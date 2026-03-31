@@ -1,0 +1,41 @@
+/**
+ * Production lines exposed on DB16 via Node-RED S7 (Cracker Line 1 → Utilities Lighting).
+ * Aligns mock data, meter lists, energy intervals, and PLC snapshot mapping.
+ */
+export const PLC_SITE_NAME = 'PLC (DB16)'
+
+export type PlcProductionMeterDef = {
+  id: string
+  name: string
+  /** S7 / Node-RED variable name for cumulative energy (REAL). */
+  totalKey: string
+  /** Synthetic demand scale for mock intervals (kW). */
+  baseKw: number
+}
+
+export const PLC_PRODUCTION_METERS: PlcProductionMeterDef[] = [
+  { id: 'plc-line-01', name: 'Cracker Line 1', totalKey: 'Total_CrackerLine1_kWh', baseKw: 520 },
+  { id: 'plc-line-02', name: 'Cracker Line 2', totalKey: 'Total_CrackerLine2_kWh', baseKw: 480 },
+  { id: 'plc-line-03', name: 'Pretzel Line', totalKey: 'Total_PretzelLine_kWh', baseKw: 310 },
+  { id: 'plc-line-04', name: 'Wafer Line 1', totalKey: 'Total_WaferLine1_kWh', baseKw: 290 },
+  { id: 'plc-line-05', name: 'Wafer Line 2', totalKey: 'Total_WaferLine2_kWh', baseKw: 275 },
+  { id: 'plc-line-06', name: 'Chocoy Choco Line', totalKey: 'Total_ChocoyChocoLine_kWh', baseKw: 340 },
+  { id: 'plc-line-07', name: 'Dynamite Line', totalKey: 'Total_DynamiteLine_kWh', baseKw: 380 },
+  { id: 'plc-line-08', name: 'XO Line', totalKey: 'Total_XOLine_kWh', baseKw: 265 },
+  { id: 'plc-line-09', name: 'Maxx Line', totalKey: 'Total_MaxxLine_kWh', baseKw: 410 },
+  { id: 'plc-line-10', name: 'Main Line', totalKey: 'Total_MainLine_kWh', baseKw: 580 },
+  { id: 'plc-line-11', name: 'Utilities Jaguar', totalKey: 'Total_UtilitiesJaguar_kWh', baseKw: 195 },
+  { id: 'plc-line-12', name: 'Utilities Lighting', totalKey: 'Total_UtilitiesLighting_kWh', baseKw: 120 },
+]
+
+/** Legacy aggregate meter id (full plant snapshot: Power_kW, Energy_kWh, …). */
+export const PLC_AGGREGATE_METER_ID = 'plc-1'
+
+export const PLC_TOTAL_ENERGY_LINES = PLC_PRODUCTION_METERS.map((m) => ({
+  key: m.totalKey,
+  name: m.name,
+}))
+
+export function findPlcProductionMeter(meterId: string): PlcProductionMeterDef | undefined {
+  return PLC_PRODUCTION_METERS.find((m) => m.id === meterId)
+}

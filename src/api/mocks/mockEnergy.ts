@@ -1,4 +1,5 @@
 import type { CostRate, EnergyInterval, LoadProfile } from '../../types'
+import { PLC_PRODUCTION_METERS } from '../../constants/plcProductionMeters'
 import { round, seededNoise, sleep } from './helpers'
 
 const costRates: CostRate[] = [
@@ -13,16 +14,11 @@ function getTierForHour(hour: number): CostRate {
   return costRates[2]
 }
 
-const meterProfiles = [
-  { id: 'mtr-101', name: 'MAIN LINE', baseKw: 580 },
-  { id: 'mtr-102', name: 'MDP3EM6400A', baseKw: 220 },
-  { id: 'mtr-104', name: 'PPBSF (FERM)', baseKw: 165 },
-  { id: 'mtr-105', name: 'PPASF', baseKw: 145 },
-  { id: 'mtr-106', name: 'PPCSF', baseKw: 120 },
-  { id: 'mtr-108', name: 'MCC23', baseKw: 185 },
-  { id: 'mtr-114', name: 'MML', baseKw: 150 },
-  { id: 'mtr-118', name: 'SLITTER', baseKw: 200 },
-]
+const meterProfiles = PLC_PRODUCTION_METERS.map((m) => ({
+  id: m.id,
+  name: m.name,
+  baseKw: m.baseKw,
+}))
 
 function generateEnergyIntervals(hours: number): EnergyInterval[] {
   const intervals: EnergyInterval[] = []
@@ -37,11 +33,10 @@ function generateEnergyIntervals(hours: number): EnergyInterval[] {
     for (const mp of meterProfiles) {
       if (mp.baseKw === 0) continue
       const timeOfDay = hour + ts.getMinutes() / 60
-      // Load varies by time: peak at 10-16, low at 0-6
       const dayShape = 0.6 + 0.4 * Math.sin((timeOfDay - 4) * Math.PI / 12)
       const noise = seededNoise(i * 7 + Number(mp.id.replace(/\D/g, '')) * 31) * 0.08
       const demandKw = round(mp.baseKw * dayShape * (1 + noise), 2)
-      const energyKwh = round(demandKw * 0.25, 3) // 15-min interval
+      const energyKwh = round(demandKw * 0.25, 3)
       const costDollars = round(energyKwh * rate.ratePerKwh, 4)
 
       intervals.push({
@@ -68,7 +63,7 @@ function generateLoadProfile(meterId: string, meterName: string, baseKw: number)
   let totalKw = 0
   const meterNum = Number(meterId.replace(/\D/g, '')) || 1
 
-  for (let i = 0; i < 96; i++) { // 96 x 15min = 24h
+  for (let i = 0; i < 96; i++) {
     const ts = new Date(today.getTime() + i * 15 * 60_000)
     const hour = ts.getHours() + ts.getMinutes() / 60
     const dayShape = 0.5 + 0.5 * Math.sin((hour - 4) * Math.PI / 12)
@@ -117,7 +112,5 @@ export async function mockGetLoadProfile(meterId: string): Promise<LoadProfile |
 
 export async function mockGetAllLoadProfiles(): Promise<LoadProfile[]> {
   await sleep(300)
-  return meterProfiles
-    .filter((mp) => mp.baseKw > 0)
-    .map((mp) => generateLoadProfile(mp.id, mp.name, mp.baseKw))
+  return meterProfiles.filter((mp) => mp.baseKw > 0).map((mp) => generateLoadProfile(mp.id, mp.name, mp.baseKw))
 }

@@ -2,7 +2,7 @@
   {
     "id": "a1000001.0001tab",
     "type": "tab",
-    "label": "S7-1500 → HTTP API",
+    "label": "S7-1500 \u2192 HTTP API",
     "disabled": false,
     "info": "Reads PLC variables via node-red-contrib-s7 and exposes JSON for the React app.\nEdit the **S7 Endpoint** node with your CPU IP, rack, slot, and DB addresses (match TIA Portal)."
   },
@@ -11,7 +11,7 @@
     "type": "tab",
     "label": "S7-1500 Dashboard (DB1)",
     "disabled": false,
-    "info": "Reads DB1 REALs at byte offsets 0, 4, 8 via node-red-contrib-s7 (ISO-on-TCP). TIA: DB1 non-optimized; CPU protection → Permit access with PUT/GET.\nDashboard: http://localhost:1880/ui (default path)."
+    "info": "Reads DB1 REALs at byte offsets 0, 4, 8 via node-red-contrib-s7 (ISO-on-TCP). TIA: DB1 non-optimized; CPU protection \u2192 Permit access with PUT/GET.\nDashboard: http://localhost:1880/ui (default path)."
   },
   {
     "id": "a1000002.s7endpoint",
@@ -28,8 +28,8 @@
     "connmode": "rack-slot",
     "adapter": "",
     "busaddr": "",
-    "cycletime": "500",
-    "timeout": "2000",
+    "cycletime": "2000",
+    "timeout": "4000",
     "name": "S7-1500 (DB16)",
     "vartable": [
       {
@@ -99,8 +99,2086 @@
       {
         "addr": "DB16,REAL2068",
         "name": "Total_UtilitiesLighting_kWh"
+      },
+      {
+        "addr": "DB16,REAL0",
+        "name": "RIO1CM1_EMU4_1_Real_power"
+      },
+      {
+        "addr": "DB16,REAL4",
+        "name": "RIO1CM1_EMU4_1_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL8",
+        "name": "RIO1CM1_EMU4_1_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL12",
+        "name": "RIO1CM1_EMU4_1_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL16",
+        "name": "RIO1CM1_EMU4_1_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL20",
+        "name": "RIO1CM1_EMU4_1_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL24",
+        "name": "RIO1CM1_EMU4_1_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL28",
+        "name": "RIO1CM1_EMU4_1_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL32",
+        "name": "RIO1CM1_EMU4_1_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL36",
+        "name": "RIO1CM1_EMU4_1_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL40",
+        "name": "RIO1CM1_EMU4_1_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL44",
+        "name": "RIO1CM1_EMU4_1_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL48",
+        "name": "RIO1CM1_EMU4_1_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL52",
+        "name": "RIO1CM1_EMU4_1_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL56",
+        "name": "RIO1CM1_EMU4_1_Current_a"
+      },
+      {
+        "addr": "DB16,REAL60",
+        "name": "RIO1CM1_EMU4_1_Current_b"
+      },
+      {
+        "addr": "DB16,REAL64",
+        "name": "RIO1CM1_EMU4_1_Current_c"
+      },
+      {
+        "addr": "DB16,REAL68",
+        "name": "RIO1CM1_EMU4_1_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL72",
+        "name": "RIO1CM1_EMU4_1_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL76",
+        "name": "RIO1CM1_EMU4_1_Frequency"
+      },
+      {
+        "addr": "DB16,REAL80",
+        "name": "RIO1CM1_EMU4_2_Real_power"
+      },
+      {
+        "addr": "DB16,REAL84",
+        "name": "RIO1CM1_EMU4_2_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL88",
+        "name": "RIO1CM1_EMU4_2_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL92",
+        "name": "RIO1CM1_EMU4_2_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL96",
+        "name": "RIO1CM1_EMU4_2_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL100",
+        "name": "RIO1CM1_EMU4_2_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL104",
+        "name": "RIO1CM1_EMU4_2_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL108",
+        "name": "RIO1CM1_EMU4_2_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL112",
+        "name": "RIO1CM1_EMU4_2_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL116",
+        "name": "RIO1CM1_EMU4_2_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL120",
+        "name": "RIO1CM1_EMU4_2_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL124",
+        "name": "RIO1CM1_EMU4_2_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL128",
+        "name": "RIO1CM1_EMU4_2_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL132",
+        "name": "RIO1CM1_EMU4_2_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL136",
+        "name": "RIO1CM1_EMU4_2_Current_a"
+      },
+      {
+        "addr": "DB16,REAL140",
+        "name": "RIO1CM1_EMU4_2_Current_b"
+      },
+      {
+        "addr": "DB16,REAL144",
+        "name": "RIO1CM1_EMU4_2_Current_c"
+      },
+      {
+        "addr": "DB16,REAL148",
+        "name": "RIO1CM1_EMU4_2_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL152",
+        "name": "RIO1CM1_EMU4_2_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL156",
+        "name": "RIO1CM1_EMU4_2_Frequency"
+      },
+      {
+        "addr": "DB16,REAL160",
+        "name": "RIO1CM2_EM6400_10_Real_power"
+      },
+      {
+        "addr": "DB16,REAL164",
+        "name": "RIO1CM2_EM6400_10_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL168",
+        "name": "RIO1CM2_EM6400_10_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL172",
+        "name": "RIO1CM2_EM6400_10_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL176",
+        "name": "RIO1CM2_EM6400_10_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL180",
+        "name": "RIO1CM2_EM6400_10_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL184",
+        "name": "RIO1CM2_EM6400_10_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL188",
+        "name": "RIO1CM2_EM6400_10_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL192",
+        "name": "RIO1CM2_EM6400_10_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL196",
+        "name": "RIO1CM2_EM6400_10_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL200",
+        "name": "RIO1CM2_EM6400_10_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL204",
+        "name": "RIO1CM2_EM6400_10_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL208",
+        "name": "RIO1CM2_EM6400_10_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL212",
+        "name": "RIO1CM2_EM6400_10_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL216",
+        "name": "RIO1CM2_EM6400_10_Current_a"
+      },
+      {
+        "addr": "DB16,REAL220",
+        "name": "RIO1CM2_EM6400_10_Current_b"
+      },
+      {
+        "addr": "DB16,REAL224",
+        "name": "RIO1CM2_EM6400_10_Current_c"
+      },
+      {
+        "addr": "DB16,REAL228",
+        "name": "RIO1CM2_EM6400_10_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL232",
+        "name": "RIO1CM2_EM6400_10_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL236",
+        "name": "RIO1CM2_EM6400_10_Frequency"
+      },
+      {
+        "addr": "DB16,REAL240",
+        "name": "RIO1CM2_EM6400_11_Real_power"
+      },
+      {
+        "addr": "DB16,REAL244",
+        "name": "RIO1CM2_EM6400_11_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL248",
+        "name": "RIO1CM2_EM6400_11_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL252",
+        "name": "RIO1CM2_EM6400_11_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL256",
+        "name": "RIO1CM2_EM6400_11_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL260",
+        "name": "RIO1CM2_EM6400_11_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL264",
+        "name": "RIO1CM2_EM6400_11_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL268",
+        "name": "RIO1CM2_EM6400_11_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL272",
+        "name": "RIO1CM2_EM6400_11_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL276",
+        "name": "RIO1CM2_EM6400_11_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL280",
+        "name": "RIO1CM2_EM6400_11_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL284",
+        "name": "RIO1CM2_EM6400_11_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL288",
+        "name": "RIO1CM2_EM6400_11_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL292",
+        "name": "RIO1CM2_EM6400_11_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL296",
+        "name": "RIO1CM2_EM6400_11_Current_a"
+      },
+      {
+        "addr": "DB16,REAL300",
+        "name": "RIO1CM2_EM6400_11_Current_b"
+      },
+      {
+        "addr": "DB16,REAL304",
+        "name": "RIO1CM2_EM6400_11_Current_c"
+      },
+      {
+        "addr": "DB16,REAL308",
+        "name": "RIO1CM2_EM6400_11_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL312",
+        "name": "RIO1CM2_EM6400_11_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL316",
+        "name": "RIO1CM2_EM6400_11_Frequency"
+      },
+      {
+        "addr": "DB16,REAL320",
+        "name": "RIO2CM1_EMU4_1_Real_power"
+      },
+      {
+        "addr": "DB16,REAL324",
+        "name": "RIO2CM1_EMU4_1_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL328",
+        "name": "RIO2CM1_EMU4_1_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL332",
+        "name": "RIO2CM1_EMU4_1_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL336",
+        "name": "RIO2CM1_EMU4_1_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL340",
+        "name": "RIO2CM1_EMU4_1_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL344",
+        "name": "RIO2CM1_EMU4_1_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL348",
+        "name": "RIO2CM1_EMU4_1_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL352",
+        "name": "RIO2CM1_EMU4_1_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL356",
+        "name": "RIO2CM1_EMU4_1_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL360",
+        "name": "RIO2CM1_EMU4_1_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL364",
+        "name": "RIO2CM1_EMU4_1_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL368",
+        "name": "RIO2CM1_EMU4_1_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL372",
+        "name": "RIO2CM1_EMU4_1_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL376",
+        "name": "RIO2CM1_EMU4_1_Current_a"
+      },
+      {
+        "addr": "DB16,REAL380",
+        "name": "RIO2CM1_EMU4_1_Current_b"
+      },
+      {
+        "addr": "DB16,REAL384",
+        "name": "RIO2CM1_EMU4_1_Current_c"
+      },
+      {
+        "addr": "DB16,REAL388",
+        "name": "RIO2CM1_EMU4_1_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL392",
+        "name": "RIO2CM1_EMU4_1_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL396",
+        "name": "RIO2CM1_EMU4_1_Frequency"
+      },
+      {
+        "addr": "DB16,REAL400",
+        "name": "RIO2CM1_EMU4_2_Real_power"
+      },
+      {
+        "addr": "DB16,REAL404",
+        "name": "RIO2CM1_EMU4_2_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL408",
+        "name": "RIO2CM1_EMU4_2_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL412",
+        "name": "RIO2CM1_EMU4_2_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL416",
+        "name": "RIO2CM1_EMU4_2_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL420",
+        "name": "RIO2CM1_EMU4_2_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL424",
+        "name": "RIO2CM1_EMU4_2_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL428",
+        "name": "RIO2CM1_EMU4_2_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL432",
+        "name": "RIO2CM1_EMU4_2_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL436",
+        "name": "RIO2CM1_EMU4_2_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL440",
+        "name": "RIO2CM1_EMU4_2_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL444",
+        "name": "RIO2CM1_EMU4_2_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL448",
+        "name": "RIO2CM1_EMU4_2_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL452",
+        "name": "RIO2CM1_EMU4_2_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL456",
+        "name": "RIO2CM1_EMU4_2_Current_a"
+      },
+      {
+        "addr": "DB16,REAL460",
+        "name": "RIO2CM1_EMU4_2_Current_b"
+      },
+      {
+        "addr": "DB16,REAL464",
+        "name": "RIO2CM1_EMU4_2_Current_c"
+      },
+      {
+        "addr": "DB16,REAL468",
+        "name": "RIO2CM1_EMU4_2_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL472",
+        "name": "RIO2CM1_EMU4_2_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL476",
+        "name": "RIO2CM1_EMU4_2_Frequency"
+      },
+      {
+        "addr": "DB16,REAL480",
+        "name": "RIO2CM1_EMU4_3_Real_power"
+      },
+      {
+        "addr": "DB16,REAL484",
+        "name": "RIO2CM1_EMU4_3_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL488",
+        "name": "RIO2CM1_EMU4_3_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL492",
+        "name": "RIO2CM1_EMU4_3_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL496",
+        "name": "RIO2CM1_EMU4_3_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL500",
+        "name": "RIO2CM1_EMU4_3_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL504",
+        "name": "RIO2CM1_EMU4_3_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL508",
+        "name": "RIO2CM1_EMU4_3_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL512",
+        "name": "RIO2CM1_EMU4_3_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL516",
+        "name": "RIO2CM1_EMU4_3_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL520",
+        "name": "RIO2CM1_EMU4_3_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL524",
+        "name": "RIO2CM1_EMU4_3_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL528",
+        "name": "RIO2CM1_EMU4_3_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL532",
+        "name": "RIO2CM1_EMU4_3_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL536",
+        "name": "RIO2CM1_EMU4_3_Current_a"
+      },
+      {
+        "addr": "DB16,REAL540",
+        "name": "RIO2CM1_EMU4_3_Current_b"
+      },
+      {
+        "addr": "DB16,REAL544",
+        "name": "RIO2CM1_EMU4_3_Current_c"
+      },
+      {
+        "addr": "DB16,REAL548",
+        "name": "RIO2CM1_EMU4_3_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL552",
+        "name": "RIO2CM1_EMU4_3_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL556",
+        "name": "RIO2CM1_EMU4_3_Frequency"
+      },
+      {
+        "addr": "DB16,REAL560",
+        "name": "RIO2CM1_EMU4_4_Real_power"
+      },
+      {
+        "addr": "DB16,REAL564",
+        "name": "RIO2CM1_EMU4_4_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL568",
+        "name": "RIO2CM1_EMU4_4_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL572",
+        "name": "RIO2CM1_EMU4_4_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL576",
+        "name": "RIO2CM1_EMU4_4_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL580",
+        "name": "RIO2CM1_EMU4_4_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL584",
+        "name": "RIO2CM1_EMU4_4_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL588",
+        "name": "RIO2CM1_EMU4_4_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL592",
+        "name": "RIO2CM1_EMU4_4_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL596",
+        "name": "RIO2CM1_EMU4_4_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL600",
+        "name": "RIO2CM1_EMU4_4_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL604",
+        "name": "RIO2CM1_EMU4_4_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL608",
+        "name": "RIO2CM1_EMU4_4_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL612",
+        "name": "RIO2CM1_EMU4_4_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL616",
+        "name": "RIO2CM1_EMU4_4_Current_a"
+      },
+      {
+        "addr": "DB16,REAL620",
+        "name": "RIO2CM1_EMU4_4_Current_b"
+      },
+      {
+        "addr": "DB16,REAL624",
+        "name": "RIO2CM1_EMU4_4_Current_c"
+      },
+      {
+        "addr": "DB16,REAL628",
+        "name": "RIO2CM1_EMU4_4_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL632",
+        "name": "RIO2CM1_EMU4_4_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL636",
+        "name": "RIO2CM1_EMU4_4_Frequency"
+      },
+      {
+        "addr": "DB16,REAL640",
+        "name": "RIO2CM1_EMU4_5_Real_power"
+      },
+      {
+        "addr": "DB16,REAL644",
+        "name": "RIO2CM1_EMU4_5_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL648",
+        "name": "RIO2CM1_EMU4_5_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL652",
+        "name": "RIO2CM1_EMU4_5_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL656",
+        "name": "RIO2CM1_EMU4_5_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL660",
+        "name": "RIO2CM1_EMU4_5_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL664",
+        "name": "RIO2CM1_EMU4_5_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL668",
+        "name": "RIO2CM1_EMU4_5_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL672",
+        "name": "RIO2CM1_EMU4_5_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL676",
+        "name": "RIO2CM1_EMU4_5_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL680",
+        "name": "RIO2CM1_EMU4_5_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL684",
+        "name": "RIO2CM1_EMU4_5_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL688",
+        "name": "RIO2CM1_EMU4_5_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL692",
+        "name": "RIO2CM1_EMU4_5_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL696",
+        "name": "RIO2CM1_EMU4_5_Current_a"
+      },
+      {
+        "addr": "DB16,REAL700",
+        "name": "RIO2CM1_EMU4_5_Current_b"
+      },
+      {
+        "addr": "DB16,REAL704",
+        "name": "RIO2CM1_EMU4_5_Current_c"
+      },
+      {
+        "addr": "DB16,REAL708",
+        "name": "RIO2CM1_EMU4_5_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL712",
+        "name": "RIO2CM1_EMU4_5_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL716",
+        "name": "RIO2CM1_EMU4_5_Frequency"
+      },
+      {
+        "addr": "DB16,REAL720",
+        "name": "RIO2CM1_EMU4_6_Real_power"
+      },
+      {
+        "addr": "DB16,REAL724",
+        "name": "RIO2CM1_EMU4_6_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL728",
+        "name": "RIO2CM1_EMU4_6_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL732",
+        "name": "RIO2CM1_EMU4_6_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL736",
+        "name": "RIO2CM1_EMU4_6_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL740",
+        "name": "RIO2CM1_EMU4_6_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL744",
+        "name": "RIO2CM1_EMU4_6_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL748",
+        "name": "RIO2CM1_EMU4_6_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL752",
+        "name": "RIO2CM1_EMU4_6_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL756",
+        "name": "RIO2CM1_EMU4_6_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL760",
+        "name": "RIO2CM1_EMU4_6_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL764",
+        "name": "RIO2CM1_EMU4_6_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL768",
+        "name": "RIO2CM1_EMU4_6_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL772",
+        "name": "RIO2CM1_EMU4_6_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL776",
+        "name": "RIO2CM1_EMU4_6_Current_a"
+      },
+      {
+        "addr": "DB16,REAL780",
+        "name": "RIO2CM1_EMU4_6_Current_b"
+      },
+      {
+        "addr": "DB16,REAL784",
+        "name": "RIO2CM1_EMU4_6_Current_c"
+      },
+      {
+        "addr": "DB16,REAL788",
+        "name": "RIO2CM1_EMU4_6_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL792",
+        "name": "RIO2CM1_EMU4_6_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL796",
+        "name": "RIO2CM1_EMU4_6_Frequency"
+      },
+      {
+        "addr": "DB16,REAL800",
+        "name": "RIO2CM1_EMU4_7_Real_power"
+      },
+      {
+        "addr": "DB16,REAL804",
+        "name": "RIO2CM1_EMU4_7_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL808",
+        "name": "RIO2CM1_EMU4_7_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL812",
+        "name": "RIO2CM1_EMU4_7_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL816",
+        "name": "RIO2CM1_EMU4_7_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL820",
+        "name": "RIO2CM1_EMU4_7_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL824",
+        "name": "RIO2CM1_EMU4_7_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL828",
+        "name": "RIO2CM1_EMU4_7_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL832",
+        "name": "RIO2CM1_EMU4_7_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL836",
+        "name": "RIO2CM1_EMU4_7_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL840",
+        "name": "RIO2CM1_EMU4_7_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL844",
+        "name": "RIO2CM1_EMU4_7_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL848",
+        "name": "RIO2CM1_EMU4_7_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL852",
+        "name": "RIO2CM1_EMU4_7_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL856",
+        "name": "RIO2CM1_EMU4_7_Current_a"
+      },
+      {
+        "addr": "DB16,REAL860",
+        "name": "RIO2CM1_EMU4_7_Current_b"
+      },
+      {
+        "addr": "DB16,REAL864",
+        "name": "RIO2CM1_EMU4_7_Current_c"
+      },
+      {
+        "addr": "DB16,REAL868",
+        "name": "RIO2CM1_EMU4_7_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL872",
+        "name": "RIO2CM1_EMU4_7_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL876",
+        "name": "RIO2CM1_EMU4_7_Frequency"
+      },
+      {
+        "addr": "DB16,REAL880",
+        "name": "RIO2CM1_EMU4_8_Real_power"
+      },
+      {
+        "addr": "DB16,REAL884",
+        "name": "RIO2CM1_EMU4_8_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL888",
+        "name": "RIO2CM1_EMU4_8_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL892",
+        "name": "RIO2CM1_EMU4_8_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL896",
+        "name": "RIO2CM1_EMU4_8_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL900",
+        "name": "RIO2CM1_EMU4_8_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL904",
+        "name": "RIO2CM1_EMU4_8_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL908",
+        "name": "RIO2CM1_EMU4_8_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL912",
+        "name": "RIO2CM1_EMU4_8_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL916",
+        "name": "RIO2CM1_EMU4_8_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL920",
+        "name": "RIO2CM1_EMU4_8_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL924",
+        "name": "RIO2CM1_EMU4_8_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL928",
+        "name": "RIO2CM1_EMU4_8_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL932",
+        "name": "RIO2CM1_EMU4_8_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL936",
+        "name": "RIO2CM1_EMU4_8_Current_a"
+      },
+      {
+        "addr": "DB16,REAL940",
+        "name": "RIO2CM1_EMU4_8_Current_b"
+      },
+      {
+        "addr": "DB16,REAL944",
+        "name": "RIO2CM1_EMU4_8_Current_c"
+      },
+      {
+        "addr": "DB16,REAL948",
+        "name": "RIO2CM1_EMU4_8_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL952",
+        "name": "RIO2CM1_EMU4_8_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL956",
+        "name": "RIO2CM1_EMU4_8_Frequency"
+      },
+      {
+        "addr": "DB16,REAL960",
+        "name": "RIO2CM1_EMU4_9_Real_power"
+      },
+      {
+        "addr": "DB16,REAL964",
+        "name": "RIO2CM1_EMU4_9_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL968",
+        "name": "RIO2CM1_EMU4_9_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL972",
+        "name": "RIO2CM1_EMU4_9_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL976",
+        "name": "RIO2CM1_EMU4_9_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL980",
+        "name": "RIO2CM1_EMU4_9_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL984",
+        "name": "RIO2CM1_EMU4_9_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL988",
+        "name": "RIO2CM1_EMU4_9_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL992",
+        "name": "RIO2CM1_EMU4_9_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL996",
+        "name": "RIO2CM1_EMU4_9_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL1000",
+        "name": "RIO2CM1_EMU4_9_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL1004",
+        "name": "RIO2CM1_EMU4_9_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL1008",
+        "name": "RIO2CM1_EMU4_9_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL1012",
+        "name": "RIO2CM1_EMU4_9_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL1016",
+        "name": "RIO2CM1_EMU4_9_Current_a"
+      },
+      {
+        "addr": "DB16,REAL1020",
+        "name": "RIO2CM1_EMU4_9_Current_b"
+      },
+      {
+        "addr": "DB16,REAL1024",
+        "name": "RIO2CM1_EMU4_9_Current_c"
+      },
+      {
+        "addr": "DB16,REAL1028",
+        "name": "RIO2CM1_EMU4_9_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL1032",
+        "name": "RIO2CM1_EMU4_9_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL1036",
+        "name": "RIO2CM1_EMU4_9_Frequency"
+      },
+      {
+        "addr": "DB16,REAL1040",
+        "name": "RIO2CM1_EMU4_10_Real_power"
+      },
+      {
+        "addr": "DB16,REAL1044",
+        "name": "RIO2CM1_EMU4_10_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL1048",
+        "name": "RIO2CM1_EMU4_10_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL1052",
+        "name": "RIO2CM1_EMU4_10_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL1056",
+        "name": "RIO2CM1_EMU4_10_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL1060",
+        "name": "RIO2CM1_EMU4_10_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL1064",
+        "name": "RIO2CM1_EMU4_10_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL1068",
+        "name": "RIO2CM1_EMU4_10_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL1072",
+        "name": "RIO2CM1_EMU4_10_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL1076",
+        "name": "RIO2CM1_EMU4_10_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL1080",
+        "name": "RIO2CM1_EMU4_10_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL1084",
+        "name": "RIO2CM1_EMU4_10_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL1088",
+        "name": "RIO2CM1_EMU4_10_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL1092",
+        "name": "RIO2CM1_EMU4_10_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL1096",
+        "name": "RIO2CM1_EMU4_10_Current_a"
+      },
+      {
+        "addr": "DB16,REAL1100",
+        "name": "RIO2CM1_EMU4_10_Current_b"
+      },
+      {
+        "addr": "DB16,REAL1104",
+        "name": "RIO2CM1_EMU4_10_Current_c"
+      },
+      {
+        "addr": "DB16,REAL1108",
+        "name": "RIO2CM1_EMU4_10_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL1112",
+        "name": "RIO2CM1_EMU4_10_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL1116",
+        "name": "RIO2CM1_EMU4_10_Frequency"
+      },
+      {
+        "addr": "DB16,REAL1120",
+        "name": "RIO2CM1_EMU4_11_Real_power"
+      },
+      {
+        "addr": "DB16,REAL1124",
+        "name": "RIO2CM1_EMU4_11_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL1128",
+        "name": "RIO2CM1_EMU4_11_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL1132",
+        "name": "RIO2CM1_EMU4_11_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL1136",
+        "name": "RIO2CM1_EMU4_11_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL1140",
+        "name": "RIO2CM1_EMU4_11_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL1144",
+        "name": "RIO2CM1_EMU4_11_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL1148",
+        "name": "RIO2CM1_EMU4_11_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL1152",
+        "name": "RIO2CM1_EMU4_11_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL1156",
+        "name": "RIO2CM1_EMU4_11_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL1160",
+        "name": "RIO2CM1_EMU4_11_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL1164",
+        "name": "RIO2CM1_EMU4_11_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL1168",
+        "name": "RIO2CM1_EMU4_11_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL1172",
+        "name": "RIO2CM1_EMU4_11_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL1176",
+        "name": "RIO2CM1_EMU4_11_Current_a"
+      },
+      {
+        "addr": "DB16,REAL1180",
+        "name": "RIO2CM1_EMU4_11_Current_b"
+      },
+      {
+        "addr": "DB16,REAL1184",
+        "name": "RIO2CM1_EMU4_11_Current_c"
+      },
+      {
+        "addr": "DB16,REAL1188",
+        "name": "RIO2CM1_EMU4_11_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL1192",
+        "name": "RIO2CM1_EMU4_11_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL1196",
+        "name": "RIO2CM1_EMU4_11_Frequency"
+      },
+      {
+        "addr": "DB16,REAL1200",
+        "name": "RIO2CM1_EMU4_12_Real_power"
+      },
+      {
+        "addr": "DB16,REAL1204",
+        "name": "RIO2CM1_EMU4_12_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL1208",
+        "name": "RIO2CM1_EMU4_12_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL1212",
+        "name": "RIO2CM1_EMU4_12_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL1216",
+        "name": "RIO2CM1_EMU4_12_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL1220",
+        "name": "RIO2CM1_EMU4_12_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL1224",
+        "name": "RIO2CM1_EMU4_12_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL1228",
+        "name": "RIO2CM1_EMU4_12_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL1232",
+        "name": "RIO2CM1_EMU4_12_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL1236",
+        "name": "RIO2CM1_EMU4_12_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL1240",
+        "name": "RIO2CM1_EMU4_12_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL1244",
+        "name": "RIO2CM1_EMU4_12_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL1248",
+        "name": "RIO2CM1_EMU4_12_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL1252",
+        "name": "RIO2CM1_EMU4_12_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL1256",
+        "name": "RIO2CM1_EMU4_12_Current_a"
+      },
+      {
+        "addr": "DB16,REAL1260",
+        "name": "RIO2CM1_EMU4_12_Current_b"
+      },
+      {
+        "addr": "DB16,REAL1264",
+        "name": "RIO2CM1_EMU4_12_Current_c"
+      },
+      {
+        "addr": "DB16,REAL1268",
+        "name": "RIO2CM1_EMU4_12_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL1272",
+        "name": "RIO2CM1_EMU4_12_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL1276",
+        "name": "RIO2CM1_EMU4_12_Frequency"
+      },
+      {
+        "addr": "DB16,REAL1280",
+        "name": "RIO2CM2_EM6400_1_Real_power"
+      },
+      {
+        "addr": "DB16,REAL1284",
+        "name": "RIO2CM2_EM6400_1_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL1288",
+        "name": "RIO2CM2_EM6400_1_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL1292",
+        "name": "RIO2CM2_EM6400_1_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL1296",
+        "name": "RIO2CM2_EM6400_1_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL1300",
+        "name": "RIO2CM2_EM6400_1_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL1304",
+        "name": "RIO2CM2_EM6400_1_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL1308",
+        "name": "RIO2CM2_EM6400_1_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL1312",
+        "name": "RIO2CM2_EM6400_1_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL1316",
+        "name": "RIO2CM2_EM6400_1_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL1320",
+        "name": "RIO2CM2_EM6400_1_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL1324",
+        "name": "RIO2CM2_EM6400_1_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL1328",
+        "name": "RIO2CM2_EM6400_1_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL1332",
+        "name": "RIO2CM2_EM6400_1_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL1336",
+        "name": "RIO2CM2_EM6400_1_Current_a"
+      },
+      {
+        "addr": "DB16,REAL1340",
+        "name": "RIO2CM2_EM6400_1_Current_b"
+      },
+      {
+        "addr": "DB16,REAL1344",
+        "name": "RIO2CM2_EM6400_1_Current_c"
+      },
+      {
+        "addr": "DB16,REAL1348",
+        "name": "RIO2CM2_EM6400_1_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL1352",
+        "name": "RIO2CM2_EM6400_1_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL1356",
+        "name": "RIO2CM2_EM6400_1_Frequency"
+      },
+      {
+        "addr": "DB16,REAL1360",
+        "name": "RIO2CM2_EM6400_2_Real_power"
+      },
+      {
+        "addr": "DB16,REAL1364",
+        "name": "RIO2CM2_EM6400_2_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL1368",
+        "name": "RIO2CM2_EM6400_2_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL1372",
+        "name": "RIO2CM2_EM6400_2_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL1376",
+        "name": "RIO2CM2_EM6400_2_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL1380",
+        "name": "RIO2CM2_EM6400_2_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL1384",
+        "name": "RIO2CM2_EM6400_2_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL1388",
+        "name": "RIO2CM2_EM6400_2_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL1392",
+        "name": "RIO2CM2_EM6400_2_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL1396",
+        "name": "RIO2CM2_EM6400_2_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL1400",
+        "name": "RIO2CM2_EM6400_2_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL1404",
+        "name": "RIO2CM2_EM6400_2_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL1408",
+        "name": "RIO2CM2_EM6400_2_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL1412",
+        "name": "RIO2CM2_EM6400_2_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL1416",
+        "name": "RIO2CM2_EM6400_2_Current_a"
+      },
+      {
+        "addr": "DB16,REAL1420",
+        "name": "RIO2CM2_EM6400_2_Current_b"
+      },
+      {
+        "addr": "DB16,REAL1424",
+        "name": "RIO2CM2_EM6400_2_Current_c"
+      },
+      {
+        "addr": "DB16,REAL1428",
+        "name": "RIO2CM2_EM6400_2_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL1432",
+        "name": "RIO2CM2_EM6400_2_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL1436",
+        "name": "RIO2CM2_EM6400_2_Frequency"
+      },
+      {
+        "addr": "DB16,REAL1440",
+        "name": "RIO2CM2_EM6400_3_Real_power"
+      },
+      {
+        "addr": "DB16,REAL1444",
+        "name": "RIO2CM2_EM6400_3_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL1448",
+        "name": "RIO2CM2_EM6400_3_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL1452",
+        "name": "RIO2CM2_EM6400_3_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL1456",
+        "name": "RIO2CM2_EM6400_3_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL1460",
+        "name": "RIO2CM2_EM6400_3_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL1464",
+        "name": "RIO2CM2_EM6400_3_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL1468",
+        "name": "RIO2CM2_EM6400_3_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL1472",
+        "name": "RIO2CM2_EM6400_3_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL1476",
+        "name": "RIO2CM2_EM6400_3_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL1480",
+        "name": "RIO2CM2_EM6400_3_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL1484",
+        "name": "RIO2CM2_EM6400_3_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL1488",
+        "name": "RIO2CM2_EM6400_3_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL1492",
+        "name": "RIO2CM2_EM6400_3_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL1496",
+        "name": "RIO2CM2_EM6400_3_Current_a"
+      },
+      {
+        "addr": "DB16,REAL1500",
+        "name": "RIO2CM2_EM6400_3_Current_b"
+      },
+      {
+        "addr": "DB16,REAL1504",
+        "name": "RIO2CM2_EM6400_3_Current_c"
+      },
+      {
+        "addr": "DB16,REAL1508",
+        "name": "RIO2CM2_EM6400_3_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL1512",
+        "name": "RIO2CM2_EM6400_3_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL1516",
+        "name": "RIO2CM2_EM6400_3_Frequency"
+      },
+      {
+        "addr": "DB16,REAL1520",
+        "name": "RIO2CM2_EM6400_4_Real_power"
+      },
+      {
+        "addr": "DB16,REAL1524",
+        "name": "RIO2CM2_EM6400_4_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL1528",
+        "name": "RIO2CM2_EM6400_4_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL1532",
+        "name": "RIO2CM2_EM6400_4_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL1536",
+        "name": "RIO2CM2_EM6400_4_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL1540",
+        "name": "RIO2CM2_EM6400_4_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL1544",
+        "name": "RIO2CM2_EM6400_4_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL1548",
+        "name": "RIO2CM2_EM6400_4_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL1552",
+        "name": "RIO2CM2_EM6400_4_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL1556",
+        "name": "RIO2CM2_EM6400_4_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL1560",
+        "name": "RIO2CM2_EM6400_4_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL1564",
+        "name": "RIO2CM2_EM6400_4_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL1568",
+        "name": "RIO2CM2_EM6400_4_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL1572",
+        "name": "RIO2CM2_EM6400_4_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL1576",
+        "name": "RIO2CM2_EM6400_4_Current_a"
+      },
+      {
+        "addr": "DB16,REAL1580",
+        "name": "RIO2CM2_EM6400_4_Current_b"
+      },
+      {
+        "addr": "DB16,REAL1584",
+        "name": "RIO2CM2_EM6400_4_Current_c"
+      },
+      {
+        "addr": "DB16,REAL1588",
+        "name": "RIO2CM2_EM6400_4_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL1592",
+        "name": "RIO2CM2_EM6400_4_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL1596",
+        "name": "RIO2CM2_EM6400_4_Frequency"
+      },
+      {
+        "addr": "DB16,REAL1600",
+        "name": "RIO2CM2_EM6400_5_Real_power"
+      },
+      {
+        "addr": "DB16,REAL1604",
+        "name": "RIO2CM2_EM6400_5_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL1608",
+        "name": "RIO2CM2_EM6400_5_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL1612",
+        "name": "RIO2CM2_EM6400_5_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL1616",
+        "name": "RIO2CM2_EM6400_5_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL1620",
+        "name": "RIO2CM2_EM6400_5_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL1624",
+        "name": "RIO2CM2_EM6400_5_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL1628",
+        "name": "RIO2CM2_EM6400_5_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL1632",
+        "name": "RIO2CM2_EM6400_5_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL1636",
+        "name": "RIO2CM2_EM6400_5_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL1640",
+        "name": "RIO2CM2_EM6400_5_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL1644",
+        "name": "RIO2CM2_EM6400_5_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL1648",
+        "name": "RIO2CM2_EM6400_5_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL1652",
+        "name": "RIO2CM2_EM6400_5_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL1656",
+        "name": "RIO2CM2_EM6400_5_Current_a"
+      },
+      {
+        "addr": "DB16,REAL1660",
+        "name": "RIO2CM2_EM6400_5_Current_b"
+      },
+      {
+        "addr": "DB16,REAL1664",
+        "name": "RIO2CM2_EM6400_5_Current_c"
+      },
+      {
+        "addr": "DB16,REAL1668",
+        "name": "RIO2CM2_EM6400_5_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL1672",
+        "name": "RIO2CM2_EM6400_5_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL1676",
+        "name": "RIO2CM2_EM6400_5_Frequency"
+      },
+      {
+        "addr": "DB16,REAL1680",
+        "name": "RIO2CM2_EM6400_6_Real_power"
+      },
+      {
+        "addr": "DB16,REAL1684",
+        "name": "RIO2CM2_EM6400_6_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL1688",
+        "name": "RIO2CM2_EM6400_6_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL1692",
+        "name": "RIO2CM2_EM6400_6_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL1696",
+        "name": "RIO2CM2_EM6400_6_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL1700",
+        "name": "RIO2CM2_EM6400_6_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL1704",
+        "name": "RIO2CM2_EM6400_6_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL1708",
+        "name": "RIO2CM2_EM6400_6_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL1712",
+        "name": "RIO2CM2_EM6400_6_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL1716",
+        "name": "RIO2CM2_EM6400_6_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL1720",
+        "name": "RIO2CM2_EM6400_6_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL1724",
+        "name": "RIO2CM2_EM6400_6_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL1728",
+        "name": "RIO2CM2_EM6400_6_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL1732",
+        "name": "RIO2CM2_EM6400_6_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL1736",
+        "name": "RIO2CM2_EM6400_6_Current_a"
+      },
+      {
+        "addr": "DB16,REAL1740",
+        "name": "RIO2CM2_EM6400_6_Current_b"
+      },
+      {
+        "addr": "DB16,REAL1744",
+        "name": "RIO2CM2_EM6400_6_Current_c"
+      },
+      {
+        "addr": "DB16,REAL1748",
+        "name": "RIO2CM2_EM6400_6_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL1752",
+        "name": "RIO2CM2_EM6400_6_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL1756",
+        "name": "RIO2CM2_EM6400_6_Frequency"
+      },
+      {
+        "addr": "DB16,REAL1760",
+        "name": "RIO2_PAC3200_51_Real_power"
+      },
+      {
+        "addr": "DB16,REAL1764",
+        "name": "RIO2_PAC3200_51_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL1768",
+        "name": "RIO2_PAC3200_51_Apparent_power"
+      },
+      {
+        "addr": "DB16,DWORD1772",
+        "name": "RIO2_PAC3200_51_Real_energy_DWORD0"
+      },
+      {
+        "addr": "DB16,DWORD1776",
+        "name": "RIO2_PAC3200_51_Real_energy_DWORD1"
+      },
+      {
+        "addr": "DB16,DWORD1780",
+        "name": "RIO2_PAC3200_51_Reactive_energy_DWORD0"
+      },
+      {
+        "addr": "DB16,DWORD1784",
+        "name": "RIO2_PAC3200_51_Reactive_energy_DWORD1"
+      },
+      {
+        "addr": "DB16,DWORD1788",
+        "name": "RIO2_PAC3200_51_Apparent_energy_DWORD0"
+      },
+      {
+        "addr": "DB16,DWORD1792",
+        "name": "RIO2_PAC3200_51_Apparent_energy_DWORD1"
+      },
+      {
+        "addr": "DB16,REAL1796",
+        "name": "RIO2_PAC3200_51_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL1800",
+        "name": "RIO2_PAC3200_51_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL1804",
+        "name": "RIO2_PAC3200_51_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL1808",
+        "name": "RIO2_PAC3200_51_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL1812",
+        "name": "RIO2_PAC3200_51_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL1816",
+        "name": "RIO2_PAC3200_51_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL1820",
+        "name": "RIO2_PAC3200_51_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL1824",
+        "name": "RIO2_PAC3200_51_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL1828",
+        "name": "RIO2_PAC3200_51_Current_a"
+      },
+      {
+        "addr": "DB16,REAL1832",
+        "name": "RIO2_PAC3200_51_Current_b"
+      },
+      {
+        "addr": "DB16,REAL1836",
+        "name": "RIO2_PAC3200_51_Current_c"
+      },
+      {
+        "addr": "DB16,REAL1840",
+        "name": "RIO2_PAC3200_51_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL1844",
+        "name": "RIO2_PAC3200_51_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL1848",
+        "name": "RIO2_PAC3200_51_Frequency"
+      },
+      {
+        "addr": "DB16,REAL1852",
+        "name": "RIO2_PAC3200_53_Real_power"
+      },
+      {
+        "addr": "DB16,REAL1856",
+        "name": "RIO2_PAC3200_53_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL1860",
+        "name": "RIO2_PAC3200_53_Apparent_power"
+      },
+      {
+        "addr": "DB16,DWORD1864",
+        "name": "RIO2_PAC3200_53_Real_energy_DWORD0"
+      },
+      {
+        "addr": "DB16,DWORD1868",
+        "name": "RIO2_PAC3200_53_Real_energy_DWORD1"
+      },
+      {
+        "addr": "DB16,DWORD1872",
+        "name": "RIO2_PAC3200_53_Reactive_energy_DWORD0"
+      },
+      {
+        "addr": "DB16,DWORD1876",
+        "name": "RIO2_PAC3200_53_Reactive_energy_DWORD1"
+      },
+      {
+        "addr": "DB16,DWORD1880",
+        "name": "RIO2_PAC3200_53_Apparent_energy_DWORD0"
+      },
+      {
+        "addr": "DB16,DWORD1884",
+        "name": "RIO2_PAC3200_53_Apparent_energy_DWORD1"
+      },
+      {
+        "addr": "DB16,REAL1888",
+        "name": "RIO2_PAC3200_53_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL1892",
+        "name": "RIO2_PAC3200_53_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL1896",
+        "name": "RIO2_PAC3200_53_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL1900",
+        "name": "RIO2_PAC3200_53_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL1904",
+        "name": "RIO2_PAC3200_53_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL1908",
+        "name": "RIO2_PAC3200_53_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL1912",
+        "name": "RIO2_PAC3200_53_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL1916",
+        "name": "RIO2_PAC3200_53_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL1920",
+        "name": "RIO2_PAC3200_53_Current_a"
+      },
+      {
+        "addr": "DB16,REAL1924",
+        "name": "RIO2_PAC3200_53_Current_b"
+      },
+      {
+        "addr": "DB16,REAL1928",
+        "name": "RIO2_PAC3200_53_Current_c"
+      },
+      {
+        "addr": "DB16,REAL1932",
+        "name": "RIO2_PAC3200_53_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL1936",
+        "name": "RIO2_PAC3200_53_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL1940",
+        "name": "RIO2_PAC3200_53_Frequency"
+      },
+      {
+        "addr": "DB16,REAL1944",
+        "name": "RIO2_UMG508_52_Real_power"
+      },
+      {
+        "addr": "DB16,REAL1948",
+        "name": "RIO2_UMG508_52_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL1952",
+        "name": "RIO2_UMG508_52_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL1956",
+        "name": "RIO2_UMG508_52_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL1960",
+        "name": "RIO2_UMG508_52_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL1964",
+        "name": "RIO2_UMG508_52_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL1968",
+        "name": "RIO2_UMG508_52_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL1972",
+        "name": "RIO2_UMG508_52_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL1976",
+        "name": "RIO2_UMG508_52_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL1980",
+        "name": "RIO2_UMG508_52_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL1984",
+        "name": "RIO2_UMG508_52_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL1988",
+        "name": "RIO2_UMG508_52_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL1992",
+        "name": "RIO2_UMG508_52_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL1996",
+        "name": "RIO2_UMG508_52_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL2000",
+        "name": "RIO2_UMG508_52_Current_a"
+      },
+      {
+        "addr": "DB16,REAL2004",
+        "name": "RIO2_UMG508_52_Current_b"
+      },
+      {
+        "addr": "DB16,REAL2008",
+        "name": "RIO2_UMG508_52_Current_c"
+      },
+      {
+        "addr": "DB16,REAL2012",
+        "name": "RIO2_UMG508_52_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL2016",
+        "name": "RIO2_UMG508_52_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL2020",
+        "name": "RIO2_UMG508_52_Frequency"
+      },
+      {
+        "addr": "DB16,REAL2024",
+        "name": "Total_EnergyCon_kwh_Cracker_Line_1"
+      },
+      {
+        "addr": "DB16,REAL2028",
+        "name": "Total_EnergyCon_kwh_Cracker_Line_2"
+      },
+      {
+        "addr": "DB16,REAL2032",
+        "name": "Total_EnergyCon_kwh_Pretzel_Line"
+      },
+      {
+        "addr": "DB16,REAL2036",
+        "name": "Total_EnergyCon_kwh_Wafer_Line_1"
+      },
+      {
+        "addr": "DB16,REAL2040",
+        "name": "Total_EnergyCon_kwh_Wafer_Line_2"
+      },
+      {
+        "addr": "DB16,REAL2044",
+        "name": "Total_EnergyCon_kwh_Chooey_Choco_Line"
+      },
+      {
+        "addr": "DB16,REAL2048",
+        "name": "Total_EnergyCon_kwh_Dynamite_Line"
+      },
+      {
+        "addr": "DB16,REAL2052",
+        "name": "Total_EnergyCon_kwh_XO_Line"
+      },
+      {
+        "addr": "DB16,REAL2056",
+        "name": "Total_EnergyCon_kwh_Maxx_Line"
+      },
+      {
+        "addr": "DB16,REAL2060",
+        "name": "Total_EnergyCon_kwh_Main_Line"
+      },
+      {
+        "addr": "DB16,REAL2064",
+        "name": "Total_EnergyCon_kwh_Utilities_Jaguar"
+      },
+      {
+        "addr": "DB16,REAL2068",
+        "name": "Total_EnergyCon_kwh_Utilities_Lighting_Power_Panel"
       }
     ]
+  },
+  {
+    "id": "a1000012.sqlitedb",
+    "type": "sqlitedb",
+    "db": "plc-energy-v2.sqlite",
+    "mode": "WAL"
   },
   {
     "id": "b2f00002.uibase",
@@ -234,11 +2312,13 @@
         "addr": "DB1,REAL8",
         "name": "DB1_REAL8"
       }
-    ]
+    ],
+    "d": true
   },
   {
-    "id": "133abdd3953ae1df",
+    "id": "a1000100.s7endpoint_full",
     "type": "s7 endpoint",
+    "d": true,
     "transport": "iso-on-tcp",
     "address": "192.168.1.3",
     "port": "102",
@@ -250,17 +2330,2084 @@
     "remotetsaplo": "00",
     "connmode": "rack-slot",
     "adapter": "",
-    "busaddr": 2,
-    "cycletime": 1000,
-    "timeout": 2000,
-    "name": "Powermetering PLC",
+    "busaddr": "",
+    "cycletime": "0",
+    "timeout": "20000",
+    "name": "S7-1500 (DB16 full from Excel)",
     "vartable": [
       {
-        "addr": "DB161,REAL0",
-        "name": "real_power"
+        "addr": "DB16,REAL0",
+        "name": "RIO1CM1_EMU4_1_Real_power"
+      },
+      {
+        "addr": "DB16,REAL4",
+        "name": "RIO1CM1_EMU4_1_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL8",
+        "name": "RIO1CM1_EMU4_1_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL12",
+        "name": "RIO1CM1_EMU4_1_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL16",
+        "name": "RIO1CM1_EMU4_1_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL20",
+        "name": "RIO1CM1_EMU4_1_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL24",
+        "name": "RIO1CM1_EMU4_1_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL28",
+        "name": "RIO1CM1_EMU4_1_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL32",
+        "name": "RIO1CM1_EMU4_1_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL36",
+        "name": "RIO1CM1_EMU4_1_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL40",
+        "name": "RIO1CM1_EMU4_1_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL44",
+        "name": "RIO1CM1_EMU4_1_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL48",
+        "name": "RIO1CM1_EMU4_1_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL52",
+        "name": "RIO1CM1_EMU4_1_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL56",
+        "name": "RIO1CM1_EMU4_1_Current_a"
+      },
+      {
+        "addr": "DB16,REAL60",
+        "name": "RIO1CM1_EMU4_1_Current_b"
+      },
+      {
+        "addr": "DB16,REAL64",
+        "name": "RIO1CM1_EMU4_1_Current_c"
+      },
+      {
+        "addr": "DB16,REAL68",
+        "name": "RIO1CM1_EMU4_1_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL72",
+        "name": "RIO1CM1_EMU4_1_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL76",
+        "name": "RIO1CM1_EMU4_1_Frequency"
+      },
+      {
+        "addr": "DB16,REAL80",
+        "name": "RIO1CM1_EMU4_2_Real_power"
+      },
+      {
+        "addr": "DB16,REAL84",
+        "name": "RIO1CM1_EMU4_2_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL88",
+        "name": "RIO1CM1_EMU4_2_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL92",
+        "name": "RIO1CM1_EMU4_2_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL96",
+        "name": "RIO1CM1_EMU4_2_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL100",
+        "name": "RIO1CM1_EMU4_2_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL104",
+        "name": "RIO1CM1_EMU4_2_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL108",
+        "name": "RIO1CM1_EMU4_2_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL112",
+        "name": "RIO1CM1_EMU4_2_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL116",
+        "name": "RIO1CM1_EMU4_2_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL120",
+        "name": "RIO1CM1_EMU4_2_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL124",
+        "name": "RIO1CM1_EMU4_2_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL128",
+        "name": "RIO1CM1_EMU4_2_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL132",
+        "name": "RIO1CM1_EMU4_2_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL136",
+        "name": "RIO1CM1_EMU4_2_Current_a"
+      },
+      {
+        "addr": "DB16,REAL140",
+        "name": "RIO1CM1_EMU4_2_Current_b"
+      },
+      {
+        "addr": "DB16,REAL144",
+        "name": "RIO1CM1_EMU4_2_Current_c"
+      },
+      {
+        "addr": "DB16,REAL148",
+        "name": "RIO1CM1_EMU4_2_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL152",
+        "name": "RIO1CM1_EMU4_2_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL156",
+        "name": "RIO1CM1_EMU4_2_Frequency"
+      },
+      {
+        "addr": "DB16,REAL160",
+        "name": "RIO1CM2_EM6400_10_Real_power"
+      },
+      {
+        "addr": "DB16,REAL164",
+        "name": "RIO1CM2_EM6400_10_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL168",
+        "name": "RIO1CM2_EM6400_10_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL172",
+        "name": "RIO1CM2_EM6400_10_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL176",
+        "name": "RIO1CM2_EM6400_10_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL180",
+        "name": "RIO1CM2_EM6400_10_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL184",
+        "name": "RIO1CM2_EM6400_10_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL188",
+        "name": "RIO1CM2_EM6400_10_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL192",
+        "name": "RIO1CM2_EM6400_10_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL196",
+        "name": "RIO1CM2_EM6400_10_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL200",
+        "name": "RIO1CM2_EM6400_10_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL204",
+        "name": "RIO1CM2_EM6400_10_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL208",
+        "name": "RIO1CM2_EM6400_10_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL212",
+        "name": "RIO1CM2_EM6400_10_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL216",
+        "name": "RIO1CM2_EM6400_10_Current_a"
+      },
+      {
+        "addr": "DB16,REAL220",
+        "name": "RIO1CM2_EM6400_10_Current_b"
+      },
+      {
+        "addr": "DB16,REAL224",
+        "name": "RIO1CM2_EM6400_10_Current_c"
+      },
+      {
+        "addr": "DB16,REAL228",
+        "name": "RIO1CM2_EM6400_10_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL232",
+        "name": "RIO1CM2_EM6400_10_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL236",
+        "name": "RIO1CM2_EM6400_10_Frequency"
+      },
+      {
+        "addr": "DB16,REAL240",
+        "name": "RIO1CM2_EM6400_11_Real_power"
+      },
+      {
+        "addr": "DB16,REAL244",
+        "name": "RIO1CM2_EM6400_11_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL248",
+        "name": "RIO1CM2_EM6400_11_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL252",
+        "name": "RIO1CM2_EM6400_11_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL256",
+        "name": "RIO1CM2_EM6400_11_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL260",
+        "name": "RIO1CM2_EM6400_11_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL264",
+        "name": "RIO1CM2_EM6400_11_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL268",
+        "name": "RIO1CM2_EM6400_11_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL272",
+        "name": "RIO1CM2_EM6400_11_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL276",
+        "name": "RIO1CM2_EM6400_11_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL280",
+        "name": "RIO1CM2_EM6400_11_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL284",
+        "name": "RIO1CM2_EM6400_11_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL288",
+        "name": "RIO1CM2_EM6400_11_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL292",
+        "name": "RIO1CM2_EM6400_11_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL296",
+        "name": "RIO1CM2_EM6400_11_Current_a"
+      },
+      {
+        "addr": "DB16,REAL300",
+        "name": "RIO1CM2_EM6400_11_Current_b"
+      },
+      {
+        "addr": "DB16,REAL304",
+        "name": "RIO1CM2_EM6400_11_Current_c"
+      },
+      {
+        "addr": "DB16,REAL308",
+        "name": "RIO1CM2_EM6400_11_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL312",
+        "name": "RIO1CM2_EM6400_11_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL316",
+        "name": "RIO1CM2_EM6400_11_Frequency"
+      },
+      {
+        "addr": "DB16,REAL320",
+        "name": "RIO2CM1_EMU4_1_Real_power"
+      },
+      {
+        "addr": "DB16,REAL324",
+        "name": "RIO2CM1_EMU4_1_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL328",
+        "name": "RIO2CM1_EMU4_1_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL332",
+        "name": "RIO2CM1_EMU4_1_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL336",
+        "name": "RIO2CM1_EMU4_1_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL340",
+        "name": "RIO2CM1_EMU4_1_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL344",
+        "name": "RIO2CM1_EMU4_1_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL348",
+        "name": "RIO2CM1_EMU4_1_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL352",
+        "name": "RIO2CM1_EMU4_1_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL356",
+        "name": "RIO2CM1_EMU4_1_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL360",
+        "name": "RIO2CM1_EMU4_1_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL364",
+        "name": "RIO2CM1_EMU4_1_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL368",
+        "name": "RIO2CM1_EMU4_1_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL372",
+        "name": "RIO2CM1_EMU4_1_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL376",
+        "name": "RIO2CM1_EMU4_1_Current_a"
+      },
+      {
+        "addr": "DB16,REAL380",
+        "name": "RIO2CM1_EMU4_1_Current_b"
+      },
+      {
+        "addr": "DB16,REAL384",
+        "name": "RIO2CM1_EMU4_1_Current_c"
+      },
+      {
+        "addr": "DB16,REAL388",
+        "name": "RIO2CM1_EMU4_1_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL392",
+        "name": "RIO2CM1_EMU4_1_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL396",
+        "name": "RIO2CM1_EMU4_1_Frequency"
+      },
+      {
+        "addr": "DB16,REAL400",
+        "name": "RIO2CM1_EMU4_2_Real_power"
+      },
+      {
+        "addr": "DB16,REAL404",
+        "name": "RIO2CM1_EMU4_2_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL408",
+        "name": "RIO2CM1_EMU4_2_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL412",
+        "name": "RIO2CM1_EMU4_2_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL416",
+        "name": "RIO2CM1_EMU4_2_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL420",
+        "name": "RIO2CM1_EMU4_2_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL424",
+        "name": "RIO2CM1_EMU4_2_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL428",
+        "name": "RIO2CM1_EMU4_2_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL432",
+        "name": "RIO2CM1_EMU4_2_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL436",
+        "name": "RIO2CM1_EMU4_2_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL440",
+        "name": "RIO2CM1_EMU4_2_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL444",
+        "name": "RIO2CM1_EMU4_2_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL448",
+        "name": "RIO2CM1_EMU4_2_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL452",
+        "name": "RIO2CM1_EMU4_2_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL456",
+        "name": "RIO2CM1_EMU4_2_Current_a"
+      },
+      {
+        "addr": "DB16,REAL460",
+        "name": "RIO2CM1_EMU4_2_Current_b"
+      },
+      {
+        "addr": "DB16,REAL464",
+        "name": "RIO2CM1_EMU4_2_Current_c"
+      },
+      {
+        "addr": "DB16,REAL468",
+        "name": "RIO2CM1_EMU4_2_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL472",
+        "name": "RIO2CM1_EMU4_2_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL476",
+        "name": "RIO2CM1_EMU4_2_Frequency"
+      },
+      {
+        "addr": "DB16,REAL480",
+        "name": "RIO2CM1_EMU4_3_Real_power"
+      },
+      {
+        "addr": "DB16,REAL484",
+        "name": "RIO2CM1_EMU4_3_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL488",
+        "name": "RIO2CM1_EMU4_3_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL492",
+        "name": "RIO2CM1_EMU4_3_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL496",
+        "name": "RIO2CM1_EMU4_3_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL500",
+        "name": "RIO2CM1_EMU4_3_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL504",
+        "name": "RIO2CM1_EMU4_3_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL508",
+        "name": "RIO2CM1_EMU4_3_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL512",
+        "name": "RIO2CM1_EMU4_3_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL516",
+        "name": "RIO2CM1_EMU4_3_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL520",
+        "name": "RIO2CM1_EMU4_3_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL524",
+        "name": "RIO2CM1_EMU4_3_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL528",
+        "name": "RIO2CM1_EMU4_3_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL532",
+        "name": "RIO2CM1_EMU4_3_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL536",
+        "name": "RIO2CM1_EMU4_3_Current_a"
+      },
+      {
+        "addr": "DB16,REAL540",
+        "name": "RIO2CM1_EMU4_3_Current_b"
+      },
+      {
+        "addr": "DB16,REAL544",
+        "name": "RIO2CM1_EMU4_3_Current_c"
+      },
+      {
+        "addr": "DB16,REAL548",
+        "name": "RIO2CM1_EMU4_3_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL552",
+        "name": "RIO2CM1_EMU4_3_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL556",
+        "name": "RIO2CM1_EMU4_3_Frequency"
+      },
+      {
+        "addr": "DB16,REAL560",
+        "name": "RIO2CM1_EMU4_4_Real_power"
+      },
+      {
+        "addr": "DB16,REAL564",
+        "name": "RIO2CM1_EMU4_4_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL568",
+        "name": "RIO2CM1_EMU4_4_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL572",
+        "name": "RIO2CM1_EMU4_4_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL576",
+        "name": "RIO2CM1_EMU4_4_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL580",
+        "name": "RIO2CM1_EMU4_4_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL584",
+        "name": "RIO2CM1_EMU4_4_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL588",
+        "name": "RIO2CM1_EMU4_4_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL592",
+        "name": "RIO2CM1_EMU4_4_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL596",
+        "name": "RIO2CM1_EMU4_4_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL600",
+        "name": "RIO2CM1_EMU4_4_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL604",
+        "name": "RIO2CM1_EMU4_4_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL608",
+        "name": "RIO2CM1_EMU4_4_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL612",
+        "name": "RIO2CM1_EMU4_4_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL616",
+        "name": "RIO2CM1_EMU4_4_Current_a"
+      },
+      {
+        "addr": "DB16,REAL620",
+        "name": "RIO2CM1_EMU4_4_Current_b"
+      },
+      {
+        "addr": "DB16,REAL624",
+        "name": "RIO2CM1_EMU4_4_Current_c"
+      },
+      {
+        "addr": "DB16,REAL628",
+        "name": "RIO2CM1_EMU4_4_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL632",
+        "name": "RIO2CM1_EMU4_4_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL636",
+        "name": "RIO2CM1_EMU4_4_Frequency"
+      },
+      {
+        "addr": "DB16,REAL640",
+        "name": "RIO2CM1_EMU4_5_Real_power"
+      },
+      {
+        "addr": "DB16,REAL644",
+        "name": "RIO2CM1_EMU4_5_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL648",
+        "name": "RIO2CM1_EMU4_5_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL652",
+        "name": "RIO2CM1_EMU4_5_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL656",
+        "name": "RIO2CM1_EMU4_5_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL660",
+        "name": "RIO2CM1_EMU4_5_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL664",
+        "name": "RIO2CM1_EMU4_5_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL668",
+        "name": "RIO2CM1_EMU4_5_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL672",
+        "name": "RIO2CM1_EMU4_5_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL676",
+        "name": "RIO2CM1_EMU4_5_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL680",
+        "name": "RIO2CM1_EMU4_5_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL684",
+        "name": "RIO2CM1_EMU4_5_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL688",
+        "name": "RIO2CM1_EMU4_5_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL692",
+        "name": "RIO2CM1_EMU4_5_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL696",
+        "name": "RIO2CM1_EMU4_5_Current_a"
+      },
+      {
+        "addr": "DB16,REAL700",
+        "name": "RIO2CM1_EMU4_5_Current_b"
+      },
+      {
+        "addr": "DB16,REAL704",
+        "name": "RIO2CM1_EMU4_5_Current_c"
+      },
+      {
+        "addr": "DB16,REAL708",
+        "name": "RIO2CM1_EMU4_5_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL712",
+        "name": "RIO2CM1_EMU4_5_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL716",
+        "name": "RIO2CM1_EMU4_5_Frequency"
+      },
+      {
+        "addr": "DB16,REAL720",
+        "name": "RIO2CM1_EMU4_6_Real_power"
+      },
+      {
+        "addr": "DB16,REAL724",
+        "name": "RIO2CM1_EMU4_6_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL728",
+        "name": "RIO2CM1_EMU4_6_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL732",
+        "name": "RIO2CM1_EMU4_6_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL736",
+        "name": "RIO2CM1_EMU4_6_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL740",
+        "name": "RIO2CM1_EMU4_6_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL744",
+        "name": "RIO2CM1_EMU4_6_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL748",
+        "name": "RIO2CM1_EMU4_6_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL752",
+        "name": "RIO2CM1_EMU4_6_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL756",
+        "name": "RIO2CM1_EMU4_6_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL760",
+        "name": "RIO2CM1_EMU4_6_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL764",
+        "name": "RIO2CM1_EMU4_6_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL768",
+        "name": "RIO2CM1_EMU4_6_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL772",
+        "name": "RIO2CM1_EMU4_6_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL776",
+        "name": "RIO2CM1_EMU4_6_Current_a"
+      },
+      {
+        "addr": "DB16,REAL780",
+        "name": "RIO2CM1_EMU4_6_Current_b"
+      },
+      {
+        "addr": "DB16,REAL784",
+        "name": "RIO2CM1_EMU4_6_Current_c"
+      },
+      {
+        "addr": "DB16,REAL788",
+        "name": "RIO2CM1_EMU4_6_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL792",
+        "name": "RIO2CM1_EMU4_6_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL796",
+        "name": "RIO2CM1_EMU4_6_Frequency"
+      },
+      {
+        "addr": "DB16,REAL800",
+        "name": "RIO2CM1_EMU4_7_Real_power"
+      },
+      {
+        "addr": "DB16,REAL804",
+        "name": "RIO2CM1_EMU4_7_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL808",
+        "name": "RIO2CM1_EMU4_7_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL812",
+        "name": "RIO2CM1_EMU4_7_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL816",
+        "name": "RIO2CM1_EMU4_7_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL820",
+        "name": "RIO2CM1_EMU4_7_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL824",
+        "name": "RIO2CM1_EMU4_7_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL828",
+        "name": "RIO2CM1_EMU4_7_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL832",
+        "name": "RIO2CM1_EMU4_7_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL836",
+        "name": "RIO2CM1_EMU4_7_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL840",
+        "name": "RIO2CM1_EMU4_7_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL844",
+        "name": "RIO2CM1_EMU4_7_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL848",
+        "name": "RIO2CM1_EMU4_7_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL852",
+        "name": "RIO2CM1_EMU4_7_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL856",
+        "name": "RIO2CM1_EMU4_7_Current_a"
+      },
+      {
+        "addr": "DB16,REAL860",
+        "name": "RIO2CM1_EMU4_7_Current_b"
+      },
+      {
+        "addr": "DB16,REAL864",
+        "name": "RIO2CM1_EMU4_7_Current_c"
+      },
+      {
+        "addr": "DB16,REAL868",
+        "name": "RIO2CM1_EMU4_7_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL872",
+        "name": "RIO2CM1_EMU4_7_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL876",
+        "name": "RIO2CM1_EMU4_7_Frequency"
+      },
+      {
+        "addr": "DB16,REAL880",
+        "name": "RIO2CM1_EMU4_8_Real_power"
+      },
+      {
+        "addr": "DB16,REAL884",
+        "name": "RIO2CM1_EMU4_8_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL888",
+        "name": "RIO2CM1_EMU4_8_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL892",
+        "name": "RIO2CM1_EMU4_8_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL896",
+        "name": "RIO2CM1_EMU4_8_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL900",
+        "name": "RIO2CM1_EMU4_8_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL904",
+        "name": "RIO2CM1_EMU4_8_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL908",
+        "name": "RIO2CM1_EMU4_8_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL912",
+        "name": "RIO2CM1_EMU4_8_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL916",
+        "name": "RIO2CM1_EMU4_8_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL920",
+        "name": "RIO2CM1_EMU4_8_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL924",
+        "name": "RIO2CM1_EMU4_8_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL928",
+        "name": "RIO2CM1_EMU4_8_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL932",
+        "name": "RIO2CM1_EMU4_8_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL936",
+        "name": "RIO2CM1_EMU4_8_Current_a"
+      },
+      {
+        "addr": "DB16,REAL940",
+        "name": "RIO2CM1_EMU4_8_Current_b"
+      },
+      {
+        "addr": "DB16,REAL944",
+        "name": "RIO2CM1_EMU4_8_Current_c"
+      },
+      {
+        "addr": "DB16,REAL948",
+        "name": "RIO2CM1_EMU4_8_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL952",
+        "name": "RIO2CM1_EMU4_8_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL956",
+        "name": "RIO2CM1_EMU4_8_Frequency"
+      },
+      {
+        "addr": "DB16,REAL960",
+        "name": "RIO2CM1_EMU4_9_Real_power"
+      },
+      {
+        "addr": "DB16,REAL964",
+        "name": "RIO2CM1_EMU4_9_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL968",
+        "name": "RIO2CM1_EMU4_9_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL972",
+        "name": "RIO2CM1_EMU4_9_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL976",
+        "name": "RIO2CM1_EMU4_9_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL980",
+        "name": "RIO2CM1_EMU4_9_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL984",
+        "name": "RIO2CM1_EMU4_9_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL988",
+        "name": "RIO2CM1_EMU4_9_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL992",
+        "name": "RIO2CM1_EMU4_9_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL996",
+        "name": "RIO2CM1_EMU4_9_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL1000",
+        "name": "RIO2CM1_EMU4_9_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL1004",
+        "name": "RIO2CM1_EMU4_9_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL1008",
+        "name": "RIO2CM1_EMU4_9_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL1012",
+        "name": "RIO2CM1_EMU4_9_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL1016",
+        "name": "RIO2CM1_EMU4_9_Current_a"
+      },
+      {
+        "addr": "DB16,REAL1020",
+        "name": "RIO2CM1_EMU4_9_Current_b"
+      },
+      {
+        "addr": "DB16,REAL1024",
+        "name": "RIO2CM1_EMU4_9_Current_c"
+      },
+      {
+        "addr": "DB16,REAL1028",
+        "name": "RIO2CM1_EMU4_9_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL1032",
+        "name": "RIO2CM1_EMU4_9_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL1036",
+        "name": "RIO2CM1_EMU4_9_Frequency"
+      },
+      {
+        "addr": "DB16,REAL1040",
+        "name": "RIO2CM1_EMU4_10_Real_power"
+      },
+      {
+        "addr": "DB16,REAL1044",
+        "name": "RIO2CM1_EMU4_10_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL1048",
+        "name": "RIO2CM1_EMU4_10_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL1052",
+        "name": "RIO2CM1_EMU4_10_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL1056",
+        "name": "RIO2CM1_EMU4_10_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL1060",
+        "name": "RIO2CM1_EMU4_10_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL1064",
+        "name": "RIO2CM1_EMU4_10_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL1068",
+        "name": "RIO2CM1_EMU4_10_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL1072",
+        "name": "RIO2CM1_EMU4_10_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL1076",
+        "name": "RIO2CM1_EMU4_10_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL1080",
+        "name": "RIO2CM1_EMU4_10_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL1084",
+        "name": "RIO2CM1_EMU4_10_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL1088",
+        "name": "RIO2CM1_EMU4_10_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL1092",
+        "name": "RIO2CM1_EMU4_10_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL1096",
+        "name": "RIO2CM1_EMU4_10_Current_a"
+      },
+      {
+        "addr": "DB16,REAL1100",
+        "name": "RIO2CM1_EMU4_10_Current_b"
+      },
+      {
+        "addr": "DB16,REAL1104",
+        "name": "RIO2CM1_EMU4_10_Current_c"
+      },
+      {
+        "addr": "DB16,REAL1108",
+        "name": "RIO2CM1_EMU4_10_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL1112",
+        "name": "RIO2CM1_EMU4_10_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL1116",
+        "name": "RIO2CM1_EMU4_10_Frequency"
+      },
+      {
+        "addr": "DB16,REAL1120",
+        "name": "RIO2CM1_EMU4_11_Real_power"
+      },
+      {
+        "addr": "DB16,REAL1124",
+        "name": "RIO2CM1_EMU4_11_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL1128",
+        "name": "RIO2CM1_EMU4_11_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL1132",
+        "name": "RIO2CM1_EMU4_11_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL1136",
+        "name": "RIO2CM1_EMU4_11_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL1140",
+        "name": "RIO2CM1_EMU4_11_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL1144",
+        "name": "RIO2CM1_EMU4_11_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL1148",
+        "name": "RIO2CM1_EMU4_11_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL1152",
+        "name": "RIO2CM1_EMU4_11_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL1156",
+        "name": "RIO2CM1_EMU4_11_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL1160",
+        "name": "RIO2CM1_EMU4_11_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL1164",
+        "name": "RIO2CM1_EMU4_11_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL1168",
+        "name": "RIO2CM1_EMU4_11_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL1172",
+        "name": "RIO2CM1_EMU4_11_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL1176",
+        "name": "RIO2CM1_EMU4_11_Current_a"
+      },
+      {
+        "addr": "DB16,REAL1180",
+        "name": "RIO2CM1_EMU4_11_Current_b"
+      },
+      {
+        "addr": "DB16,REAL1184",
+        "name": "RIO2CM1_EMU4_11_Current_c"
+      },
+      {
+        "addr": "DB16,REAL1188",
+        "name": "RIO2CM1_EMU4_11_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL1192",
+        "name": "RIO2CM1_EMU4_11_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL1196",
+        "name": "RIO2CM1_EMU4_11_Frequency"
+      },
+      {
+        "addr": "DB16,REAL1200",
+        "name": "RIO2CM1_EMU4_12_Real_power"
+      },
+      {
+        "addr": "DB16,REAL1204",
+        "name": "RIO2CM1_EMU4_12_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL1208",
+        "name": "RIO2CM1_EMU4_12_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL1212",
+        "name": "RIO2CM1_EMU4_12_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL1216",
+        "name": "RIO2CM1_EMU4_12_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL1220",
+        "name": "RIO2CM1_EMU4_12_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL1224",
+        "name": "RIO2CM1_EMU4_12_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL1228",
+        "name": "RIO2CM1_EMU4_12_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL1232",
+        "name": "RIO2CM1_EMU4_12_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL1236",
+        "name": "RIO2CM1_EMU4_12_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL1240",
+        "name": "RIO2CM1_EMU4_12_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL1244",
+        "name": "RIO2CM1_EMU4_12_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL1248",
+        "name": "RIO2CM1_EMU4_12_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL1252",
+        "name": "RIO2CM1_EMU4_12_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL1256",
+        "name": "RIO2CM1_EMU4_12_Current_a"
+      },
+      {
+        "addr": "DB16,REAL1260",
+        "name": "RIO2CM1_EMU4_12_Current_b"
+      },
+      {
+        "addr": "DB16,REAL1264",
+        "name": "RIO2CM1_EMU4_12_Current_c"
+      },
+      {
+        "addr": "DB16,REAL1268",
+        "name": "RIO2CM1_EMU4_12_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL1272",
+        "name": "RIO2CM1_EMU4_12_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL1276",
+        "name": "RIO2CM1_EMU4_12_Frequency"
+      },
+      {
+        "addr": "DB16,REAL1280",
+        "name": "RIO2CM2_EM6400_1_Real_power"
+      },
+      {
+        "addr": "DB16,REAL1284",
+        "name": "RIO2CM2_EM6400_1_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL1288",
+        "name": "RIO2CM2_EM6400_1_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL1292",
+        "name": "RIO2CM2_EM6400_1_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL1296",
+        "name": "RIO2CM2_EM6400_1_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL1300",
+        "name": "RIO2CM2_EM6400_1_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL1304",
+        "name": "RIO2CM2_EM6400_1_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL1308",
+        "name": "RIO2CM2_EM6400_1_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL1312",
+        "name": "RIO2CM2_EM6400_1_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL1316",
+        "name": "RIO2CM2_EM6400_1_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL1320",
+        "name": "RIO2CM2_EM6400_1_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL1324",
+        "name": "RIO2CM2_EM6400_1_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL1328",
+        "name": "RIO2CM2_EM6400_1_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL1332",
+        "name": "RIO2CM2_EM6400_1_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL1336",
+        "name": "RIO2CM2_EM6400_1_Current_a"
+      },
+      {
+        "addr": "DB16,REAL1340",
+        "name": "RIO2CM2_EM6400_1_Current_b"
+      },
+      {
+        "addr": "DB16,REAL1344",
+        "name": "RIO2CM2_EM6400_1_Current_c"
+      },
+      {
+        "addr": "DB16,REAL1348",
+        "name": "RIO2CM2_EM6400_1_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL1352",
+        "name": "RIO2CM2_EM6400_1_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL1356",
+        "name": "RIO2CM2_EM6400_1_Frequency"
+      },
+      {
+        "addr": "DB16,REAL1360",
+        "name": "RIO2CM2_EM6400_2_Real_power"
+      },
+      {
+        "addr": "DB16,REAL1364",
+        "name": "RIO2CM2_EM6400_2_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL1368",
+        "name": "RIO2CM2_EM6400_2_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL1372",
+        "name": "RIO2CM2_EM6400_2_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL1376",
+        "name": "RIO2CM2_EM6400_2_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL1380",
+        "name": "RIO2CM2_EM6400_2_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL1384",
+        "name": "RIO2CM2_EM6400_2_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL1388",
+        "name": "RIO2CM2_EM6400_2_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL1392",
+        "name": "RIO2CM2_EM6400_2_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL1396",
+        "name": "RIO2CM2_EM6400_2_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL1400",
+        "name": "RIO2CM2_EM6400_2_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL1404",
+        "name": "RIO2CM2_EM6400_2_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL1408",
+        "name": "RIO2CM2_EM6400_2_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL1412",
+        "name": "RIO2CM2_EM6400_2_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL1416",
+        "name": "RIO2CM2_EM6400_2_Current_a"
+      },
+      {
+        "addr": "DB16,REAL1420",
+        "name": "RIO2CM2_EM6400_2_Current_b"
+      },
+      {
+        "addr": "DB16,REAL1424",
+        "name": "RIO2CM2_EM6400_2_Current_c"
+      },
+      {
+        "addr": "DB16,REAL1428",
+        "name": "RIO2CM2_EM6400_2_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL1432",
+        "name": "RIO2CM2_EM6400_2_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL1436",
+        "name": "RIO2CM2_EM6400_2_Frequency"
+      },
+      {
+        "addr": "DB16,REAL1440",
+        "name": "RIO2CM2_EM6400_3_Real_power"
+      },
+      {
+        "addr": "DB16,REAL1444",
+        "name": "RIO2CM2_EM6400_3_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL1448",
+        "name": "RIO2CM2_EM6400_3_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL1452",
+        "name": "RIO2CM2_EM6400_3_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL1456",
+        "name": "RIO2CM2_EM6400_3_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL1460",
+        "name": "RIO2CM2_EM6400_3_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL1464",
+        "name": "RIO2CM2_EM6400_3_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL1468",
+        "name": "RIO2CM2_EM6400_3_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL1472",
+        "name": "RIO2CM2_EM6400_3_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL1476",
+        "name": "RIO2CM2_EM6400_3_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL1480",
+        "name": "RIO2CM2_EM6400_3_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL1484",
+        "name": "RIO2CM2_EM6400_3_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL1488",
+        "name": "RIO2CM2_EM6400_3_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL1492",
+        "name": "RIO2CM2_EM6400_3_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL1496",
+        "name": "RIO2CM2_EM6400_3_Current_a"
+      },
+      {
+        "addr": "DB16,REAL1500",
+        "name": "RIO2CM2_EM6400_3_Current_b"
+      },
+      {
+        "addr": "DB16,REAL1504",
+        "name": "RIO2CM2_EM6400_3_Current_c"
+      },
+      {
+        "addr": "DB16,REAL1508",
+        "name": "RIO2CM2_EM6400_3_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL1512",
+        "name": "RIO2CM2_EM6400_3_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL1516",
+        "name": "RIO2CM2_EM6400_3_Frequency"
+      },
+      {
+        "addr": "DB16,REAL1520",
+        "name": "RIO2CM2_EM6400_4_Real_power"
+      },
+      {
+        "addr": "DB16,REAL1524",
+        "name": "RIO2CM2_EM6400_4_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL1528",
+        "name": "RIO2CM2_EM6400_4_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL1532",
+        "name": "RIO2CM2_EM6400_4_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL1536",
+        "name": "RIO2CM2_EM6400_4_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL1540",
+        "name": "RIO2CM2_EM6400_4_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL1544",
+        "name": "RIO2CM2_EM6400_4_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL1548",
+        "name": "RIO2CM2_EM6400_4_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL1552",
+        "name": "RIO2CM2_EM6400_4_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL1556",
+        "name": "RIO2CM2_EM6400_4_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL1560",
+        "name": "RIO2CM2_EM6400_4_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL1564",
+        "name": "RIO2CM2_EM6400_4_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL1568",
+        "name": "RIO2CM2_EM6400_4_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL1572",
+        "name": "RIO2CM2_EM6400_4_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL1576",
+        "name": "RIO2CM2_EM6400_4_Current_a"
+      },
+      {
+        "addr": "DB16,REAL1580",
+        "name": "RIO2CM2_EM6400_4_Current_b"
+      },
+      {
+        "addr": "DB16,REAL1584",
+        "name": "RIO2CM2_EM6400_4_Current_c"
+      },
+      {
+        "addr": "DB16,REAL1588",
+        "name": "RIO2CM2_EM6400_4_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL1592",
+        "name": "RIO2CM2_EM6400_4_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL1596",
+        "name": "RIO2CM2_EM6400_4_Frequency"
+      },
+      {
+        "addr": "DB16,REAL1600",
+        "name": "RIO2CM2_EM6400_5_Real_power"
+      },
+      {
+        "addr": "DB16,REAL1604",
+        "name": "RIO2CM2_EM6400_5_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL1608",
+        "name": "RIO2CM2_EM6400_5_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL1612",
+        "name": "RIO2CM2_EM6400_5_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL1616",
+        "name": "RIO2CM2_EM6400_5_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL1620",
+        "name": "RIO2CM2_EM6400_5_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL1624",
+        "name": "RIO2CM2_EM6400_5_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL1628",
+        "name": "RIO2CM2_EM6400_5_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL1632",
+        "name": "RIO2CM2_EM6400_5_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL1636",
+        "name": "RIO2CM2_EM6400_5_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL1640",
+        "name": "RIO2CM2_EM6400_5_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL1644",
+        "name": "RIO2CM2_EM6400_5_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL1648",
+        "name": "RIO2CM2_EM6400_5_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL1652",
+        "name": "RIO2CM2_EM6400_5_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL1656",
+        "name": "RIO2CM2_EM6400_5_Current_a"
+      },
+      {
+        "addr": "DB16,REAL1660",
+        "name": "RIO2CM2_EM6400_5_Current_b"
+      },
+      {
+        "addr": "DB16,REAL1664",
+        "name": "RIO2CM2_EM6400_5_Current_c"
+      },
+      {
+        "addr": "DB16,REAL1668",
+        "name": "RIO2CM2_EM6400_5_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL1672",
+        "name": "RIO2CM2_EM6400_5_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL1676",
+        "name": "RIO2CM2_EM6400_5_Frequency"
+      },
+      {
+        "addr": "DB16,REAL1680",
+        "name": "RIO2CM2_EM6400_6_Real_power"
+      },
+      {
+        "addr": "DB16,REAL1684",
+        "name": "RIO2CM2_EM6400_6_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL1688",
+        "name": "RIO2CM2_EM6400_6_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL1692",
+        "name": "RIO2CM2_EM6400_6_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL1696",
+        "name": "RIO2CM2_EM6400_6_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL1700",
+        "name": "RIO2CM2_EM6400_6_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL1704",
+        "name": "RIO2CM2_EM6400_6_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL1708",
+        "name": "RIO2CM2_EM6400_6_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL1712",
+        "name": "RIO2CM2_EM6400_6_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL1716",
+        "name": "RIO2CM2_EM6400_6_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL1720",
+        "name": "RIO2CM2_EM6400_6_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL1724",
+        "name": "RIO2CM2_EM6400_6_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL1728",
+        "name": "RIO2CM2_EM6400_6_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL1732",
+        "name": "RIO2CM2_EM6400_6_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL1736",
+        "name": "RIO2CM2_EM6400_6_Current_a"
+      },
+      {
+        "addr": "DB16,REAL1740",
+        "name": "RIO2CM2_EM6400_6_Current_b"
+      },
+      {
+        "addr": "DB16,REAL1744",
+        "name": "RIO2CM2_EM6400_6_Current_c"
+      },
+      {
+        "addr": "DB16,REAL1748",
+        "name": "RIO2CM2_EM6400_6_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL1752",
+        "name": "RIO2CM2_EM6400_6_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL1756",
+        "name": "RIO2CM2_EM6400_6_Frequency"
+      },
+      {
+        "addr": "DB16,REAL1760",
+        "name": "RIO2_PAC3200_51_Real_power"
+      },
+      {
+        "addr": "DB16,REAL1764",
+        "name": "RIO2_PAC3200_51_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL1768",
+        "name": "RIO2_PAC3200_51_Apparent_power"
+      },
+      {
+        "addr": "DB16,DWORD1772",
+        "name": "RIO2_PAC3200_51_Real_energy_DWORD0"
+      },
+      {
+        "addr": "DB16,DWORD1776",
+        "name": "RIO2_PAC3200_51_Real_energy_DWORD1"
+      },
+      {
+        "addr": "DB16,DWORD1780",
+        "name": "RIO2_PAC3200_51_Reactive_energy_DWORD0"
+      },
+      {
+        "addr": "DB16,DWORD1784",
+        "name": "RIO2_PAC3200_51_Reactive_energy_DWORD1"
+      },
+      {
+        "addr": "DB16,DWORD1788",
+        "name": "RIO2_PAC3200_51_Apparent_energy_DWORD0"
+      },
+      {
+        "addr": "DB16,DWORD1792",
+        "name": "RIO2_PAC3200_51_Apparent_energy_DWORD1"
+      },
+      {
+        "addr": "DB16,REAL1796",
+        "name": "RIO2_PAC3200_51_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL1800",
+        "name": "RIO2_PAC3200_51_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL1804",
+        "name": "RIO2_PAC3200_51_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL1808",
+        "name": "RIO2_PAC3200_51_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL1812",
+        "name": "RIO2_PAC3200_51_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL1816",
+        "name": "RIO2_PAC3200_51_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL1820",
+        "name": "RIO2_PAC3200_51_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL1824",
+        "name": "RIO2_PAC3200_51_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL1828",
+        "name": "RIO2_PAC3200_51_Current_a"
+      },
+      {
+        "addr": "DB16,REAL1832",
+        "name": "RIO2_PAC3200_51_Current_b"
+      },
+      {
+        "addr": "DB16,REAL1836",
+        "name": "RIO2_PAC3200_51_Current_c"
+      },
+      {
+        "addr": "DB16,REAL1840",
+        "name": "RIO2_PAC3200_51_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL1844",
+        "name": "RIO2_PAC3200_51_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL1848",
+        "name": "RIO2_PAC3200_51_Frequency"
+      },
+      {
+        "addr": "DB16,REAL1852",
+        "name": "RIO2_PAC3200_53_Real_power"
+      },
+      {
+        "addr": "DB16,REAL1856",
+        "name": "RIO2_PAC3200_53_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL1860",
+        "name": "RIO2_PAC3200_53_Apparent_power"
+      },
+      {
+        "addr": "DB16,DWORD1864",
+        "name": "RIO2_PAC3200_53_Real_energy_DWORD0"
+      },
+      {
+        "addr": "DB16,DWORD1868",
+        "name": "RIO2_PAC3200_53_Real_energy_DWORD1"
+      },
+      {
+        "addr": "DB16,DWORD1872",
+        "name": "RIO2_PAC3200_53_Reactive_energy_DWORD0"
+      },
+      {
+        "addr": "DB16,DWORD1876",
+        "name": "RIO2_PAC3200_53_Reactive_energy_DWORD1"
+      },
+      {
+        "addr": "DB16,DWORD1880",
+        "name": "RIO2_PAC3200_53_Apparent_energy_DWORD0"
+      },
+      {
+        "addr": "DB16,DWORD1884",
+        "name": "RIO2_PAC3200_53_Apparent_energy_DWORD1"
+      },
+      {
+        "addr": "DB16,REAL1888",
+        "name": "RIO2_PAC3200_53_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL1892",
+        "name": "RIO2_PAC3200_53_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL1896",
+        "name": "RIO2_PAC3200_53_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL1900",
+        "name": "RIO2_PAC3200_53_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL1904",
+        "name": "RIO2_PAC3200_53_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL1908",
+        "name": "RIO2_PAC3200_53_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL1912",
+        "name": "RIO2_PAC3200_53_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL1916",
+        "name": "RIO2_PAC3200_53_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL1920",
+        "name": "RIO2_PAC3200_53_Current_a"
+      },
+      {
+        "addr": "DB16,REAL1924",
+        "name": "RIO2_PAC3200_53_Current_b"
+      },
+      {
+        "addr": "DB16,REAL1928",
+        "name": "RIO2_PAC3200_53_Current_c"
+      },
+      {
+        "addr": "DB16,REAL1932",
+        "name": "RIO2_PAC3200_53_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL1936",
+        "name": "RIO2_PAC3200_53_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL1940",
+        "name": "RIO2_PAC3200_53_Frequency"
+      },
+      {
+        "addr": "DB16,REAL1944",
+        "name": "RIO2_UMG508_52_Real_power"
+      },
+      {
+        "addr": "DB16,REAL1948",
+        "name": "RIO2_UMG508_52_Reactive_power"
+      },
+      {
+        "addr": "DB16,REAL1952",
+        "name": "RIO2_UMG508_52_Apparent_power"
+      },
+      {
+        "addr": "DB16,REAL1956",
+        "name": "RIO2_UMG508_52_Real_energy"
+      },
+      {
+        "addr": "DB16,REAL1960",
+        "name": "RIO2_UMG508_52_Reactive_energy"
+      },
+      {
+        "addr": "DB16,REAL1964",
+        "name": "RIO2_UMG508_52_Apparent_energy"
+      },
+      {
+        "addr": "DB16,REAL1968",
+        "name": "RIO2_UMG508_52_Voltage_ab"
+      },
+      {
+        "addr": "DB16,REAL1972",
+        "name": "RIO2_UMG508_52_Voltage_bc"
+      },
+      {
+        "addr": "DB16,REAL1976",
+        "name": "RIO2_UMG508_52_Voltage_ca"
+      },
+      {
+        "addr": "DB16,REAL1980",
+        "name": "RIO2_UMG508_52_Voltage_Lave"
+      },
+      {
+        "addr": "DB16,REAL1984",
+        "name": "RIO2_UMG508_52_Voltage_an"
+      },
+      {
+        "addr": "DB16,REAL1988",
+        "name": "RIO2_UMG508_52_Voltage_bn"
+      },
+      {
+        "addr": "DB16,REAL1992",
+        "name": "RIO2_UMG508_52_Voltage_cn"
+      },
+      {
+        "addr": "DB16,REAL1996",
+        "name": "RIO2_UMG508_52_Voltage_Nave"
+      },
+      {
+        "addr": "DB16,REAL2000",
+        "name": "RIO2_UMG508_52_Current_a"
+      },
+      {
+        "addr": "DB16,REAL2004",
+        "name": "RIO2_UMG508_52_Current_b"
+      },
+      {
+        "addr": "DB16,REAL2008",
+        "name": "RIO2_UMG508_52_Current_c"
+      },
+      {
+        "addr": "DB16,REAL2012",
+        "name": "RIO2_UMG508_52_Current_Ave"
+      },
+      {
+        "addr": "DB16,REAL2016",
+        "name": "RIO2_UMG508_52_Power_factor"
+      },
+      {
+        "addr": "DB16,REAL2020",
+        "name": "RIO2_UMG508_52_Frequency"
+      },
+      {
+        "addr": "DB16,REAL2024",
+        "name": "Total_EnergyCon_kwh_Cracker_Line_1"
+      },
+      {
+        "addr": "DB16,REAL2028",
+        "name": "Total_EnergyCon_kwh_Cracker_Line_2"
+      },
+      {
+        "addr": "DB16,REAL2032",
+        "name": "Total_EnergyCon_kwh_Pretzel_Line"
+      },
+      {
+        "addr": "DB16,REAL2036",
+        "name": "Total_EnergyCon_kwh_Wafer_Line_1"
+      },
+      {
+        "addr": "DB16,REAL2040",
+        "name": "Total_EnergyCon_kwh_Wafer_Line_2"
+      },
+      {
+        "addr": "DB16,REAL2044",
+        "name": "Total_EnergyCon_kwh_Chooey_Choco_Line"
+      },
+      {
+        "addr": "DB16,REAL2048",
+        "name": "Total_EnergyCon_kwh_Dynamite_Line"
+      },
+      {
+        "addr": "DB16,REAL2052",
+        "name": "Total_EnergyCon_kwh_XO_Line"
+      },
+      {
+        "addr": "DB16,REAL2056",
+        "name": "Total_EnergyCon_kwh_Maxx_Line"
+      },
+      {
+        "addr": "DB16,REAL2060",
+        "name": "Total_EnergyCon_kwh_Main_Line"
+      },
+      {
+        "addr": "DB16,REAL2064",
+        "name": "Total_EnergyCon_kwh_Utilities_Jaguar"
+      },
+      {
+        "addr": "DB16,REAL2068",
+        "name": "Total_EnergyCon_kwh_Utilities_Lighting_Power_Panel"
       }
-    ],
-    "info": "[\n    {\n        \"id\": \"s7endpoint\",\n        \"type\": \"s7 endpoint\",\n        \"transport\": \"iso-on-tcp\",\n        \"address\": \"192.168.1.3\",\n        \"port\": \"102\",\n        \"rack\": \"0\",\n        \"slot\": \"1\",\n        \"name\": \"S7-1500 PLC\"\n    },\n    {\n        \"id\": \"s7in\",\n        \"type\": \"s7 in\",\n        \"z\": \"flow1\",\n        \"endpoint\": \"s7endpoint\",\n        \"mode\": \"all\",\n        \"variable\": \"power,DB61,REAL0\\nreactive,DB61,REAL4\\napparent,DB61,REAL8\\nvoltage_ab,DB61,REAL24\\ncurrent_a,DB61,REAL56\\nfrequency,DB61,REAL76\",\n        \"diff\": false,\n        \"name\": \"Read Power Meter\",\n        \"x\": 300,\n        \"y\": 200,\n        \"wires\": [[\"debug\"]]\n    },\n    {\n        \"id\": \"debug\",\n        \"type\": \"debug\",\n        \"z\": \"flow1\",\n        \"name\": \"Output\",\n        \"active\": true,\n        \"tosidebar\": true,\n        \"complete\": \"true\",\n        \"x\": 550,\n        \"y\": 200,\n        \"wires\": []\n    }\n]"
+    ]
   },
   {
     "id": "a1000003.s7in",
@@ -270,14 +4417,200 @@
     "mode": "all",
     "variable": "",
     "diff": false,
-    "name": "Read all (each cycle)",
-    "x": 240,
-    "y": 160,
+    "name": "Read DB16 totals",
+    "x": 220,
+    "y": 200,
     "wires": [
       [
         "a1000004.store",
-        "3e7515be6f46630b"
+        "a1000030.trendbuf",
+        "a1000013.sqlprep",
+        "a1000015.energycache"
       ]
+    ]
+  },
+  {
+    "id": "a1000030.trendbuf",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "Trend buffer (kW/V/I/PF/kVAR + alerts)",
+    "func": "const v = msg.payload || {};\nif (!msg.payload || typeof msg.payload !== 'object') return null;\n\n// Sample at most once per minute\nconst now = Date.now();\nconst lastMs = global.get('trendPowerLastMs') || 0;\nif (now - lastMs < 60_000) return null;\nglobal.set('trendPowerLastMs', now);\n\nconst toNum = (x) => {\n  const n = typeof x === 'number' ? x : Number(x);\n  return Number.isFinite(n) ? n : 0;\n};\n\nconst meterPrefixes = [\n  'RIO1CM1_EMU4_1', 'RIO1CM1_EMU4_2',\n  'RIO1CM2_EM6400_10', 'RIO1CM2_EM6400_11',\n  'RIO2CM1_EMU4_1', 'RIO2CM1_EMU4_2', 'RIO2CM1_EMU4_3', 'RIO2CM1_EMU4_4',\n  'RIO2CM1_EMU4_5', 'RIO2CM1_EMU4_6', 'RIO2CM1_EMU4_7', 'RIO2CM1_EMU4_8',\n  'RIO2CM1_EMU4_9', 'RIO2CM1_EMU4_10', 'RIO2CM1_EMU4_11', 'RIO2CM1_EMU4_12',\n  'RIO2CM2_EM6400_1', 'RIO2CM2_EM6400_2', 'RIO2CM2_EM6400_3',\n  'RIO2CM2_EM6400_4', 'RIO2CM2_EM6400_5', 'RIO2CM2_EM6400_6',\n  'RIO2_PAC3200_51', 'RIO2_PAC3200_53', 'RIO2_UMG508_52'\n];\n\nlet kvar = 0;\nfor (const p of meterPrefixes) {\n  kvar += toNum(v[p + '_Reactive_power']);\n}\n\nconst point = {\n  ts: new Date().toISOString(),\n  kw: toNum(v.Power_kW),\n  voltageV: toNum(v.Voltage_V),\n  currentA: toNum(v.Current_A),\n  pf: toNum(v.PowerFactor),\n  kvar\n};\n\nconst arr = global.get('trendPower') || [];\narr.push(point);\n// Keep last 7 days at 1/min (~10k points)\nwhile (arr.length > 10_080) arr.shift();\nglobal.set('trendPower', arr);\n\n// ---- Record fluctuations into Enhanced Alerts (/api/alarms) ----\nconst pushAlert = (severity, priority, category, message, detail) => {\n  const alerts = global.get('enhancedAlerts') || [];\n  const ts = new Date().toISOString();\n  const id = `evt-${ts}-${Math.random().toString(16).slice(2, 8)}`;\n  alerts.unshift({\n    id,\n    meterId: 'plant',\n    meterName: 'Plant',\n    severity,\n    priority,\n    category,\n    status: 'active',\n    message,\n    detail,\n    ts,\n    acknowledgedAt: null,\n    acknowledgedBy: null,\n    resolvedAt: null,\n    notes: [],\n    incidentId: null\n  });\n  // keep recent 500\n  while (alerts.length > 500) alerts.pop();\n  global.set('enhancedAlerts', alerts);\n};\n\nconst prev = global.get('trendPowerPrev') || null;\nif (prev) {\n  const pct = (cur, p) => (p !== 0 ? (cur - p) / Math.abs(p) : 0);\n  const abs = (x) => Math.abs(x);\n\n  const kwPct = abs(pct(point.kw, prev.kw));\n  if (kwPct > 0.25) {\n    const sev = kwPct > 0.4 ? 'critical' : 'warning';\n    pushAlert(sev, sev === 'critical' ? 'high' : 'medium', 'energy', `kW spike ${(kwPct * 100).toFixed(0)}%`, `kW changed from ${prev.kw.toFixed(2)} to ${point.kw.toFixed(2)} within ~1 minute.`);\n  }\n\n  const curPct = abs(pct(point.currentA, prev.currentA));\n  if (curPct > 0.25) {\n    const sev = curPct > 0.4 ? 'critical' : 'warning';\n    pushAlert(sev, sev === 'critical' ? 'high' : 'medium', 'energy', `Current surge ${(curPct * 100).toFixed(0)}%`, `Current changed from ${prev.currentA.toFixed(2)}A to ${point.currentA.toFixed(2)}A within ~1 minute.`);\n  }\n\n  // Voltage band based on rolling nominal (median of last 30 points)\n  const recentV = arr.slice(-30).map((p) => p.voltageV).filter((x) => Number.isFinite(x) && x > 0);\n  if (recentV.length >= 5) {\n    const sorted = recentV.slice().sort((a,b)=>a-b);\n    const mid = Math.floor(sorted.length / 2);\n    const nominal = sorted.length % 2 === 1 ? sorted[mid] : (sorted[mid-1] + sorted[mid]) / 2;\n    const off = abs((point.voltageV - nominal) / nominal);\n    if (off > 0.05) {\n      const sev = off > 0.10 ? 'critical' : 'warning';\n      pushAlert(sev, sev === 'critical' ? 'high' : 'medium', 'power_quality', `Voltage out of band ${(off * 100).toFixed(0)}%`, `Voltage ${point.voltageV.toFixed(2)}V vs nominal ${nominal.toFixed(2)}V.`);\n    }\n  }\n}\n\nglobal.set('trendPowerPrev', point);\nreturn null;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 520,
+    "y": 240,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "a1000031.httptrend",
+    "type": "http in",
+    "z": "a1000001.0001tab",
+    "name": "GET /api/trends/power",
+    "url": "/api/trends/power",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": "",
+    "x": 230,
+    "y": 520,
+    "wires": [
+      [
+        "a1000032.trendjson"
+      ]
+    ]
+  },
+  {
+    "id": "a1000032.trendjson",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "Build trend JSON",
+    "func": "const minutes = Math.max(5, Math.min(60 * 24 * 7, Number(msg.req?.query?.minutes ?? 24 * 60)));\nconst since = Date.now() - minutes * 60 * 1000;\nconst arr = global.get('trendPower') || [];\nmsg.payload = arr.filter((p) => Date.parse(p.ts) >= since);\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 500,
+    "y": 520,
+    "wires": [
+      [
+        "a1000033.httptrendres"
+      ]
+    ]
+  },
+  {
+    "id": "a1000033.httptrendres",
+    "type": "http response",
+    "z": "a1000001.0001tab",
+    "name": "",
+    "statusCode": "",
+    "headers": {},
+    "x": 730,
+    "y": 520,
+    "wires": []
+  },
+  {
+    "id": "a1000036.httptrendhist",
+    "type": "http in",
+    "z": "a1000001.0001tab",
+    "name": "GET /api/trends/power/history",
+    "url": "/api/trends/power/history",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": "",
+    "x": 240,
+    "y": 580,
+    "wires": [
+      [
+        "a1000037.trendhistsql"
+      ]
+    ]
+  },
+  {
+    "id": "a1000037.trendhistsql",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "SQLite: query power trend history",
+    "func": "const minutes = Math.max(60, Math.min(60 * 24 * 366, Number(msg.req?.query?.minutes ?? 60 * 24 * 30)));\nconst sinceEpoch = Math.floor(Date.now() / 1000) - Math.floor(minutes * 60);\n\n// Downsample aggressively for long windows to keep response small.\n// - <= 7 days: 1 minute bucket\n// - <= 30 days: 5 minute bucket\n// - <= 90 days: 15 minute bucket\n// - > 90 days: 60 minute bucket\nlet bucketSec = 60;\nif (minutes > 60 * 24 * 90) bucketSec = 3600;\nelse if (minutes > 60 * 24 * 30) bucketSec = 900;\nelse if (minutes > 60 * 24 * 7) bucketSec = 300;\n\nmsg.topic = `WITH b AS (\n  SELECT\n    (ts_epoch / ${bucketSec}) * ${bucketSec} AS bucket_epoch,\n    MAX(ts_epoch) AS last_epoch,\n    AVG(Power_kW) AS kw,\n    AVG(Voltage_V) AS voltageV,\n    AVG(Current_A) AS currentA,\n    AVG(PowerFactor) AS pf\n  FROM plc_samples\n  WHERE ts_epoch >= ${sinceEpoch}\n  GROUP BY bucket_epoch\n)\nSELECT\n  strftime('%Y-%m-%dT%H:%M:00.000Z', datetime(last_epoch, 'unixepoch')) AS ts,\n  COALESCE(kw, 0) AS kw,\n  COALESCE(voltageV, 0) AS voltageV,\n  COALESCE(currentA, 0) AS currentA,\n  COALESCE(pf, 0) AS pf,\n  0 AS kvar\nFROM b\nORDER BY last_epoch ASC;`;\n\ndelete msg.payload;\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 520,
+    "y": 580,
+    "wires": [
+      [
+        "a1000038.sqliteread_trendhist"
+      ]
+    ]
+  },
+  {
+    "id": "a1000038.sqliteread_trendhist",
+    "type": "sqlite",
+    "z": "a1000001.0001tab",
+    "mydb": "a1000012.sqlitedb",
+    "sqlquery": "msg.topic",
+    "sql": "",
+    "name": "SQLite read (trend history)",
+    "x": 770,
+    "y": 580,
+    "wires": [
+      [
+        "a1000039.httptrendhistres"
+      ]
+    ]
+  },
+  {
+    "id": "a1000039.httptrendhistres",
+    "type": "http response",
+    "z": "a1000001.0001tab",
+    "name": "",
+    "statusCode": "",
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8"
+    },
+    "x": 980,
+    "y": 580,
+    "wires": []
+  },
+  {
+    "id": "a1000013.sqlprep",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "SQLite: insert sample (full)",
+    "func": "const v = msg.payload || {};\nif (!msg.payload || typeof msg.payload !== 'object') return null;\n\nconst ts = new Date().toISOString();\nconst tsEpoch = Math.floor(Date.now() / 1000);\n\nconst toSql = (x) => {\n  if (x === undefined || x === null || x === '') return 'NULL';\n  const n = Number(x);\n  if (Number.isFinite(n)) return String(n);\n  return 'NULL';\n};\n\n// Accept BOTH shapes:\n// - \"small DB16\" payload (Power_kW + Total_*_kWh)\n// - \"full Excel\" payload (RIO* and Total_EnergyCon_* keys)\n\nlet totalPower = Number(v.Power_kW);\nlet totalEnergy = Number(v.Energy_kWh);\nlet voltage = v.Voltage_V;\nlet current = v.Current_A;\nlet pf = v.PowerFactor;\n\nif (!Number.isFinite(totalPower) || !Number.isFinite(totalEnergy)) {\n  const meterPrefixes = [\n    'RIO1CM1_EMU4_1', 'RIO1CM1_EMU4_2',\n    'RIO1CM2_EM6400_10', 'RIO1CM2_EM6400_11',\n    'RIO2CM1_EMU4_1', 'RIO2CM1_EMU4_2', 'RIO2CM1_EMU4_3', 'RIO2CM1_EMU4_4',\n    'RIO2CM1_EMU4_5', 'RIO2CM1_EMU4_6', 'RIO2CM1_EMU4_7', 'RIO2CM1_EMU4_8',\n    'RIO2CM1_EMU4_9', 'RIO2CM1_EMU4_10', 'RIO2CM1_EMU4_11', 'RIO2CM1_EMU4_12',\n    'RIO2CM2_EM6400_1', 'RIO2CM2_EM6400_2', 'RIO2CM2_EM6400_3',\n    'RIO2CM2_EM6400_4', 'RIO2CM2_EM6400_5', 'RIO2CM2_EM6400_6',\n    'RIO2_PAC3200_51', 'RIO2_PAC3200_53', 'RIO2_UMG508_52'\n  ];\n  let p = 0, e = 0;\n  for (const m of meterPrefixes) {\n    p += Number(v[m + '_Real_power']) || 0;\n    e += Number(v[m + '_Real_energy']) || 0;\n  }\n  totalPower = p;\n  totalEnergy = e;\n  voltage = v.RIO1CM1_EMU4_1_Voltage_Lave;\n  current = v.RIO1CM1_EMU4_1_Current_Ave;\n  pf = v.RIO1CM1_EMU4_1_Power_factor;\n}\n\nconst totals = {\n  Total_CrackerLine1_kWh: v.Total_CrackerLine1_kWh ?? v.Total_EnergyCon_kwh_Cracker_Line_1,\n  Total_CrackerLine2_kWh: v.Total_CrackerLine2_kWh ?? v.Total_EnergyCon_kwh_Cracker_Line_2,\n  Total_PretzelLine_kWh: v.Total_PretzelLine_kWh ?? v.Total_EnergyCon_kwh_Pretzel_Line,\n  Total_WaferLine1_kWh: v.Total_WaferLine1_kWh ?? v.Total_EnergyCon_kwh_Wafer_Line_1,\n  Total_WaferLine2_kWh: v.Total_WaferLine2_kWh ?? v.Total_EnergyCon_kwh_Wafer_Line_2,\n  Total_ChocoyChocoLine_kWh: v.Total_ChocoyChocoLine_kWh ?? v.Total_EnergyCon_kwh_Chooey_Choco_Line,\n  Total_DynamiteLine_kWh: v.Total_DynamiteLine_kWh ?? v.Total_EnergyCon_kwh_Dynamite_Line,\n  Total_XOLine_kWh: v.Total_XOLine_kWh ?? v.Total_EnergyCon_kwh_XO_Line,\n  Total_MaxxLine_kWh: v.Total_MaxxLine_kWh ?? v.Total_EnergyCon_kwh_Maxx_Line,\n  Total_MainLine_kWh: v.Total_MainLine_kWh ?? v.Total_EnergyCon_kwh_Main_Line,\n  Total_UtilitiesJaguar_kWh: v.Total_UtilitiesJaguar_kWh ?? v.Total_EnergyCon_kwh_Utilities_Jaguar,\n  Total_UtilitiesLighting_kWh: v.Total_UtilitiesLighting_kWh ?? v.Total_EnergyCon_kwh_Utilities_Lighting_Power_Panel\n};\n\nconst sql = `INSERT INTO plc_samples (\n  ts, ts_epoch, Power_kW, Energy_kWh, Voltage_V, Current_A, PowerFactor,\n  Total_CrackerLine1_kWh, Total_CrackerLine2_kWh, Total_PretzelLine_kWh,\n  Total_WaferLine1_kWh, Total_WaferLine2_kWh, Total_ChocoyChocoLine_kWh,\n  Total_DynamiteLine_kWh, Total_XOLine_kWh, Total_MaxxLine_kWh,\n  Total_MainLine_kWh, Total_UtilitiesJaguar_kWh, Total_UtilitiesLighting_kWh\n) VALUES (\n  '${ts}', ${tsEpoch},\n  ${toSql(totalPower)}, ${toSql(totalEnergy)},\n  ${toSql(voltage)},\n  ${toSql(current)},\n  ${toSql(pf)},\n  ${toSql(totals.Total_CrackerLine1_kWh)},\n  ${toSql(totals.Total_CrackerLine2_kWh)},\n  ${toSql(totals.Total_PretzelLine_kWh)},\n  ${toSql(totals.Total_WaferLine1_kWh)},\n  ${toSql(totals.Total_WaferLine2_kWh)},\n  ${toSql(totals.Total_ChocoyChocoLine_kWh)},\n  ${toSql(totals.Total_DynamiteLine_kWh)},\n  ${toSql(totals.Total_XOLine_kWh)},\n  ${toSql(totals.Total_MaxxLine_kWh)},\n  ${toSql(totals.Total_MainLine_kWh)},\n  ${toSql(totals.Total_UtilitiesJaguar_kWh)},\n  ${toSql(totals.Total_UtilitiesLighting_kWh)}\n);`;\n\nmsg.topic = sql;\ndelete msg.payload;\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 520,
+    "y": 120,
+    "wires": [
+      [
+        "a1000014.sqlite"
+      ]
+    ]
+  },
+  {
+    "id": "a1000014.sqlite",
+    "type": "sqlite",
+    "z": "a1000001.0001tab",
+    "mydb": "a1000012.sqlitedb",
+    "sqlquery": "msg.topic",
+    "sql": "",
+    "name": "SQLite write",
+    "x": 740,
+    "y": 120,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "a1000015.energycache",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "Cache: last sample ts",
+    "func": "global.set('plcLastSampleTs', new Date().toISOString());\nreturn null;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 510,
+    "y": 200,
+    "wires": [
+      []
     ]
   },
   {
@@ -320,7 +4653,7 @@
     "type": "function",
     "z": "a1000001.0001tab",
     "name": "Build JSON",
-    "func": "const snap = global.get('plcSnapshot');\nmsg.payload = snap || {\n  ts: new Date().toISOString(),\n  values: null,\n  warning: 'No S7 data received yet — check PLC IP, rack/slot, DB addresses, and TIA PUT/GET.'\n};\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
+    "func": "const snap = global.get('plcSnapshot');\nmsg.payload = snap || {\n  ts: new Date().toISOString(),\n  values: null,\n  warning: 'No S7 data received yet \u2014 check PLC IP, rack/slot, DB addresses, and TIA PUT/GET.'\n};\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -364,11 +4697,297 @@
     ]
   },
   {
+    "id": "a1000016.sqlinit",
+    "type": "inject",
+    "z": "a1000001.0001tab",
+    "name": "SQLite init (tables)",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": true,
+    "onceDelay": "0.5",
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 200,
+    "y": 120,
+    "wires": [
+      [
+        "a1000017.sqlcreate"
+      ]
+    ]
+  },
+  {
+    "id": "a1000017.sqlcreate",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "SQLite: create schema",
+    "func": "msg.topic = `CREATE TABLE IF NOT EXISTS plc_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  Power_kW REAL,\n  Energy_kWh REAL,\n  Voltage_V REAL,\n  Current_A REAL,\n  PowerFactor REAL,\n  Total_CrackerLine1_kWh REAL,\n  Total_CrackerLine2_kWh REAL,\n  Total_PretzelLine_kWh REAL,\n  Total_WaferLine1_kWh REAL,\n  Total_WaferLine2_kWh REAL,\n  Total_ChocoyChocoLine_kWh REAL,\n  Total_DynamiteLine_kWh REAL,\n  Total_XOLine_kWh REAL,\n  Total_MaxxLine_kWh REAL,\n  Total_MainLine_kWh REAL,\n  Total_UtilitiesJaguar_kWh REAL,\n  Total_UtilitiesLighting_kWh REAL\n);\nCREATE INDEX IF NOT EXISTS idx_plc_samples_ts ON plc_samples(ts);\nCREATE INDEX IF NOT EXISTS idx_plc_samples_epoch ON plc_samples(ts_epoch);`;\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 450,
+    "y": 120,
+    "wires": [
+      [
+        "a1000018.sqliteexec"
+      ]
+    ]
+  },
+  {
+    "id": "a1000018.sqliteexec",
+    "type": "sqlite",
+    "z": "a1000001.0001tab",
+    "mydb": "a1000012.sqlitedb",
+    "sqlquery": "msg.topic",
+    "sql": "",
+    "name": "SQLite exec",
+    "x": 690,
+    "y": 120,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "a1000019.energyhttp",
+    "type": "http in",
+    "z": "a1000001.0001tab",
+    "name": "GET /api/energy/intervals",
+    "url": "/api/energy/intervals",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": "",
+    "x": 220,
+    "y": 420,
+    "wires": [
+      [
+        "a1000020.energyquery"
+      ]
+    ]
+  },
+  {
+    "id": "a1000045.alarms_http",
+    "type": "http in",
+    "z": "a1000001.0001tab",
+    "name": "GET /api/alarms",
+    "url": "/api/alarms",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": "",
+    "x": 210,
+    "y": 660,
+    "wires": [
+      [
+        "a1000046.alarms_list"
+      ]
+    ]
+  },
+  {
+    "id": "a1000046.alarms_list",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "Build alarms JSON",
+    "func": "const arr = global.get('enhancedAlerts') || [];\nmsg.payload = arr;\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 480,
+    "y": 660,
+    "wires": [
+      [
+        "a1000047.alarms_res"
+      ]
+    ]
+  },
+  {
+    "id": "a1000047.alarms_res",
+    "type": "http response",
+    "z": "a1000001.0001tab",
+    "name": "",
+    "statusCode": "",
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8"
+    },
+    "x": 740,
+    "y": 660,
+    "wires": []
+  },
+  {
+    "id": "a1000048.alarms_ack_http",
+    "type": "http in",
+    "z": "a1000001.0001tab",
+    "name": "GET /api/alarms/:id/acknowledge",
+    "url": "/api/alarms/:id/acknowledge",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": "",
+    "x": 250,
+    "y": 700,
+    "wires": [
+      [
+        "a1000049.alarms_ack"
+      ]
+    ]
+  },
+  {
+    "id": "a1000049.alarms_ack",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "Acknowledge alarm",
+    "func": "const id = msg.req?.params?.id;\nconst who = msg.req?.query?.by ?? 'user';\nconst arr = global.get('enhancedAlerts') || [];\nconst a = arr.find((x) => x.id === id);\nif (a) {\n  a.status = 'acknowledged';\n  a.acknowledgedAt = new Date().toISOString();\n  a.acknowledgedBy = String(who);\n}\nmsg.payload = a || null;\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 500,
+    "y": 700,
+    "wires": [
+      [
+        "a1000047.alarms_res"
+      ]
+    ]
+  },
+  {
+    "id": "a1000050.alarms_resolve_http",
+    "type": "http in",
+    "z": "a1000001.0001tab",
+    "name": "GET /api/alarms/:id/resolve",
+    "url": "/api/alarms/:id/resolve",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": "",
+    "x": 230,
+    "y": 740,
+    "wires": [
+      [
+        "a1000051.alarms_resolve"
+      ]
+    ]
+  },
+  {
+    "id": "a1000051.alarms_resolve",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "Resolve alarm",
+    "func": "const id = msg.req?.params?.id;\nconst arr = global.get('enhancedAlerts') || [];\nconst a = arr.find((x) => x.id === id);\nif (a) {\n  a.status = 'resolved';\n  a.resolvedAt = new Date().toISOString();\n}\nmsg.payload = a || null;\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 470,
+    "y": 740,
+    "wires": [
+      [
+        "a1000047.alarms_res"
+      ]
+    ]
+  },
+  {
+    "id": "a1000052.alarms_notes_http",
+    "type": "http in",
+    "z": "a1000001.0001tab",
+    "name": "GET /api/alarms/:id/notes",
+    "url": "/api/alarms/:id/notes",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": "",
+    "x": 220,
+    "y": 780,
+    "wires": [
+      [
+        "a1000053.alarms_notes"
+      ]
+    ]
+  },
+  {
+    "id": "a1000053.alarms_notes",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "Add alarm note",
+    "func": "const id = msg.req?.params?.id;\nconst note = msg.req?.query?.note ?? '';\nconst arr = global.get('enhancedAlerts') || [];\nconst a = arr.find((x) => x.id === id);\nif (a) {\n  if (!Array.isArray(a.notes)) a.notes = [];\n  if (note) a.notes.unshift(String(note));\n}\nmsg.payload = a || null;\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 460,
+    "y": 780,
+    "wires": [
+      [
+        "a1000047.alarms_res"
+      ]
+    ]
+  },
+  {
+    "id": "a1000020.energyquery",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "SQLite: query intervals",
+    "func": "const hours = Math.max(1, Math.min(24 * 120, Number(msg.req?.query?.hours ?? 24)));\nconst sinceEpoch = Math.floor(Date.now() / 1000) - Math.floor(hours * 3600);\n\n// We store cumulative kWh totals. Convert to per-15min kWh by diffing successive samples (LAG).\n// Inline sinceEpoch to avoid parameter binding differences across sqlite node versions.\nmsg.topic = `WITH base AS (\n  SELECT\n    ts_epoch,\n    Total_CrackerLine1_kWh,\n    Total_CrackerLine2_kWh,\n    Total_PretzelLine_kWh,\n    Total_WaferLine1_kWh,\n    Total_WaferLine2_kWh,\n    Total_ChocoyChocoLine_kWh,\n    Total_DynamiteLine_kWh,\n    Total_XOLine_kWh,\n    Total_MaxxLine_kWh,\n    Total_MainLine_kWh,\n    Total_UtilitiesJaguar_kWh,\n    Total_UtilitiesLighting_kWh\n  FROM plc_samples\n  WHERE ts_epoch >= ${sinceEpoch}\n), diffs AS (\n  SELECT\n    ts_epoch,\n    COALESCE(Total_CrackerLine1_kWh - LAG(Total_CrackerLine1_kWh) OVER (ORDER BY ts_epoch), 0) AS d1,\n    COALESCE(Total_CrackerLine2_kWh - LAG(Total_CrackerLine2_kWh) OVER (ORDER BY ts_epoch), 0) AS d2,\n    COALESCE(Total_PretzelLine_kWh - LAG(Total_PretzelLine_kWh) OVER (ORDER BY ts_epoch), 0) AS d3,\n    COALESCE(Total_WaferLine1_kWh - LAG(Total_WaferLine1_kWh) OVER (ORDER BY ts_epoch), 0) AS d4,\n    COALESCE(Total_WaferLine2_kWh - LAG(Total_WaferLine2_kWh) OVER (ORDER BY ts_epoch), 0) AS d5,\n    COALESCE(Total_ChocoyChocoLine_kWh - LAG(Total_ChocoyChocoLine_kWh) OVER (ORDER BY ts_epoch), 0) AS d6,\n    COALESCE(Total_DynamiteLine_kWh - LAG(Total_DynamiteLine_kWh) OVER (ORDER BY ts_epoch), 0) AS d7,\n    COALESCE(Total_XOLine_kWh - LAG(Total_XOLine_kWh) OVER (ORDER BY ts_epoch), 0) AS d8,\n    COALESCE(Total_MaxxLine_kWh - LAG(Total_MaxxLine_kWh) OVER (ORDER BY ts_epoch), 0) AS d9,\n    COALESCE(Total_MainLine_kWh - LAG(Total_MainLine_kWh) OVER (ORDER BY ts_epoch), 0) AS d10,\n    COALESCE(Total_UtilitiesJaguar_kWh - LAG(Total_UtilitiesJaguar_kWh) OVER (ORDER BY ts_epoch), 0) AS d11,\n    COALESCE(Total_UtilitiesLighting_kWh - LAG(Total_UtilitiesLighting_kWh) OVER (ORDER BY ts_epoch), 0) AS d12\n  FROM base\n), buckets AS (\n  SELECT\n    datetime((ts_epoch / 900) * 900, 'unixepoch') AS bucket_ts,\n    SUM(MAX(0, COALESCE(d1,0))) AS d1,\n    SUM(MAX(0, COALESCE(d2,0))) AS d2,\n    SUM(MAX(0, COALESCE(d3,0))) AS d3,\n    SUM(MAX(0, COALESCE(d4,0))) AS d4,\n    SUM(MAX(0, COALESCE(d5,0))) AS d5,\n    SUM(MAX(0, COALESCE(d6,0))) AS d6,\n    SUM(MAX(0, COALESCE(d7,0))) AS d7,\n    SUM(MAX(0, COALESCE(d8,0))) AS d8,\n    SUM(MAX(0, COALESCE(d9,0))) AS d9,\n    SUM(MAX(0, COALESCE(d10,0))) AS d10,\n    SUM(MAX(0, COALESCE(d11,0))) AS d11,\n    SUM(MAX(0, COALESCE(d12,0))) AS d12\n  FROM diffs\n  GROUP BY bucket_ts\n), cum AS (\n  SELECT\n    datetime((ts_epoch / 900) * 900, 'unixepoch') AS bucket_ts,\n    MAX(Total_CrackerLine1_kWh) AS t1,\n    MAX(Total_CrackerLine2_kWh) AS t2,\n    MAX(Total_PretzelLine_kWh) AS t3,\n    MAX(Total_WaferLine1_kWh) AS t4,\n    MAX(Total_WaferLine2_kWh) AS t5,\n    MAX(Total_ChocoyChocoLine_kWh) AS t6,\n    MAX(Total_DynamiteLine_kWh) AS t7,\n    MAX(Total_XOLine_kWh) AS t8,\n    MAX(Total_MaxxLine_kWh) AS t9,\n    MAX(Total_MainLine_kWh) AS t10,\n    MAX(Total_UtilitiesJaguar_kWh) AS t11,\n    MAX(Total_UtilitiesLighting_kWh) AS t12\n  FROM base\n  GROUP BY bucket_ts\n)\nSELECT\n  strftime('%Y-%m-%dT%H:%M:00.000Z', bucket_ts) AS ts,\n  meterId,\n  meterName,\n  energyKwh,\n  (energyKwh * 4.0) AS demandKw,\n  0.0 AS costDollars,\n  'n/a' AS rateTier,\n  cumulativeKwh\nFROM (\n  SELECT b.bucket_ts, 'line-01' AS meterId, 'Cracker Line 1' AS meterName, b.d1 AS energyKwh, c.t1 AS cumulativeKwh FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-02', 'Cracker Line 2', b.d2, c.t2 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-03', 'Pretzel Line', b.d3, c.t3 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-04', 'Wafer Line 1', b.d4, c.t4 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-05', 'Wafer Line 2', b.d5, c.t5 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-06', 'Chocoy Choco Line', b.d6, c.t6 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-07', 'Dynamite Line', b.d7, c.t7 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-08', 'XO Line', b.d8, c.t8 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-09', 'Maxx Line', b.d9, c.t9 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-10', 'Main Line', b.d10, c.t10 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-11', 'Utilities Jaguar', b.d11, c.t11 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-12', 'Utilities Lighting', b.d12, c.t12 FROM buckets b JOIN cum c USING(bucket_ts)\n)\nORDER BY ts ASC, meterId ASC;`;\n\ndelete msg.payload;\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 470,
+    "y": 420,
+    "wires": [
+      [
+        "a1000021.sqliteread"
+      ]
+    ]
+  },
+  {
+    "id": "a1000021.sqliteread",
+    "type": "sqlite",
+    "z": "a1000001.0001tab",
+    "mydb": "a1000012.sqlitedb",
+    "sqlquery": "msg.topic",
+    "sql": "",
+    "name": "SQLite read",
+    "x": 690,
+    "y": 420,
+    "wires": [
+      [
+        "a1000022.energyres"
+      ]
+    ]
+  },
+  {
+    "id": "a1000022.energyres",
+    "type": "http response",
+    "z": "a1000001.0001tab",
+    "name": "",
+    "statusCode": "",
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8"
+    },
+    "x": 900,
+    "y": 420,
+    "wires": []
+  },
+  {
     "id": "a1000009.healthjson",
     "type": "function",
     "z": "a1000001.0001tab",
     "name": "Health body",
-    "func": "msg.payload = {\n  ok: true,\n  service: 'node-red',\n  ts: new Date().toISOString()\n};\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
+    "func": "const now = Date.now();\nconst snap = global.get('plcSnapshot');\nconst lastSample = global.get('plcLastSampleTs');\n\nlet lastPlcCommTs = null;\nif (typeof lastSample === 'string') lastPlcCommTs = lastSample;\nelse if (snap?.ts) lastPlcCommTs = snap.ts;\n\nlet plcLinkUp = false;\nif (lastPlcCommTs) {\n  const t = Date.parse(lastPlcCommTs);\n  if (Number.isFinite(t)) plcLinkUp = (now - t) <= 15000;\n}\n\n// Record PLC link transitions into Enhanced Alerts (/api/alarms)\nconst prevUp = global.get('plcLinkUpPrev');\nif (prevUp === undefined) {\n  global.set('plcLinkUpPrev', plcLinkUp);\n} else if (prevUp !== plcLinkUp) {\n  global.set('plcLinkUpPrev', plcLinkUp);\n\n  const alerts = global.get('enhancedAlerts') || [];\n  const ts = new Date().toISOString();\n  const id = `plc-${ts}-${Math.random().toString(16).slice(2, 8)}`;\n  const severity = plcLinkUp ? 'info' : 'critical';\n  const priority = plcLinkUp ? 'low' : 'urgent';\n  const message = plcLinkUp ? 'PLC link restored' : 'PLC link disconnected';\n  const detail = plcLinkUp\n    ? `PLC communication resumed at ${ts}.`\n    : `No PLC communication within 15s. Last communication: ${lastPlcCommTs || 'unknown'}.`;\n\n  alerts.unshift({\n    id,\n    meterId: 'plc',\n    meterName: 'PLC Link',\n    severity,\n    priority,\n    category: 'communication',\n    status: 'active',\n    message,\n    detail,\n    ts,\n    acknowledgedAt: null,\n    acknowledgedBy: null,\n    resolvedAt: null,\n    notes: [],\n    incidentId: null\n  });\n  while (alerts.length > 500) alerts.pop();\n  global.set('enhancedAlerts', alerts);\n}\n\nmsg.payload = {\n  ok: true,\n  service: 'node-red',\n  ts: new Date().toISOString(),\n  plcLink: {\n    up: plcLinkUp,\n    lastCommunicationTs: lastPlcCommTs\n  }\n};\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -405,39 +5024,87 @@
     "wires": []
   },
   {
-    "id": "3e7515be6f46630b",
+    "id": "a1000101.s7in_full",
+    "type": "s7 in",
+    "z": "a1000001.0001tab",
+    "d": true,
+    "endpoint": "a1000100.s7endpoint_full",
+    "mode": "all",
+    "variable": "",
+    "diff": false,
+    "name": "Read all (Excel vartable)",
+    "x": 240,
+    "y": 240,
+    "wires": [
+      [
+        "a1000102.cache_full"
+      ]
+    ]
+  },
+  {
+    "id": "a1000102.cache_full",
     "type": "function",
     "z": "a1000001.0001tab",
-    "name": "function 2",
-    "func": "\nreturn msg;",
+    "name": "Cache full snapshot",
+    "func": "global.set('plcFullSnapshot', {\n  ts: new Date().toISOString(),\n  values: msg.payload\n});\nreturn null;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
     "initialize": "",
     "finalize": "",
     "libs": [],
-    "x": 460,
-    "y": 220,
+    "x": 520,
+    "y": 240,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "a1000103.httpin_full",
+    "type": "http in",
+    "z": "a1000001.0001tab",
+    "name": "GET /api/plc/full-snapshot",
+    "url": "/api/plc/full-snapshot",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": "",
+    "x": 250,
+    "y": 500,
     "wires": [
       [
-        "dcf31d6f80b482f5"
+        "a1000104.fulljson"
       ]
     ]
   },
   {
-    "id": "dcf31d6f80b482f5",
-    "type": "debug",
+    "id": "a1000104.fulljson",
+    "type": "function",
     "z": "a1000001.0001tab",
-    "name": "debug 1",
-    "active": true,
-    "tosidebar": true,
-    "console": false,
-    "tostatus": false,
-    "complete": "false",
-    "statusVal": "",
-    "statusType": "auto",
-    "x": 680,
-    "y": 220,
+    "name": "Build full JSON",
+    "func": "const snap = global.get('plcFullSnapshot');\nmsg.payload = snap || {\n  ts: new Date().toISOString(),\n  values: null,\n  warning: 'No full S7 data received yet \u2014 check PLC connection and DB16 access.'\n};\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 520,
+    "y": 500,
+    "wires": [
+      [
+        "a1000105.httpres_full"
+      ]
+    ]
+  },
+  {
+    "id": "a1000105.httpres_full",
+    "type": "http response",
+    "z": "a1000001.0001tab",
+    "name": "",
+    "statusCode": "",
+    "headers": {},
+    "x": 740,
+    "y": 500,
     "wires": []
   },
   {
@@ -502,7 +5169,7 @@
     "type": "function",
     "z": "b2f00001.tab",
     "name": "Format for dashboard",
-    "func": "const p = msg.payload;\nif (!p || typeof p !== 'object') {\n    return [ { payload: 'Waiting for PLC…' }, null, null, null ];\n}\nconst r0 = Number(p.DB1_REAL0);\nconst r4 = Number(p.DB1_REAL4);\nconst r8 = Number(p.DB1_REAL8);\nconst line = (k, v) => `${k}: ${Number.isFinite(v) ? v.toFixed(3) : '—'}`;\nconst text = [\n  line('DB1,REAL0', r0),\n  line('DB1,REAL4', r4),\n  line('DB1,REAL8', r8)\n].join('\\n');\nreturn [\n  { payload: text },\n  { payload: r0 },\n  { payload: r4 },\n  { payload: r8 }\n];",
+    "func": "const p = msg.payload;\nif (!p || typeof p !== 'object') {\n    return [ { payload: 'Waiting for PLC\u2026' }, null, null, null ];\n}\nconst r0 = Number(p.DB1_REAL0);\nconst r4 = Number(p.DB1_REAL4);\nconst r8 = Number(p.DB1_REAL8);\nconst line = (k, v) => `${k}: ${Number.isFinite(v) ? v.toFixed(3) : '\u2014'}`;\nconst text = [\n  line('DB1,REAL0', r0),\n  line('DB1,REAL4', r4),\n  line('DB1,REAL8', r8)\n].join('\\n');\nreturn [\n  { payload: text },\n  { payload: r0 },\n  { payload: r4 },\n  { payload: r8 }\n];",
     "outputs": 4,
     "timeout": 0,
     "noerr": 0,

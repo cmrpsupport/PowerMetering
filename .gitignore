@@ -16,6 +16,11 @@ dist-ssr
 .env
 .env.local
 
+# Node-RED runtime data (local only)
+backend/*.sqlite
+backend/node-red-data/*.sqlite
+backend/node-red-data/.generated_vartable_full.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

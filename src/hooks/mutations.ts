@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { acknowledgeAlert, resolveAlert, addAlertNote, toggleSchedule } from '../api/powerApi'
+import { acknowledgeAlert, resolveAlert, addAlertNote } from '../api/powerApi'
 import { useUiStore } from '../store/uiStore'
 
 export function useAcknowledgeAlert() {
@@ -38,18 +38,5 @@ export function useAddAlertNote() {
       addToast('success', 'Note added')
     },
     onError: () => addToast('error', 'Failed to add note'),
-  })
-}
-
-export function useToggleSchedule() {
-  const qc = useQueryClient()
-  const addToast = useUiStore((s) => s.addToast)
-  return useMutation({
-    mutationFn: (scheduleId: string) => toggleSchedule(scheduleId),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['reportSchedules'] })
-      addToast('success', 'Schedule updated')
-    },
-    onError: () => addToast('error', 'Failed to toggle schedule'),
   })
 }

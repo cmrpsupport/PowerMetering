@@ -2,16 +2,16 @@ import type { HarmonicSnapshot, VoltageEvent, WaveformCapture } from '../../type
 import { hoursAgo, round, seededNoise, sleep } from './helpers'
 
 const voltageEvents: VoltageEvent[] = [
-  { id: 'evt-001', meterId: 'mtr-101', type: 'sag', ts: hoursAgo(2.3), durationMs: 120, magnitudePu: 0.82, phase: 'A', description: 'Voltage sag detected on Phase A — motor start inrush' },
-  { id: 'evt-002', meterId: 'mtr-101', type: 'swell', ts: hoursAgo(5.1), durationMs: 80, magnitudePu: 1.12, phase: 'B', description: 'Voltage swell on Phase B — load rejection' },
-  { id: 'evt-003', meterId: 'mtr-104', type: 'sag', ts: hoursAgo(1.5), durationMs: 350, magnitudePu: 0.71, phase: 'ABC', description: 'Three-phase voltage sag — upstream fault' },
-  { id: 'evt-004', meterId: 'mtr-102', type: 'transient', ts: hoursAgo(8.0), durationMs: 5, magnitudePu: 1.45, phase: 'C', description: 'Capacitor switching transient on Phase C' },
-  { id: 'evt-005', meterId: 'mtr-104', type: 'interruption', ts: hoursAgo(24), durationMs: 2400, magnitudePu: 0.05, phase: 'ABC', description: 'Momentary interruption — breaker trip and reclose' },
-  { id: 'evt-006', meterId: 'mtr-101', type: 'sag', ts: hoursAgo(12), durationMs: 200, magnitudePu: 0.85, phase: 'A', description: 'Voltage sag — large motor DOL start' },
-  { id: 'evt-007', meterId: 'mtr-105', type: 'swell', ts: hoursAgo(18), durationMs: 150, magnitudePu: 1.08, phase: 'ABC', description: 'Minor three-phase swell — UPS test' },
-  { id: 'evt-008', meterId: 'mtr-102', type: 'sag', ts: hoursAgo(36), durationMs: 500, magnitudePu: 0.68, phase: 'B', description: 'Deep sag on Phase B — grid disturbance' },
-  { id: 'evt-009', meterId: 'mtr-101', type: 'transient', ts: hoursAgo(48), durationMs: 3, magnitudePu: 1.62, phase: 'A', description: 'Lightning-induced transient' },
-  { id: 'evt-010', meterId: 'mtr-104', type: 'sag', ts: hoursAgo(72), durationMs: 180, magnitudePu: 0.78, phase: 'C', description: 'Voltage sag — transformer tap change' },
+  { id: 'evt-001', meterId: 'plc-line-10', type: 'sag', ts: hoursAgo(2.3), durationMs: 120, magnitudePu: 0.82, phase: 'A', description: 'Voltage sag detected on Phase A — motor start inrush' },
+  { id: 'evt-002', meterId: 'plc-line-10', type: 'swell', ts: hoursAgo(5.1), durationMs: 80, magnitudePu: 1.12, phase: 'B', description: 'Voltage swell on Phase B — load rejection' },
+  { id: 'evt-003', meterId: 'plc-line-03', type: 'sag', ts: hoursAgo(1.5), durationMs: 350, magnitudePu: 0.71, phase: 'ABC', description: 'Three-phase voltage sag — upstream fault' },
+  { id: 'evt-004', meterId: 'plc-line-02', type: 'transient', ts: hoursAgo(8.0), durationMs: 5, magnitudePu: 1.45, phase: 'C', description: 'Capacitor switching transient on Phase C' },
+  { id: 'evt-005', meterId: 'plc-line-03', type: 'interruption', ts: hoursAgo(24), durationMs: 2400, magnitudePu: 0.05, phase: 'ABC', description: 'Momentary interruption — breaker trip and reclose' },
+  { id: 'evt-006', meterId: 'plc-line-10', type: 'sag', ts: hoursAgo(12), durationMs: 200, magnitudePu: 0.85, phase: 'A', description: 'Voltage sag — large motor DOL start' },
+  { id: 'evt-007', meterId: 'plc-line-05', type: 'swell', ts: hoursAgo(18), durationMs: 150, magnitudePu: 1.08, phase: 'ABC', description: 'Minor three-phase swell — UPS test' },
+  { id: 'evt-008', meterId: 'plc-line-02', type: 'sag', ts: hoursAgo(36), durationMs: 500, magnitudePu: 0.68, phase: 'B', description: 'Deep sag on Phase B — grid disturbance' },
+  { id: 'evt-009', meterId: 'plc-line-10', type: 'transient', ts: hoursAgo(48), durationMs: 3, magnitudePu: 1.62, phase: 'A', description: 'Lightning-induced transient' },
+  { id: 'evt-010', meterId: 'plc-line-03', type: 'sag', ts: hoursAgo(72), durationMs: 180, magnitudePu: 0.78, phase: 'C', description: 'Voltage sag — transformer tap change' },
 ]
 
 function generateHarmonics(meterId: string): HarmonicSnapshot {
@@ -83,12 +83,12 @@ export async function mockGetHarmonics(meterId: string): Promise<HarmonicSnapsho
 
 export async function mockListWaveforms(meterId?: string): Promise<WaveformCapture[]> {
   await sleep(220)
-  const meterIds = meterId ? [meterId] : ['mtr-101', 'mtr-102', 'mtr-104']
+  const meterIds = meterId ? [meterId] : ['plc-line-10', 'plc-line-02', 'plc-line-03']
   return meterIds.map((mid, i) => generateWaveform(mid, `wf-${String(i + 1).padStart(3, '0')}`))
 }
 
 export async function mockGetWaveform(waveformId: string): Promise<WaveformCapture | null> {
   await sleep(150)
-  const all = ['mtr-101', 'mtr-102', 'mtr-104'].map((mid, i) => generateWaveform(mid, `wf-${String(i + 1).padStart(3, '0')}`))
+  const all = ['plc-line-10', 'plc-line-02', 'plc-line-03'].map((mid, i) => generateWaveform(mid, `wf-${String(i + 1).padStart(3, '0')}`))
   return all.find((w) => w.id === waveformId) ?? null
 }

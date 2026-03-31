@@ -12,13 +12,13 @@ export function Badge({
 }) {
   const styles =
     color === 'green'
-      ? 'bg-[color-mix(in_srgb,var(--accent-green)_12%,var(--card))] text-[var(--accent-green)] ring-[var(--border)]'
+      ? 'bg-[color-mix(in_srgb,var(--success)_12%,var(--card))] text-[var(--success)] ring-[var(--border)]'
       : color === 'yellow'
-        ? 'bg-[var(--card)] text-[var(--text)] ring-[var(--border)]'
+        ? 'bg-[color-mix(in_srgb,var(--warning)_12%,var(--card))] text-[var(--warning)] ring-[var(--border)]'
         : color === 'red'
-          ? 'bg-[color-mix(in_srgb,var(--accent-red)_12%,var(--card))] text-[var(--accent-red)] ring-[var(--border)]'
+          ? 'bg-[color-mix(in_srgb,var(--danger)_12%,var(--card))] text-[var(--danger)] ring-[var(--border)]'
           : color === 'indigo'
-            ? 'bg-[var(--card)] text-[var(--text)] ring-[var(--border)]'
+            ? 'bg-[color-mix(in_srgb,var(--primary)_10%,var(--card))] text-[var(--primary)] ring-[var(--border)]'
             : 'bg-[var(--card)] text-[var(--text)] ring-[var(--border)]'
 
   return (

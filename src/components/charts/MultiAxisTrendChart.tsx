@@ -42,46 +42,45 @@ export default function MultiAxisTrendChart({
   const rightSeries = series.filter((s) => s.yAxisId === 'right')
 
   return (
-    <div className="w-full rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+    <div className="w-full rounded-xl border border-[var(--border)] bg-[var(--card)] p-4">
       <ResponsiveContainer width="100%" height={height}>
         <LineChart data={data}>
           <CartesianGrid
             strokeDasharray="3 3"
-            stroke="#94a3b8"
-            opacity={0.3}
+            stroke="var(--chart-grid)"
           />
           <XAxis
             dataKey="ts"
             tickFormatter={formatTime}
-            tick={{ fill: '#94a3b8', fontSize: 12 }}
-            stroke="#94a3b8"
+            tick={{ fill: 'var(--chart-axis)', fontSize: 12 }}
+            stroke="var(--chart-axis)"
           />
           {leftSeries.length > 0 && (
             <YAxis
               yAxisId="left"
-              tick={{ fill: '#94a3b8', fontSize: 12 }}
-              stroke="#94a3b8"
+              tick={{ fill: 'var(--chart-axis)', fontSize: 12 }}
+              stroke="var(--chart-axis)"
             />
           )}
           {rightSeries.length > 0 && (
             <YAxis
               yAxisId="right"
               orientation="right"
-              tick={{ fill: '#94a3b8', fontSize: 12 }}
-              stroke="#94a3b8"
+              tick={{ fill: 'var(--chart-axis)', fontSize: 12 }}
+              stroke="var(--chart-axis)"
             />
           )}
           <Tooltip
             contentStyle={{
-              backgroundColor: '#1e293b',
-              border: '1px solid #334155',
+              backgroundColor: 'var(--chart-tooltip-bg)',
+              border: `1px solid var(--chart-tooltip-border)`,
               borderRadius: 8,
-              color: '#f1f5f9',
+              color: 'var(--chart-tooltip-text)',
             }}
             labelFormatter={formatTimeLabel}
           />
           <Legend
-            wrapperStyle={{ color: '#94a3b8', fontSize: 12 }}
+            wrapperStyle={{ color: 'var(--muted)', fontSize: 12 }}
           />
           {series.map((s) => (
             <Line

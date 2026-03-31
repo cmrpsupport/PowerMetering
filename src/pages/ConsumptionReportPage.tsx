@@ -1,0 +1,578 @@
+import { Fragment, useMemo, useState } from 'react'
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  LabelList,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
+import { Download } from 'lucide-react'
+import { useConsumptionReportIntervals } from '../hooks/queries'
+import {
+  aggregateConsumptionIntervals,
+  consumptionReportToCsv,
+  CONSUMPTION_REPORT_HOURS,
+} from '../lib/consumptionReport'
+import type { ConsumptionGranularity } from '../types'
+import { StatCard } from '../components/ui/StatCard'
+import { SegmentedControl } from '../components/ui/SegmentedControl'
+
+const GRANULARITY_OPTIONS: { id: ConsumptionGranularity; label: string; hint: string }[] = [
+  { id: 'hourly', label: 'Hourly', hint: 'Last ~3 days' },
+  { id: 'daily', label: 'Daily', hint: 'Last ~30 days' },
+  { id: 'weekly', label: 'Weekly', hint: 'Last ~12 weeks' },
+  { id: 'monthly', label: 'Monthly', hint: 'Last ~90 days by month' },
+]
+
+const LINE_ORDER = [
+  'Cracker Line 1',
+  'Cracker Line 2',
+  'Pretzel Line',
+  'Wafer Line 1',
+  'Wafer Line 2',
+  'Chocoy Choco Line',
+  'Dynamite Line',
+  'XO Line',
+  'Maxx Line',
+  'Main Line',
+  'Utilities Jaguar',
+  'Utilities Lighting',
+]
+
+const LINE_COLORS = [
+  '#2563eb', // blue
+  '#16a34a', // green
+  '#f59e0b', // amber
+  '#7c3aed', // purple
+  '#0ea5e9', // sky
+  '#db2777', // pink
+  '#ef4444', // red
+  '#14b8a6', // teal
+  '#a16207', // brown/amber
+  '#4f46e5', // indigo
+  '#22c55e', // green
+  '#eab308', // yellow
+]
+
+function fmtNum(n: number, decimals = 1) {
+  if (!Number.isFinite(n)) return '—'
+  return n.toLocaleString(undefined, {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  })
+}
+
+function gaugeColor(pct: number): 'green' | 'yellow' | 'red' {
+  if (!Number.isFinite(pct)) return 'green'
+  if (pct >= 66) return 'red'
+  if (pct >= 33) return 'yellow'
+  return 'green'
+}
+
+function Gauge({ pct, color }: { pct: number; color: 'green' | 'yellow' | 'red' }) {
+  const clamped = Math.max(0, Math.min(100, pct))
+  const r = 22
+  const c = 2 * Math.PI * r
+  const dash = (clamped / 100) * c
+  const stroke = color === 'red' ? 'var(--danger)' : color === 'yellow' ? 'var(--warning)' : 'var(--success)'
+
+  return (
+    <svg width="56" height="56" viewBox="0 0 56 56" className="shrink-0">
+      <circle cx="28" cy="28" r={r} stroke="var(--border)" strokeWidth="6" fill="none" opacity={0.6} />
+      <circle
+        cx="28"
+        cy="28"
+        r={r}
+        stroke={stroke}
+        strokeWidth="6"
+        fill="none"
+        strokeLinecap="round"
+        strokeDasharray={`${dash} ${c - dash}`}
+        transform="rotate(-90 28 28)"
+      />
+      <text x="28" y="31" textAnchor="middle" fontSize="11" fontWeight="700" fill="var(--text)">
+        {Math.round(clamped)}%
+      </text>
+    </svg>
+  )
+}
+
+export function ConsumptionReportPage() {
+  const [granularity, setGranularity] = useState<ConsumptionGranularity>('daily')
+  const [viewMode, setViewMode] = useState<'byTime' | 'byLine'>('byLine')
+  const [layoutMode, setLayoutMode] = useState<'cards' | 'table'>('cards')
+  const q = useConsumptionReportIntervals(granularity)
+
+  const buckets = useMemo(() => {
+    const intervals = q.data ?? []
+    return aggregateConsumptionIntervals(intervals, granularity)
+  }, [q.data, granularity])
+
+  const totals = useMemo(() => {
+    const te = buckets.reduce((s, b) => s + b.totalEnergyKwh, 0)
+    const pk = buckets.reduce((m, b) => Math.max(m, b.peakDemandKw), 0)
+    return { totalEnergyKwh: te, peakDemandKw: pk }
+  }, [buckets])
+
+  const meterNames = useMemo(() => {
+    const s = new Set<string>()
+    for (const b of buckets) {
+      for (const m of Object.keys(b.byMeter)) s.add(m)
+    }
+    const raw = Array.from(s)
+    const ordered = raw
+      .slice()
+      .sort((a, b) => {
+        const ia = LINE_ORDER.indexOf(a)
+        const ib = LINE_ORDER.indexOf(b)
+        if (ia === -1 && ib === -1) return a.localeCompare(b)
+        if (ia === -1) return 1
+        if (ib === -1) return -1
+        return ia - ib
+      })
+    return ordered
+  }, [buckets])
+
+  const latestBucket = buckets.length > 0 ? buckets[buckets.length - 1] : null
+  const totalDailyAll =
+    latestBucket && meterNames.length > 0
+      ? meterNames.reduce((s, m) => s + (latestBucket.byMeter[m]?.energyKwh ?? 0), 0)
+      : 0
+  const totalCumAll =
+    latestBucket && meterNames.length > 0
+      ? meterNames.reduce((s, m) => s + (latestBucket.byMeter[m]?.cumulativeKwhEnd ?? 0), 0)
+      : 0
+  const snapshotLabel = latestBucket ? new Date(latestBucket.lastTs).toLocaleString() : '—'
+
+  const chartData = useMemo(() => {
+    if (viewMode === 'byLine') {
+      const totalsByLine = meterNames
+        .map((m) => ({
+          line: m,
+          energyKwh: buckets.reduce((s, b) => s + (b.byMeter[m]?.energyKwh ?? 0), 0),
+        }))
+        .filter((x) => x.energyKwh > 0)
+        .sort((a, b) => b.energyKwh - a.energyKwh)
+
+      const total = totalsByLine.reduce((s, x) => s + x.energyKwh, 0) || 1
+
+      return totalsByLine.map((x, idx) => ({
+        name: x.line,
+        energy: Math.round(x.energyKwh * 1000) / 1000,
+        pct: Math.round((x.energyKwh / total) * 1000) / 10, // 1 decimal
+        rank: idx + 1,
+      }))
+    }
+
+    return buckets.map((b) => {
+      const row: Record<string, unknown> = {
+        name: b.label.length > 18 ? `${b.label.slice(0, 16)}…` : b.label,
+        fullLabel: b.label,
+      }
+      for (const m of meterNames) {
+        row[m] = Math.round((b.byMeter[m]?.energyKwh ?? 0) * 1000) / 1000
+      }
+      return row
+    })
+  }, [buckets, meterNames])
+
+  const onDownloadCsv = () => {
+    const csv = consumptionReportToCsv(buckets, granularity)
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `consumption-${granularity}-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const onDownloadSummaryCsv = () => {
+    const header = ['LINE', 'KWH', 'PCT_OF_TOTAL', 'CUMULATIVE_KWH']
+    const denom = totalDailyAll > 0 ? totalDailyAll : 1
+    const rows = meterNames.map((m) => {
+      const daily = latestBucket?.byMeter[m]?.energyKwh ?? 0
+      const pct = (daily / denom) * 100
+      const cum = latestBucket?.byMeter[m]?.cumulativeKwhEnd ?? null
+      return [m, daily.toFixed(3), pct.toFixed(2), cum !== null ? String(cum) : '']
+    })
+    const lines = [header.join(','), ...rows.map((r) => r.join(','))]
+    lines.push(['TOTAL', totalDailyAll.toFixed(3), '100.00', String(totalCumAll)].join(','))
+
+    const csv = lines.join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `consumption-summary-${granularity}-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const hours = CONSUMPTION_REPORT_HOURS[granularity]
+
+  return (
+    <div className="space-y-6">
+      {/* Unified hero panel */}
+      <div className="panel overflow-hidden">
+        {/* Header row */}
+        <div className="flex flex-col gap-3 border-b border-[var(--border)] bg-[var(--card)] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <div className="text-base font-semibold text-[var(--text)]">Total energy consumption</div>
+            <div className="mt-0.5 text-xs text-[var(--muted)]">{snapshotLabel}</div>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-2 sm:justify-end">
+            <div className="inline-flex overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
+              {GRANULARITY_OPTIONS.map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setGranularity(opt.id)}
+                  title={opt.hint}
+                  className={[
+                    'px-3 py-2 text-left text-xs font-medium transition',
+                    granularity === opt.id
+                      ? 'bg-[color-mix(in_srgb,var(--primary)_12%,var(--card))] text-[var(--primary)]'
+                      : 'text-[var(--muted)] hover:bg-[color-mix(in_srgb,var(--text)_4%,transparent)] hover:text-[var(--text)]',
+                  ].join(' ')}
+                >
+                  <div className="leading-none">{opt.label}</div>
+                  <div className="mt-0.5 text-[10px] font-normal opacity-80">{opt.hint}</div>
+                </button>
+              ))}
+            </div>
+
+            <SegmentedControl
+              value={layoutMode}
+              onChange={setLayoutMode}
+              options={[
+                { id: 'cards', label: 'Cards' },
+                { id: 'table', label: 'Table' },
+              ]}
+            />
+
+            <button
+              type="button"
+              onClick={onDownloadSummaryCsv}
+              disabled={!latestBucket || q.isLoading}
+              className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm font-medium text-[var(--text)] shadow-sm hover:bg-[color-mix(in_srgb,var(--text)_4%,transparent)] disabled:opacity-50"
+            >
+              <Download size={16} aria-hidden />
+              Summary
+            </button>
+            <button
+              type="button"
+              onClick={onDownloadCsv}
+              disabled={buckets.length === 0 || q.isLoading}
+              className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm font-medium text-[var(--text)] shadow-sm hover:bg-[color-mix(in_srgb,var(--text)_4%,transparent)] disabled:opacity-50"
+            >
+              <Download size={16} aria-hidden />
+              Export
+            </button>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div className="bg-[var(--bg)] px-4 py-4">
+          {layoutMode === 'cards' ? (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {meterNames.map((m) => {
+                const daily = latestBucket?.byMeter[m]?.energyKwh ?? 0
+                const cum = latestBucket?.byMeter[m]?.cumulativeKwhEnd ?? null
+                const denom = totalDailyAll > 0 ? totalDailyAll : 1
+                const pct = (daily / denom) * 100
+                const sev = gaugeColor(pct)
+                return (
+                  <div key={m} className="card card-hover p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-semibold text-[var(--text)]">{m}</div>
+                        <div className="mt-1 text-xs text-[var(--muted)]">kWh (period)</div>
+                        <div className="mt-1 text-2xl font-semibold text-[var(--text)] tabular-nums">{fmtNum(daily, 0)}</div>
+                        <div className="mt-1 text-xs text-[var(--muted)]">{fmtNum(pct, 1)}% of total</div>
+                        <div className="mt-2 text-xs text-[var(--muted)] tabular-nums">
+                          Cumulative: {cum !== null ? fmtNum(cum, 0) : '—'} kWh
+                        </div>
+                      </div>
+                      <Gauge pct={pct} color={sev} />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="overflow-auto">
+              {/* existing table card already styled; keep it contained here */}
+              <div className="card overflow-hidden">
+                <div className="border-b border-[var(--border)] px-4 py-3 text-sm font-semibold text-[var(--text)]">
+                  Consumption detail (Excel-style)
+                </div>
+                <div className="overflow-auto">
+                  <table className="min-w-[960px] text-left text-sm">
+                    <thead className="sticky top-0 z-10 bg-[var(--card)] text-[11px] text-[var(--muted)]">
+                      <tr className="border-b border-[var(--border)]">
+                        <th className="px-3 py-2" rowSpan={2}>
+                          MONTH
+                        </th>
+                        <th className="px-3 py-2" rowSpan={2}>
+                          DAY
+                        </th>
+                        <th className="px-3 py-2" rowSpan={2}>
+                          TIME
+                        </th>
+                        {meterNames.map((m) => (
+                          <th key={m} className="px-3 py-2 text-center font-semibold text-[var(--text)]" colSpan={2}>
+                            {m}
+                          </th>
+                        ))}
+                        <th className="px-3 py-2 text-center font-semibold text-[var(--text)]" colSpan={1}>
+                          TOTAL KWH
+                        </th>
+                      </tr>
+                      <tr className="border-b border-[var(--border)]">
+                        {meterNames.map((m) => (
+                          <Fragment key={`${m}-sub`}>
+                            <th className="px-3 py-2 text-right" />
+                            <th className="px-3 py-2 text-right">KWH</th>
+                          </Fragment>
+                        ))}
+                        <th className="px-3 py-2 text-right">KWH</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[var(--border)]">
+                      {buckets.map((b, idx) => {
+                        const d = new Date(b.lastTs)
+                        const month = d.toLocaleString([], { month: 'long' })
+                        const prevMonth =
+                          idx > 0 ? new Date(buckets[idx - 1].lastTs).toLocaleString([], { month: 'long' }) : null
+                        const showMonth = month !== prevMonth
+                        const day =
+                          granularity === 'weekly' || granularity === 'monthly'
+                            ? d.toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' })
+                            : String(d.getDate())
+                        const time =
+                          granularity === 'hourly'
+                            ? `${String(d.getHours()).padStart(2, '0')}${String(d.getMinutes()).padStart(2, '0')}`
+                            : ''
+
+                        let sumDailyAll = 0
+                        for (const m of meterNames) sumDailyAll += b.byMeter[m]?.energyKwh ?? 0
+
+                        return (
+                          <tr key={b.key} className="hover:bg-[color-mix(in_srgb,var(--text)_3%,transparent)]">
+                            <td className="px-3 py-2 font-medium text-[var(--text)]">{showMonth ? month : ''}</td>
+                            <td className="px-3 py-2 text-[var(--text)]">{day}</td>
+                            <td className="px-3 py-2 font-mono text-[var(--muted)]">{time}</td>
+                            {meterNames.map((m) => {
+                              const cell = b.byMeter[m]
+                              const cum = cell?.cumulativeKwhEnd ?? null
+                              const daily = cell?.energyKwh ?? 0
+                              return (
+                                <Fragment key={`${b.key}:${m}`}>
+                                  <td className="px-3 py-2 text-right font-mono text-[var(--text)]">
+                                    {cum !== null ? String(Math.round(cum)) : ''}
+                                  </td>
+                                  <td className="px-3 py-2 text-right font-mono text-[var(--muted)]">
+                                    {cell ? daily.toFixed(0) : ''}
+                                  </td>
+                                </Fragment>
+                              )
+                            })}
+                            <td className="px-3 py-2 text-right font-mono text-[var(--text)]">{sumDailyAll.toFixed(0)}</td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                    {buckets.length > 0 && (
+                      <tfoot className="border-t border-[var(--border)] bg-[color-mix(in_srgb,var(--text)_3%,transparent)] font-semibold">
+                        <tr>
+                          <td className="px-3 py-2">TOTAL</td>
+                          <td className="px-3 py-2" />
+                          <td className="px-3 py-2" />
+                          {meterNames.map((m) => {
+                            const sumDaily = buckets.reduce((s, b) => s + (b.byMeter[m]?.energyKwh ?? 0), 0)
+                            return (
+                              <Fragment key={`tot:${m}`}>
+                                <td className="px-3 py-2" />
+                                <td className="px-3 py-2 text-right font-mono text-[var(--text)]">{sumDaily.toFixed(0)}</td>
+                              </Fragment>
+                            )
+                          })}
+                          <td className="px-3 py-2 text-right font-mono text-[var(--text)]">{totals.totalEnergyKwh.toFixed(0)}</td>
+                        </tr>
+                      </tfoot>
+                    )}
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Bottom KPI row */}
+        <div className="border-t border-[var(--border)] bg-[var(--card)] px-4 py-4">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="card card-hover p-4">
+              <div className="text-xs font-medium text-[var(--muted)]">Total energy (period)</div>
+              <div className="mt-1 text-2xl font-semibold text-[var(--text)] tabular-nums">
+                {fmtNum(totals.totalEnergyKwh, 1)} <span className="text-base font-normal text-[var(--muted)]">kWh</span>
+              </div>
+              <div className="mt-1 text-xs text-[var(--muted)]">
+                Cumulative: {fmtNum(totalCumAll, 0)} kWh
+              </div>
+            </div>
+
+            <div className="card card-hover p-4">
+              <div className="text-xs font-medium text-[var(--muted)]">Peak demand (interval max)</div>
+              <div className="mt-1 text-2xl font-semibold text-[var(--text)] tabular-nums">
+                {fmtNum(totals.peakDemandKw, 1)} <span className="text-base font-normal text-[var(--muted)]">kW</span>
+              </div>
+              <div className="mt-1 text-xs text-[var(--muted)]">
+                Window: {hours}h ({granularity})
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {GRANULARITY_OPTIONS.map((opt) => (
+          <button
+            key={opt.id}
+            type="button"
+            onClick={() => setGranularity(opt.id)}
+            title={opt.hint}
+            className={[
+              'rounded-lg border px-3 py-2 text-left text-sm transition',
+              granularity === opt.id
+                ? 'border-indigo-500 bg-indigo-50 font-medium text-indigo-900 dark:border-indigo-500 dark:bg-indigo-500/15 dark:text-indigo-100'
+                : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800',
+            ].join(' ')}
+          >
+            <div>{opt.label}</div>
+            <div className="text-[11px] font-normal text-slate-500 dark:text-slate-400">{opt.hint}</div>
+          </button>
+        ))}
+      </div>
+
+      {q.isError ? (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-100">
+          Failed to load intervals: {(q.error as Error)?.message ?? 'Unknown error'}
+        </div>
+      ) : null}
+
+      <div className="card p-4">
+        <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-sm font-semibold text-slate-900 dark:text-slate-50">
+            Production Line Energy Totals
+          </div>
+          <div className="inline-flex overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
+            <button
+              type="button"
+              onClick={() => setViewMode('byLine')}
+              className={[
+                'px-3 py-2 text-sm font-medium',
+                viewMode === 'byLine'
+                  ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-50'
+                  : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/60',
+              ].join(' ')}
+            >
+              View by Line
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('byTime')}
+              className={[
+                'px-3 py-2 text-sm font-medium',
+                viewMode === 'byTime'
+                  ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-50'
+                  : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/60',
+              ].join(' ')}
+            >
+              View by Time
+            </button>
+          </div>
+        </div>
+        <div className="h-80 min-h-[240px] w-full min-w-0">
+          {q.isLoading ? (
+            <div className="flex h-full items-center justify-center text-sm text-slate-500">Loading…</div>
+          ) : chartData.length === 0 ? (
+            <div className="flex h-full items-center justify-center text-sm text-slate-500">No data.</div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              {viewMode === 'byLine' ? (
+                <BarChart data={chartData} margin={{ left: 4, right: 12, top: 8, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-slate-200 dark:stroke-slate-700" />
+                  <XAxis dataKey="name" tick={{ fontSize: 11 }} interval={0} angle={-25} textAnchor="end" height={70} />
+                  <YAxis tick={{ fontSize: 11 }} width={64} tickFormatter={(v) => `${v}`} />
+                  <Tooltip
+                    formatter={(value, name, item) => {
+                      const p = (item?.payload as { pct?: number } | undefined)?.pct
+                      if (name === 'energy') return [`${fmtNum(Number(value))} kWh (${fmtNum(Number(p ?? 0), 1)}%)`, 'Energy']
+                      return [`${value}`, String(name)]
+                    }}
+                  />
+                  <ReferenceLine
+                    y={chartData.length > 0 ? totals.totalEnergyKwh / Math.max(1, chartData.length) : 0}
+                    stroke="#94a3b8"
+                    strokeDasharray="4 4"
+                    ifOverflow="extendDomain"
+                    label={{ value: 'Avg/line', position: 'insideTopRight', fill: '#94a3b8', fontSize: 11 }}
+                  />
+                  <Bar dataKey="energy" name="Energy" isAnimationActive={false} radius={[6, 6, 0, 0]}>
+                    <LabelList
+                      dataKey="pct"
+                      position="top"
+                      formatter={(v: unknown) => `${fmtNum(Number(v), 1)}%`}
+                      className="fill-slate-600 dark:fill-slate-300"
+                      fontSize={11}
+                    />
+                    {chartData.map((entry, idx) => {
+                      const rank = Number((entry as { rank?: number }).rank ?? idx + 1)
+                      const isTop3 = rank <= 3
+                      return <Cell key={`bar-${String((entry as { name?: string }).name ?? idx)}`} fill={isTop3 ? '#2563eb' : '#94a3b8'} />
+                    })}
+                  </Bar>
+                </BarChart>
+              ) : (
+                <BarChart data={chartData} margin={{ left: 4, right: 12, top: 8, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-slate-200 dark:stroke-slate-700" />
+                  <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} angle={-35} textAnchor="end" height={70} />
+                  <YAxis tick={{ fontSize: 11 }} width={56} tickFormatter={(v) => `${v}`} />
+                  <Tooltip
+                    formatter={(value, name) => [`${fmtNum(Number(value))} kWh`, String(name)]}
+                    labelFormatter={(label, payload) => {
+                      const pl = payload?.[0]?.payload as { fullLabel?: string } | undefined
+                      return pl?.fullLabel ?? String(label ?? '')
+                    }}
+                  />
+                  <Legend />
+                  {meterNames.map((m, idx) => (
+                    <Bar
+                      key={m}
+                      dataKey={m}
+                      name={m}
+                      stackId="kwh"
+                      fill={LINE_COLORS[idx % LINE_COLORS.length]}
+                      radius={idx === meterNames.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]}
+                      isAnimationActive={false}
+                    />
+                  ))}
+                </BarChart>
+              )}
+            </ResponsiveContainer>
+          )}
+        </div>
+      </div>
+
+      {/* legacy: table view is now contained in hero */}
+    </div>
+  )
+}

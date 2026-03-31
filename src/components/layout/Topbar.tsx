@@ -1,127 +1,98 @@
-import { Search, SunMoon, Wifi } from 'lucide-react'
-import { useLocation, useNavigate } from 'react-router-dom'
-import { useMemo, useState } from 'react'
+import { Bell, SunMoon } from 'lucide-react'
+import { useLocation } from 'react-router-dom'
+import { useMemo } from 'react'
 import { useUiStore } from '../../store/uiStore'
-import { useDevices } from '../../hooks/queries'
+import { useNodeRedHealth, usePlcFullSnapshot } from '../../hooks/queries'
 import { Badge } from '../ui/Badge'
+import urcLogo from '../../assets/urc-logo.svg'
 
 function titleForPath(pathname: string) {
   if (pathname === '/') return 'Dashboard'
-  if (pathname === '/single-line') return 'Single-Line Diagram'
-  if (pathname.startsWith('/meters')) return 'Meters'
-  if (pathname === '/power-quality') return 'PQ Analysis'
-  if (pathname === '/power-quality/harmonics') return 'Harmonics'
-  if (pathname === '/power-quality/waveforms') return 'Waveforms'
-  if (pathname === '/power-quality/events') return 'PQ Events'
-  if (pathname === '/alerts') return 'Active Alarms'
-  if (pathname === '/alarms/incidents') return 'Incidents'
-  if (pathname === '/alarms/soe') return 'Sequence of Events'
-  if (pathname === '/energy') return 'Energy Dashboard'
-  if (pathname === '/energy/load-profiles') return 'Load Profiles'
-  if (pathname === '/reports') return 'Report Templates'
-  if (pathname === '/reports/schedules') return 'Report Schedules'
-  if (pathname === '/reports/kpis') return 'KPIs'
-  if (pathname === '/analytics/data-browser') return 'Data Browser'
-  if (pathname === '/analytics/trends') return 'Trends'
-  if (pathname === '/system/devices') return 'Devices'
-  if (pathname === '/system/sites') return 'Sites'
-  if (pathname === '/system/capacity') return 'Capacity Planning'
-  if (pathname === '/settings') return 'Settings'
-  return 'Power Monitoring Expert'
-}
-
-const roleBadgeColors: Record<string, string> = {
-  operator:
-    'bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-500/15 dark:text-blue-200 dark:ring-blue-500/20',
-  engineer:
-    'bg-indigo-50 text-indigo-700 ring-indigo-200 dark:bg-indigo-500/15 dark:text-indigo-200 dark:ring-indigo-500/20',
-  manager:
-    'bg-purple-50 text-purple-700 ring-purple-200 dark:bg-purple-500/15 dark:text-purple-200 dark:ring-purple-500/20',
-  admin:
-    'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/15 dark:text-amber-200 dark:ring-amber-500/20',
+  if (pathname === '/dashboard') return 'Monitoring'
+  if (pathname.startsWith('/meters/')) return 'Meter Detail'
+  if (pathname === '/alerts') return 'Alerts'
+  if (pathname === '/reports/consumption') return 'Consumption Report'
+  return 'Power Monitoring'
 }
 
 export function Topbar() {
   const { pathname } = useLocation()
   const title = useMemo(() => titleForPath(pathname), [pathname])
   const toggleTheme = useUiStore((s) => s.toggleTheme)
-  const role = useUiStore((s) => s.role)
 
-  const navigate = useNavigate()
-  const [q, setQ] = useState('')
-
-  const { data: devices } = useDevices()
-  const totalDevices = devices?.length ?? 0
-  const connectedDevices = devices?.filter((d) => d.status === 'connected').length ?? 0
-  const systemUp = totalDevices > 0 ? connectedDevices > 0 : true
+  const { data: snap } = usePlcFullSnapshot()
+  const { data: health } = useNodeRedHealth()
+  // Important: snapshot values can remain cached even when PLC is disconnected.
+  // Use the health heartbeat (last communication age) as the source of truth.
+  const plcUp = health?.plcLink?.up === true
+  const metersOnline = snap?.meters
+    ? Object.values(snap.meters).filter(
+        (d) => d.Real_power !== 0 || d.Voltage_Lave !== 0 || d.Current_Ave !== 0,
+      ).length
+    : 0
 
   return (
-    <header className="sticky top-0 z-20 border-b border-[var(--border)] bg-[var(--bg)] px-4 py-3 md:px-6">
-      <div className="mx-auto flex w-full max-w-7xl items-center gap-3">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <div className="truncate text-sm font-semibold text-[var(--text)]">
-              Power Monitoring System
+    <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-[var(--card)]/75 backdrop-blur">
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-6 px-6 py-3">
+        {/* LEFT */}
+        <div className="flex min-w-0 items-center gap-4">
+          <div className="flex items-center gap-3">
+            <img src={urcLogo} alt="URC" className="h-8 w-auto" />
+            <div className="min-w-0">
+              <div className="truncate text-base font-semibold text-[var(--text)]">Power Monitoring</div>
+              <div className="truncate text-sm text-[var(--muted)]">25 Meters</div>
             </div>
-            <Badge color={systemUp ? 'green' : 'red'}>{systemUp ? 'UP' : 'DOWN'}</Badge>
-          </div>
-          <div className="truncate text-xs text-[var(--muted)]">
-            {title}
           </div>
         </div>
 
-        {/* Connection status */}
-        <div className="hidden items-center gap-1.5 rounded-[10px] border border-[var(--border)] bg-[var(--card)] px-2.5 py-1.5 text-xs text-[var(--text)] sm:flex">
-          <span
-            className={[
-              'inline-block h-2 w-2 rounded-full',
-              connectedDevices > 0
-                ? 'bg-[var(--accent-green)]'
-                : 'bg-[var(--accent-red)]',
-            ].join(' ')}
-          />
-          <Wifi size={13} className="text-[var(--muted)]" />
-          <span className="font-medium">
-            {connectedDevices}/{totalDevices}
-          </span>
+        {/* CENTER */}
+        <div className="hidden flex-1 items-center justify-center md:flex">
+          <div className="flex items-center gap-3">
+            <div className="text-sm font-medium text-[var(--muted)]">{title}</div>
+            <Badge color={plcUp ? 'green' : 'red'}>{plcUp ? 'PLC Connected' : 'PLC Disconnected'}</Badge>
+          </div>
         </div>
 
-        {/* Role badge */}
-        <span
-          className={[
-            'hidden items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ring-1 ring-inset sm:inline-flex',
-            roleBadgeColors[role] ?? roleBadgeColors.operator,
-          ].join(' ')}
-        >
-          {role}
-        </span>
+        {/* RIGHT */}
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            className="grid h-10 w-10 place-items-center rounded-xl border border-[var(--border)] bg-[var(--card)] text-[var(--muted)] shadow-sm transition hover:bg-[color-mix(in_srgb,var(--text)_4%,transparent)] hover:text-[var(--text)]"
+            aria-label="Notifications"
+          >
+            <Bell size={20} />
+          </button>
 
-        <form
-          className="hidden items-center gap-2 rounded-[10px] border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm text-[var(--text)] shadow md:flex"
-          onSubmit={(e) => {
-            e.preventDefault()
-            const trimmed = q.trim()
-            if (!trimmed) return
-            navigate(`/meters?query=${encodeURIComponent(trimmed)}`)
-          }}
-        >
-          <Search size={16} className="text-[var(--muted)]" />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search meters..."
-            className="w-56 bg-transparent outline-none placeholder:text-[var(--muted)]"
-          />
-        </form>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="grid h-10 w-10 place-items-center rounded-xl border border-[var(--border)] bg-[var(--card)] text-[var(--muted)] shadow-sm transition hover:bg-[color-mix(in_srgb,var(--text)_4%,transparent)] hover:text-[var(--text)]"
+            aria-label="Toggle theme"
+          >
+            <SunMoon size={20} />
+          </button>
 
-        <button
-          type="button"
-          onClick={toggleTheme}
-          className="nr-btn-secondary"
-        >
-          <SunMoon size={16} />
-          <span className="hidden sm:inline">Theme</span>
-        </button>
+          <div className="flex items-center gap-3">
+            <div className="grid h-10 w-10 place-items-center rounded-full border border-[var(--border)] bg-[var(--card)] text-xs font-semibold text-[var(--text)] shadow-sm">
+              TJ
+            </div>
+            <div className="hidden sm:block">
+              <div className="text-sm font-semibold text-[var(--text)]">TJC</div>
+              <div className="text-xs text-[var(--muted)]">Operator</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile status row */}
+      <div className="border-t border-[var(--border)] px-6 py-2 md:hidden">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0 truncate text-sm font-medium text-[var(--muted)]">{title}</div>
+          <Badge color={plcUp ? 'green' : 'red'}>{plcUp ? 'PLC Connected' : 'PLC Disconnected'}</Badge>
+        </div>
+        <div className="mt-1 text-xs text-[var(--muted)]">
+          {metersOnline} meter{metersOnline !== 1 ? 's' : ''} reporting
+        </div>
       </div>
     </header>
   )

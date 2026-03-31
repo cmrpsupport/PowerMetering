@@ -1,4 +1,5 @@
 import type { MeterReading, PowerMeter } from '../../types'
+import { PLC_PRODUCTION_METERS, PLC_SITE_NAME } from '../../constants/plcProductionMeters'
 import { clamp, nowIso, round, seededNoise, sleep } from './helpers'
 
 export type MeterState = {
@@ -9,48 +10,25 @@ export type MeterState = {
 
 export const startTs = Date.now()
 
-export const meterStates: MeterState[] = [
-  // URC Cavite meters (from Power Monitoring workbook)
-  { meter: { id: 'mtr-101', name: 'MAIN LINE', site: 'URC Cavite', status: 'online', lastSeenAt: nowIso() }, energyKwh: 3302710, lastTs: startTs },
-  { meter: { id: 'mtr-102', name: 'MDP3EM6400A', site: 'URC Cavite', status: 'online', lastSeenAt: nowIso() }, energyKwh: 4186293, lastTs: startTs },
-  { meter: { id: 'mtr-103', name: 'MDP3EM6400B', site: 'URC Cavite', status: 'online', lastSeenAt: nowIso() }, energyKwh: 0.71, lastTs: startTs },
-  { meter: { id: 'mtr-104', name: 'PPBSF (FERM)', site: 'URC Cavite', status: 'online', lastSeenAt: nowIso() }, energyKwh: 663666, lastTs: startTs },
-  { meter: { id: 'mtr-105', name: 'PPASF', site: 'URC Cavite', status: 'online', lastSeenAt: nowIso() }, energyKwh: 598490, lastTs: startTs },
-  { meter: { id: 'mtr-106', name: 'PPCSF', site: 'URC Cavite', status: 'online', lastSeenAt: nowIso() }, energyKwh: 313450, lastTs: startTs },
-  { meter: { id: 'mtr-107', name: 'MCC22', site: 'URC Cavite', status: 'online', lastSeenAt: nowIso() }, energyKwh: 408329, lastTs: startTs },
-  { meter: { id: 'mtr-108', name: 'MCC23', site: 'URC Cavite', status: 'online', lastSeenAt: nowIso() }, energyKwh: 750199, lastTs: startTs },
-  { meter: { id: 'mtr-109', name: 'PPM2B', site: 'URC Cavite', status: 'online', lastSeenAt: nowIso() }, energyKwh: 691093, lastTs: startTs },
-  { meter: { id: 'mtr-110', name: 'PPM2C', site: 'URC Cavite', status: 'online', lastSeenAt: nowIso() }, energyKwh: 310594, lastTs: startTs },
-  { meter: { id: 'mtr-111', name: 'PPM2A', site: 'URC Cavite', status: 'online', lastSeenAt: nowIso() }, energyKwh: 1088, lastTs: startTs },
-  { meter: { id: 'mtr-112', name: 'PIPERS', site: 'URC Cavite', status: 'online', lastSeenAt: nowIso() }, energyKwh: 167004, lastTs: startTs },
-  { meter: { id: 'mtr-113', name: 'PPM2D', site: 'URC Cavite', status: 'online', lastSeenAt: nowIso() }, energyKwh: 207, lastTs: startTs },
-  { meter: { id: 'mtr-114', name: 'MML', site: 'URC Cavite', status: 'online', lastSeenAt: nowIso() }, energyKwh: 970016, lastTs: startTs },
-  { meter: { id: 'mtr-115', name: 'PZL', site: 'URC Cavite', status: 'online', lastSeenAt: nowIso() }, energyKwh: 242940, lastTs: startTs },
-  { meter: { id: 'mtr-116', name: 'PM21 EMU4A', site: 'URC Cavite', status: 'warning', lastSeenAt: nowIso() }, energyKwh: 166085, lastTs: startTs },
-  { meter: { id: 'mtr-117', name: 'PM23 EM6400', site: 'URC Cavite', status: 'online', lastSeenAt: nowIso() }, energyKwh: 238975, lastTs: startTs },
-  { meter: { id: 'mtr-118', name: 'SLITTER', site: 'URC Cavite', status: 'online', lastSeenAt: nowIso() }, energyKwh: 961963, lastTs: startTs },
-]
-
-const baseKwMap: Record<string, number> = {
-  'mtr-101': 620,
-  'mtr-102': 210,
-  'mtr-103': 180,
-  'mtr-104': 145,
-  'mtr-105': 120,
-  'mtr-106': 110,
-  'mtr-107': 160,
-  'mtr-108': 170,
-  'mtr-109': 130,
-  'mtr-110': 125,
-  'mtr-111': 95,
-  'mtr-112': 115,
-  'mtr-113': 105,
-  'mtr-114': 140,
-  'mtr-115': 90,
-  'mtr-116': 150,
-  'mtr-117': 155,
-  'mtr-118': 175,
+function initialEnergyForLine(index: number): number {
+  return round(80000 + index * 42000 + seededNoise(index * 13) * 5000, 1)
 }
+
+export const meterStates: MeterState[] = PLC_PRODUCTION_METERS.map((m, i) => ({
+  meter: {
+    id: m.id,
+    name: m.name,
+    site: PLC_SITE_NAME,
+    status: 'online' as const,
+    lastSeenAt: nowIso(),
+  },
+  energyKwh: initialEnergyForLine(i),
+  lastTs: startTs,
+}))
+
+const baseKwMap: Record<string, number> = Object.fromEntries(
+  PLC_PRODUCTION_METERS.map((m) => [m.id, m.baseKw]),
+)
 
 export function computeReading(s: MeterState, tsMs: number): MeterReading {
   const meterNum = Number(s.meter.id.replace(/\D/g, '')) || 1

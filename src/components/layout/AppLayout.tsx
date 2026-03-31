@@ -21,15 +21,18 @@ export function AppLayout() {
   }, [themeMode])
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <div className="min-h-full md:pl-[240px]">
-        <Topbar />
-        <main className="px-3 py-3 md:px-4 md:py-4">
-          <div className="w-full">
-            <Outlet />
-          </div>
-        </main>
+    <div className="min-h-screen w-full bg-[var(--bg)]">
+      <div className="flex min-h-screen w-full">
+        <Sidebar />
+
+        <div className="flex min-w-0 flex-1 flex-col">
+          <Topbar />
+          <main className="px-3 py-3 md:px-4 md:py-4">
+            <div className="w-full min-w-0">
+              <Outlet />
+            </div>
+          </main>
+        </div>
       </div>
 
       {/* Toast notifications */}
