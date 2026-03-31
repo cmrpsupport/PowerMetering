@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "concurrently -n frontend,backend -c green,cyan \"npm run dev\" \"npm start --prefix backend\"",
+    "bootstrap:win": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/bootstrap-windows.ps1",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
