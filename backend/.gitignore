@@ -1,0 +1,4 @@
+node_modules/
+node-red-data/.sessions/
+node-red-data/*.backup
+node-red-data/flows_cred.json

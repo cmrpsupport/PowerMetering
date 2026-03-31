@@ -1,0 +1,677 @@
+[
+  {
+    "id": "a1000001.0001tab",
+    "type": "tab",
+    "label": "S7-1500 → HTTP API",
+    "disabled": false,
+    "info": "Reads PLC variables via node-red-contrib-s7 and exposes JSON for the React app.\nEdit the **S7 Endpoint** node with your CPU IP, rack, slot, and DB addresses (match TIA Portal)."
+  },
+  {
+    "id": "b2f00001.tab",
+    "type": "tab",
+    "label": "S7-1500 Dashboard (DB1)",
+    "disabled": false,
+    "info": "Reads DB1 REALs at byte offsets 0, 4, 8 via node-red-contrib-s7 (ISO-on-TCP). TIA: DB1 non-optimized; CPU protection → Permit access with PUT/GET.\nDashboard: http://localhost:1880/ui (default path)."
+  },
+  {
+    "id": "a1000002.s7endpoint",
+    "type": "s7 endpoint",
+    "transport": "iso-on-tcp",
+    "address": "192.168.1.3",
+    "port": "102",
+    "rack": "0",
+    "slot": "1",
+    "localtsaphi": "01",
+    "localtsaplo": "00",
+    "remotetsaphi": "01",
+    "remotetsaplo": "00",
+    "connmode": "rack-slot",
+    "adapter": "",
+    "busaddr": "",
+    "cycletime": "500",
+    "timeout": "2000",
+    "name": "S7-1500 (DB16)",
+    "vartable": [
+      {
+        "addr": "DB16,REAL0",
+        "name": "Power_kW"
+      },
+      {
+        "addr": "DB16,REAL12",
+        "name": "Energy_kWh"
+      },
+      {
+        "addr": "DB16,REAL36",
+        "name": "Voltage_V"
+      },
+      {
+        "addr": "DB16,REAL68",
+        "name": "Current_A"
+      },
+      {
+        "addr": "DB16,REAL72",
+        "name": "PowerFactor"
+      },
+      {
+        "addr": "DB16,REAL2024",
+        "name": "Total_CrackerLine1_kWh"
+      },
+      {
+        "addr": "DB16,REAL2028",
+        "name": "Total_CrackerLine2_kWh"
+      },
+      {
+        "addr": "DB16,REAL2032",
+        "name": "Total_PretzelLine_kWh"
+      },
+      {
+        "addr": "DB16,REAL2036",
+        "name": "Total_WaferLine1_kWh"
+      },
+      {
+        "addr": "DB16,REAL2040",
+        "name": "Total_WaferLine2_kWh"
+      },
+      {
+        "addr": "DB16,REAL2044",
+        "name": "Total_ChocoyChocoLine_kWh"
+      },
+      {
+        "addr": "DB16,REAL2048",
+        "name": "Total_DynamiteLine_kWh"
+      },
+      {
+        "addr": "DB16,REAL2052",
+        "name": "Total_XOLine_kWh"
+      },
+      {
+        "addr": "DB16,REAL2056",
+        "name": "Total_MaxxLine_kWh"
+      },
+      {
+        "addr": "DB16,REAL2060",
+        "name": "Total_MainLine_kWh"
+      },
+      {
+        "addr": "DB16,REAL2064",
+        "name": "Total_UtilitiesJaguar_kWh"
+      },
+      {
+        "addr": "DB16,REAL2068",
+        "name": "Total_UtilitiesLighting_kWh"
+      }
+    ]
+  },
+  {
+    "id": "b2f00002.uibase",
+    "type": "ui_base",
+    "theme": {
+      "name": "theme-light",
+      "lightTheme": {
+        "baseColor": "#0094CE",
+        "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+      },
+      "darkTheme": {
+        "baseColor": "#097479",
+        "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+      },
+      "customTheme": {
+        "name": "Untitled Theme 1",
+        "baseColor": "#0094CE",
+        "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+      },
+      "angularTheme": {
+        "primary": "indigo",
+        "accents": "teal",
+        "warn": "red",
+        "background": "grey",
+        "palette": "light"
+      },
+      "themeState": {
+        "base-font": {
+          "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+        },
+        "base-color": {
+          "value": "#0094CE"
+        },
+        "page-backgroundColor": {
+          "value": "#fafafa"
+        },
+        "page-titlebar-backgroundColor": {
+          "value": "#0094CE"
+        },
+        "page-sidebar-backgroundColor": {
+          "value": "#ffffff"
+        },
+        "group-backgroundColor": {
+          "value": "#ffffff"
+        },
+        "group-textColor": {
+          "value": "#000000"
+        },
+        "group-borderColor": {
+          "value": "#ffffff"
+        },
+        "widget-textColor": {
+          "value": "#111111"
+        },
+        "widget-backgroundColor": {
+          "value": "#0094CE"
+        }
+      }
+    },
+    "site": {
+      "name": "S7-1500 PLC",
+      "hideToolbar": "false",
+      "allowSwipe": "false",
+      "allowImport": "false",
+      "allowExport": "false",
+      "allowSave": "false",
+      "hideTitleBar": "false",
+      "lockMenu": "false",
+      "allowTempTheme": "true",
+      "dateFormat": "DD/MM/YYYY",
+      "sizes": {
+        "sx": 48,
+        "sy": 48,
+        "gx": 6,
+        "gy": 6,
+        "cx": 6,
+        "cy": 6,
+        "px": 0,
+        "py": 0
+      }
+    }
+  },
+  {
+    "id": "b2f00003.uitab",
+    "type": "ui_tab",
+    "name": "PLC",
+    "icon": "dashboard",
+    "order": 1,
+    "disabled": false,
+    "hidden": false
+  },
+  {
+    "id": "b2f00004.uigroup",
+    "type": "ui_group",
+    "name": "DB1 REAL read / write",
+    "tab": "b2f00003.uitab",
+    "order": 1,
+    "disp": true,
+    "width": 6,
+    "collapse": false,
+    "disabled": false,
+    "hidden": false,
+    "className": ""
+  },
+  {
+    "id": "b2f00005.s7ep",
+    "type": "s7 endpoint",
+    "transport": "iso-on-tcp",
+    "address": "192.168.1.3",
+    "port": "102",
+    "rack": "0",
+    "slot": "1",
+    "localtsaphi": "01",
+    "localtsaplo": "00",
+    "remotetsaphi": "01",
+    "remotetsaplo": "00",
+    "connmode": "rack-slot",
+    "cycletime": "500",
+    "timeout": "2000",
+    "name": "S7-1500 DB1",
+    "vartable": [
+      {
+        "addr": "DB1,REAL0",
+        "name": "DB1_REAL0"
+      },
+      {
+        "addr": "DB1,REAL4",
+        "name": "DB1_REAL4"
+      },
+      {
+        "addr": "DB1,REAL8",
+        "name": "DB1_REAL8"
+      }
+    ]
+  },
+  {
+    "id": "133abdd3953ae1df",
+    "type": "s7 endpoint",
+    "transport": "iso-on-tcp",
+    "address": "192.168.1.3",
+    "port": "102",
+    "rack": "0",
+    "slot": "1",
+    "localtsaphi": "01",
+    "localtsaplo": "00",
+    "remotetsaphi": "01",
+    "remotetsaplo": "00",
+    "connmode": "rack-slot",
+    "adapter": "",
+    "busaddr": 2,
+    "cycletime": 1000,
+    "timeout": 2000,
+    "name": "Powermetering PLC",
+    "vartable": [
+      {
+        "addr": "DB161,REAL0",
+        "name": "real_power"
+      }
+    ],
+    "info": "[\n    {\n        \"id\": \"s7endpoint\",\n        \"type\": \"s7 endpoint\",\n        \"transport\": \"iso-on-tcp\",\n        \"address\": \"192.168.1.3\",\n        \"port\": \"102\",\n        \"rack\": \"0\",\n        \"slot\": \"1\",\n        \"name\": \"S7-1500 PLC\"\n    },\n    {\n        \"id\": \"s7in\",\n        \"type\": \"s7 in\",\n        \"z\": \"flow1\",\n        \"endpoint\": \"s7endpoint\",\n        \"mode\": \"all\",\n        \"variable\": \"power,DB61,REAL0\\nreactive,DB61,REAL4\\napparent,DB61,REAL8\\nvoltage_ab,DB61,REAL24\\ncurrent_a,DB61,REAL56\\nfrequency,DB61,REAL76\",\n        \"diff\": false,\n        \"name\": \"Read Power Meter\",\n        \"x\": 300,\n        \"y\": 200,\n        \"wires\": [[\"debug\"]]\n    },\n    {\n        \"id\": \"debug\",\n        \"type\": \"debug\",\n        \"z\": \"flow1\",\n        \"name\": \"Output\",\n        \"active\": true,\n        \"tosidebar\": true,\n        \"complete\": \"true\",\n        \"x\": 550,\n        \"y\": 200,\n        \"wires\": []\n    }\n]"
+  },
+  {
+    "id": "a1000003.s7in",
+    "type": "s7 in",
+    "z": "a1000001.0001tab",
+    "endpoint": "a1000002.s7endpoint",
+    "mode": "all",
+    "variable": "",
+    "diff": false,
+    "name": "Read all (each cycle)",
+    "x": 240,
+    "y": 160,
+    "wires": [
+      [
+        "a1000004.store",
+        "3e7515be6f46630b"
+      ]
+    ]
+  },
+  {
+    "id": "a1000004.store",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "Cache for HTTP",
+    "func": "global.set('plcSnapshot', {\n  ts: new Date().toISOString(),\n  values: msg.payload\n});\nreturn null;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 470,
+    "y": 160,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "a1000005.httpin",
+    "type": "http in",
+    "z": "a1000001.0001tab",
+    "name": "GET /api/plc/snapshot",
+    "url": "/api/plc/snapshot",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": "",
+    "x": 240,
+    "y": 280,
+    "wires": [
+      [
+        "a1000006.json"
+      ]
+    ]
+  },
+  {
+    "id": "a1000006.json",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "Build JSON",
+    "func": "const snap = global.get('plcSnapshot');\nmsg.payload = snap || {\n  ts: new Date().toISOString(),\n  values: null,\n  warning: 'No S7 data received yet — check PLC IP, rack/slot, DB addresses, and TIA PUT/GET.'\n};\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 470,
+    "y": 280,
+    "wires": [
+      [
+        "a1000007.httpres"
+      ]
+    ]
+  },
+  {
+    "id": "a1000007.httpres",
+    "type": "http response",
+    "z": "a1000001.0001tab",
+    "name": "",
+    "statusCode": "",
+    "headers": {},
+    "x": 700,
+    "y": 280,
+    "wires": []
+  },
+  {
+    "id": "a1000008.httphealth",
+    "type": "http in",
+    "z": "a1000001.0001tab",
+    "name": "GET /api/health",
+    "url": "/api/health",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": "",
+    "x": 240,
+    "y": 360,
+    "wires": [
+      [
+        "a1000009.healthjson"
+      ]
+    ]
+  },
+  {
+    "id": "a1000009.healthjson",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "Health body",
+    "func": "msg.payload = {\n  ok: true,\n  service: 'node-red',\n  ts: new Date().toISOString()\n};\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 470,
+    "y": 360,
+    "wires": [
+      [
+        "a1000010.httpresh"
+      ]
+    ]
+  },
+  {
+    "id": "a1000010.httpresh",
+    "type": "http response",
+    "z": "a1000001.0001tab",
+    "name": "",
+    "statusCode": "",
+    "headers": {},
+    "x": 700,
+    "y": 360,
+    "wires": []
+  },
+  {
+    "id": "a1000011.comment",
+    "type": "comment",
+    "z": "a1000001.0001tab",
+    "name": "TIA: create DB100 (non-optimized), map REAL tags; enable PUT/GET on CPU.",
+    "info": "",
+    "x": 320,
+    "y": 80,
+    "wires": []
+  },
+  {
+    "id": "3e7515be6f46630b",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "function 2",
+    "func": "\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 460,
+    "y": 220,
+    "wires": [
+      [
+        "dcf31d6f80b482f5"
+      ]
+    ]
+  },
+  {
+    "id": "dcf31d6f80b482f5",
+    "type": "debug",
+    "z": "a1000001.0001tab",
+    "name": "debug 1",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "false",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 680,
+    "y": 220,
+    "wires": []
+  },
+  {
+    "id": "b2f00006.s7in",
+    "type": "s7 in",
+    "z": "b2f00001.tab",
+    "endpoint": "b2f00005.s7ep",
+    "mode": "all",
+    "variable": "",
+    "diff": false,
+    "name": "Read DB1 REALs",
+    "x": 360,
+    "y": 220,
+    "wires": [
+      [
+        "b2f00009.func"
+      ]
+    ]
+  },
+  {
+    "id": "b2f00007.inject",
+    "type": "inject",
+    "z": "b2f00001.tab",
+    "name": "Test: trigger read (5s)",
+    "props": [
+      {
+        "p": "payload",
+        "v": "",
+        "vt": "date"
+      }
+    ],
+    "repeat": "5",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 140,
+    "y": 160,
+    "wires": [
+      [
+        "b2f00008.s7ctl"
+      ]
+    ]
+  },
+  {
+    "id": "b2f00008.s7ctl",
+    "type": "s7 control",
+    "z": "b2f00001.tab",
+    "endpoint": "b2f00005.s7ep",
+    "function": "trigger",
+    "name": "Trigger read now",
+    "x": 360,
+    "y": 160,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "b2f00009.func",
+    "type": "function",
+    "z": "b2f00001.tab",
+    "name": "Format for dashboard",
+    "func": "const p = msg.payload;\nif (!p || typeof p !== 'object') {\n    return [ { payload: 'Waiting for PLC…' }, null, null, null ];\n}\nconst r0 = Number(p.DB1_REAL0);\nconst r4 = Number(p.DB1_REAL4);\nconst r8 = Number(p.DB1_REAL8);\nconst line = (k, v) => `${k}: ${Number.isFinite(v) ? v.toFixed(3) : '—'}`;\nconst text = [\n  line('DB1,REAL0', r0),\n  line('DB1,REAL4', r4),\n  line('DB1,REAL8', r8)\n].join('\\n');\nreturn [\n  { payload: text },\n  { payload: r0 },\n  { payload: r4 },\n  { payload: r8 }\n];",
+    "outputs": 4,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 580,
+    "y": 220,
+    "wires": [
+      [
+        "b2f00010.uitext"
+      ],
+      [
+        "b2f00011.uinum0"
+      ],
+      [
+        "b2f00012.uinum4"
+      ],
+      [
+        "b2f00013.uinum8"
+      ]
+    ]
+  },
+  {
+    "id": "b2f00010.uitext",
+    "type": "ui_text",
+    "z": "b2f00001.tab",
+    "group": "b2f00004.uigroup",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "name": "",
+    "label": "Live values",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "className": "",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#000000",
+    "x": 820,
+    "y": 180,
+    "wires": []
+  },
+  {
+    "id": "b2f00011.uinum0",
+    "type": "ui_numeric",
+    "z": "b2f00001.tab",
+    "name": "",
+    "label": "Write DB1,REAL0",
+    "tooltip": "Adjust and release to write to PLC",
+    "group": "b2f00004.uigroup",
+    "order": 2,
+    "width": 0,
+    "height": 0,
+    "wrap": false,
+    "passthru": false,
+    "topic": "DB1_REAL0",
+    "topicType": "str",
+    "format": "{{value}}",
+    "min": "-100000",
+    "max": "100000",
+    "step": "0.01",
+    "className": "",
+    "x": 820,
+    "y": 260,
+    "wires": [
+      [
+        "b2f00014.so0"
+      ]
+    ]
+  },
+  {
+    "id": "b2f00012.uinum4",
+    "type": "ui_numeric",
+    "z": "b2f00001.tab",
+    "name": "",
+    "label": "Write DB1,REAL4",
+    "tooltip": "",
+    "group": "b2f00004.uigroup",
+    "order": 3,
+    "width": 0,
+    "height": 0,
+    "wrap": false,
+    "passthru": false,
+    "topic": "DB1_REAL4",
+    "topicType": "str",
+    "format": "{{value}}",
+    "min": "-100000",
+    "max": "100000",
+    "step": "0.01",
+    "className": "",
+    "x": 820,
+    "y": 320,
+    "wires": [
+      [
+        "b2f00015.so4"
+      ]
+    ]
+  },
+  {
+    "id": "b2f00013.uinum8",
+    "type": "ui_numeric",
+    "z": "b2f00001.tab",
+    "name": "",
+    "label": "Write DB1,REAL8",
+    "tooltip": "",
+    "group": "b2f00004.uigroup",
+    "order": 4,
+    "width": 0,
+    "height": 0,
+    "wrap": false,
+    "passthru": false,
+    "topic": "DB1_REAL8",
+    "topicType": "str",
+    "format": "{{value}}",
+    "min": "-100000",
+    "max": "100000",
+    "step": "0.01",
+    "className": "",
+    "x": 820,
+    "y": 380,
+    "wires": [
+      [
+        "b2f00016.so8"
+      ]
+    ]
+  },
+  {
+    "id": "b2f00014.so0",
+    "type": "s7 out",
+    "z": "b2f00001.tab",
+    "endpoint": "b2f00005.s7ep",
+    "variable": "DB1_REAL0",
+    "name": "Write REAL0",
+    "x": 1040,
+    "y": 260,
+    "wires": []
+  },
+  {
+    "id": "b2f00015.so4",
+    "type": "s7 out",
+    "z": "b2f00001.tab",
+    "endpoint": "b2f00005.s7ep",
+    "variable": "DB1_REAL4",
+    "name": "Write REAL4",
+    "x": 1040,
+    "y": 320,
+    "wires": []
+  },
+  {
+    "id": "b2f00016.so8",
+    "type": "s7 out",
+    "z": "b2f00001.tab",
+    "endpoint": "b2f00005.s7ep",
+    "variable": "DB1_REAL8",
+    "name": "Write REAL8",
+    "x": 1040,
+    "y": 380,
+    "wires": []
+  },
+  {
+    "id": "b2f00017.comment",
+    "type": "comment",
+    "z": "b2f00001.tab",
+    "name": "Inject + s7 control = extra read cycles (in addition to 500 ms poll). Writes use s7 out; test on a bench PLC first.",
+    "info": "",
+    "x": 420,
+    "y": 100,
+    "wires": []
+  }
+]

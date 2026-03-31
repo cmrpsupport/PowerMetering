@@ -1,0 +1,125 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root,
+  [data-theme='light'] {
+    color-scheme: light;
+    --bg: #f9fafb;
+    --card: #ffffff;
+    --border: #e5e7eb;
+    --text: #111827;
+    --muted: rgba(17, 24, 39, 0.65);
+    --accent-green: #22c55e;
+    --accent-red: #ef4444;
+  }
+
+  [data-theme='dark'] {
+    color-scheme: dark;
+    --bg: #0f172a;
+    --card: #111827;
+    --border: #1f2937;
+    --text: #e5e7eb;
+    --muted: rgba(229, 231, 235, 0.7);
+    --accent-green: #22c55e;
+    --accent-red: #ef4444;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+      Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    background: var(--bg);
+    color: var(--text);
+    @apply antialiased;
+  }
+
+  /*
+   * Compatibility layer: map common Tailwind "slate/white" utility classes
+   * to the active theme variables, so legacy components automatically
+   * participate in theming without hardcoded colors.
+   */
+  .bg-white { background-color: var(--card) !important; }
+  .bg-slate-50 { background-color: var(--bg) !important; }
+  .bg-slate-900 { background-color: var(--card) !important; }
+  .bg-slate-950 { background-color: var(--bg) !important; }
+
+  .border-slate-200 { border-color: var(--border) !important; }
+  .border-slate-700 { border-color: var(--border) !important; }
+  .border-slate-800 { border-color: var(--border) !important; }
+
+  .text-slate-900 { color: var(--text) !important; }
+  .text-slate-800 { color: var(--text) !important; }
+  .text-slate-700 { color: var(--text) !important; }
+  .text-slate-600 { color: var(--muted) !important; }
+  .text-slate-500 { color: var(--muted) !important; }
+  .text-slate-400 { color: var(--muted) !important; }
+}
+
+@layer components {
+  .app-shell {
+    @apply min-h-full;
+  }
+
+  .card {
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.22);
+  }
+
+  .panel {
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18);
+  }
+
+  .nr-btn {
+    @apply inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium transition;
+    border-radius: 10px;
+  }
+  .nr-btn-primary {
+    @apply nr-btn;
+    background: var(--accent-green);
+    color: #0b1220;
+  }
+  .nr-btn-primary:hover {
+    filter: brightness(1.05);
+  }
+  .nr-btn-secondary {
+    @apply nr-btn;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  .nr-input {
+    @apply px-3 py-2 text-sm outline-none;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+  }
+  .nr-input::placeholder {
+    color: var(--muted);
+  }
+  .nr-input:focus {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-green) 20%, transparent);
+    border-color: color-mix(in srgb, var(--accent-green) 60%, var(--border));
+  }
+
+  .kbd {
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    @apply px-2 py-0.5 font-mono text-xs;
+  }
+}
