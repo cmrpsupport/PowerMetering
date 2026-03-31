@@ -1,4 +1,5 @@
 import { Fragment, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   Bar,
   BarChart,
@@ -13,7 +14,11 @@ import {
   YAxis,
 } from 'recharts'
 import { Download } from 'lucide-react'
-import { useConsumptionReportIntervals } from '../hooks/queries'
+import { useConsumptionReportIntervals, usePlcFullSnapshot } from '../hooks/queries'
+import { findPlcMeter } from '../constants/plcMeters'
+import { PLC_PRODUCTION_METERS } from '../constants/plcProductionMeters'
+import { Badge } from '../components/ui/Badge'
+import type { PlcMeterData } from '../types'
 import {
   aggregateConsumptionIntervals,
   consumptionReportToCsv,
@@ -24,10 +29,10 @@ import { StatCard } from '../components/ui/StatCard'
 import { SegmentedControl } from '../components/ui/SegmentedControl'
 
 const GRANULARITY_OPTIONS: { id: ConsumptionGranularity; label: string; hint: string }[] = [
-  { id: 'hourly', label: 'Hourly', hint: 'Last ~3 days' },
-  { id: 'daily', label: 'Daily', hint: 'Last ~30 days' },
-  { id: 'weekly', label: 'Weekly', hint: 'Last ~12 weeks' },
-  { id: 'monthly', label: 'Monthly', hint: 'Last ~90 days by month' },
+  { id: 'hourly', label: 'Hourly', hint: '' },
+  { id: 'daily', label: 'Daily', hint: '' },
+  { id: 'weekly', label: 'Weekly', hint: '' },
+  { id: 'monthly', label: 'Monthly', hint: '' },
 ]
 
 const LINE_ORDER = [
@@ -66,6 +71,16 @@ function fmtNum(n: number, decimals = 1) {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   })
+}
+
+function fmtSnap(n: number, decimals = 1): string {
+  if (!Number.isFinite(n) || n === 0) return '\u2014'
+  return n.toFixed(decimals)
+}
+
+function meterHasData(data: PlcMeterData | undefined): boolean {
+  if (!data) return false
+  return data.Real_power !== 0 || data.Voltage_Lave !== 0 || data.Current_Ave !== 0
 }
 
 function gaugeColor(pct: number): 'green' | 'yellow' | 'red' {
@@ -107,7 +122,10 @@ export function ConsumptionReportPage() {
   const [granularity, setGranularity] = useState<ConsumptionGranularity>('daily')
   const [viewMode, setViewMode] = useState<'byTime' | 'byLine'>('byLine')
   const [layoutMode, setLayoutMode] = useState<'cards' | 'table'>('cards')
+  const [expandedLine, setExpandedLine] = useState<string | null>(null)
   const q = useConsumptionReportIntervals(granularity)
+  const snapQ = usePlcFullSnapshot()
+  const snap = snapQ.data
 
   const buckets = useMemo(() => {
     const intervals = q.data ?? []
@@ -140,15 +158,29 @@ export function ConsumptionReportPage() {
   }, [buckets])
 
   const latestBucket = buckets.length > 0 ? buckets[buckets.length - 1] : null
+  // For DAILY, show the last completed day (12am→12am) rather than "today so far".
+  const displayBucket = useMemo(() => {
+    if (!latestBucket) return null
+    if (granularity !== 'daily') return latestBucket
+    const now = new Date()
+    const last = new Date(latestBucket.lastTs)
+    const sameDay =
+      now.getFullYear() === last.getFullYear() &&
+      now.getMonth() === last.getMonth() &&
+      now.getDate() === last.getDate()
+    if (!sameDay) return latestBucket
+    return buckets.length >= 2 ? buckets[buckets.length - 2] : latestBucket
+  }, [buckets, granularity, latestBucket])
+
   const totalDailyAll =
-    latestBucket && meterNames.length > 0
-      ? meterNames.reduce((s, m) => s + (latestBucket.byMeter[m]?.energyKwh ?? 0), 0)
+    displayBucket && meterNames.length > 0
+      ? meterNames.reduce((s, m) => s + (displayBucket.byMeter[m]?.energyKwh ?? 0), 0)
       : 0
   const totalCumAll =
-    latestBucket && meterNames.length > 0
-      ? meterNames.reduce((s, m) => s + (latestBucket.byMeter[m]?.cumulativeKwhEnd ?? 0), 0)
+    displayBucket && meterNames.length > 0
+      ? meterNames.reduce((s, m) => s + (displayBucket.byMeter[m]?.cumulativeKwhEnd ?? 0), 0)
       : 0
-  const snapshotLabel = latestBucket ? new Date(latestBucket.lastTs).toLocaleString() : '—'
+  const snapshotLabel = displayBucket ? new Date(displayBucket.lastTs).toLocaleString() : '—'
 
   const chartData = useMemo(() => {
     if (viewMode === 'byLine') {
@@ -197,9 +229,9 @@ export function ConsumptionReportPage() {
     const header = ['LINE', 'KWH', 'PCT_OF_TOTAL', 'CUMULATIVE_KWH']
     const denom = totalDailyAll > 0 ? totalDailyAll : 1
     const rows = meterNames.map((m) => {
-      const daily = latestBucket?.byMeter[m]?.energyKwh ?? 0
+      const daily = displayBucket?.byMeter[m]?.energyKwh ?? 0
       const pct = (daily / denom) * 100
-      const cum = latestBucket?.byMeter[m]?.cumulativeKwhEnd ?? null
+      const cum = displayBucket?.byMeter[m]?.cumulativeKwhEnd ?? null
       return [m, daily.toFixed(3), pct.toFixed(2), cum !== null ? String(cum) : '']
     })
     const lines = [header.join(','), ...rows.map((r) => r.join(','))]
@@ -261,7 +293,7 @@ export function ConsumptionReportPage() {
             <button
               type="button"
               onClick={onDownloadSummaryCsv}
-              disabled={!latestBucket || q.isLoading}
+            disabled={!displayBucket || q.isLoading}
               className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm font-medium text-[var(--text)] shadow-sm hover:bg-[color-mix(in_srgb,var(--text)_4%,transparent)] disabled:opacity-50"
             >
               <Download size={16} aria-hidden />
@@ -284,25 +316,117 @@ export function ConsumptionReportPage() {
           {layoutMode === 'cards' ? (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {meterNames.map((m) => {
-                const daily = latestBucket?.byMeter[m]?.energyKwh ?? 0
-                const cum = latestBucket?.byMeter[m]?.cumulativeKwhEnd ?? null
+                const daily = displayBucket?.byMeter[m]?.energyKwh ?? 0
+                const cum = displayBucket?.byMeter[m]?.cumulativeKwhEnd ?? null
                 const denom = totalDailyAll > 0 ? totalDailyAll : 1
                 const pct = (daily / denom) * 100
                 const sev = gaugeColor(pct)
+                const def = PLC_PRODUCTION_METERS.find((x) => x.name === m)
+                const subMeterIds = def?.meterIds ?? []
+                const isExpandable = subMeterIds.length > 0
+                const isOpen = expandedLine === m
                 return (
-                  <div key={m} className="card card-hover p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="truncate text-sm font-semibold text-[var(--text)]">{m}</div>
-                        <div className="mt-1 text-xs text-[var(--muted)]">kWh (period)</div>
-                        <div className="mt-1 text-2xl font-semibold text-[var(--text)] tabular-nums">{fmtNum(daily, 0)}</div>
-                        <div className="mt-1 text-xs text-[var(--muted)]">{fmtNum(pct, 1)}% of total</div>
-                        <div className="mt-2 text-xs text-[var(--muted)] tabular-nums">
-                          Cumulative: {cum !== null ? fmtNum(cum, 0) : '—'} kWh
+                  <div key={m} className="card card-hover overflow-hidden">
+                    <div
+                      role={isExpandable ? 'button' : undefined}
+                      tabIndex={isExpandable ? 0 : undefined}
+                      onKeyDown={(e) => {
+                        if (!isExpandable) return
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          setExpandedLine((cur) => (cur === m ? null : m))
+                        }
+                      }}
+                      onClick={() => {
+                        if (!isExpandable) return
+                        setExpandedLine((cur) => (cur === m ? null : m))
+                      }}
+                      className={[
+                        'p-4',
+                        isExpandable ? 'cursor-pointer hover:bg-[color-mix(in_srgb,var(--text)_3%,transparent)]' : '',
+                      ].join(' ')}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <div className="truncate text-sm font-semibold text-[var(--text)]">{m}</div>
+                            {isExpandable ? (
+                              <span className="text-[11px] text-[var(--muted)]">
+                                {isOpen ? 'Hide meters' : 'Show meters'}
+                              </span>
+                            ) : null}
+                          </div>
+                          <div className="mt-1 text-xs text-[var(--muted)]">kWh ({granularity})</div>
+                          <div className="mt-1 text-2xl font-semibold text-[var(--text)] tabular-nums">
+                            {fmtNum(daily, 0)}
+                          </div>
+                          <div className="mt-1 text-xs text-[var(--muted)]">{fmtNum(pct, 1)}% of total</div>
+                          <div className="mt-2 text-xs text-[var(--muted)] tabular-nums">
+                            Cumulative: {cum !== null ? fmtNum(cum, 0) : '—'} kWh
+                          </div>
+                        </div>
+                        <Gauge pct={pct} color={sev} />
+                      </div>
+                    </div>
+
+                    {isOpen && isExpandable ? (
+                      <div className="border-t border-[var(--border)] bg-[var(--bg)] p-3">
+                        <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                          <span>Powermeters under {m}</span>
+                          {def ? (
+                            <Link
+                              to={`/lines/${def.id}`}
+                              className="text-[11px] font-medium normal-case text-[var(--primary)] hover:underline"
+                            >
+                              Open line dashboard
+                            </Link>
+                          ) : null}
+                        </div>
+                        <div className="grid gap-2 sm:grid-cols-1">
+                          {subMeterIds.map((meterId) => {
+                            const meter = findPlcMeter(meterId)
+                            const d = snap?.meters[meterId]
+                            return (
+                              <div
+                                key={meterId}
+                                className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-3"
+                              >
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="min-w-0">
+                                    <Link
+                                      to={`/meters/${meterId}`}
+                                      className="truncate text-sm font-semibold text-[var(--text)] hover:text-[var(--primary)]"
+                                    >
+                                      {meter?.name ?? meterId}
+                                    </Link>
+                                    <div className="mt-0.5 text-[11px] text-[var(--muted)]">
+                                      {meter?.model ?? '—'}
+                                    </div>
+                                  </div>
+                                  <Badge color={meterHasData(d) ? 'green' : 'red'}>
+                                    {meterHasData(d) ? 'ON' : 'OFF'}
+                                  </Badge>
+                                </div>
+                                <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
+                                  <div>
+                                    <div className="text-[11px] text-[var(--muted)]">kW</div>
+                                    <div className="font-mono text-[var(--text)]">{fmtSnap(d?.Real_power ?? 0, 1)}</div>
+                                  </div>
+                                  <div>
+                                    <div className="text-[11px] text-[var(--muted)]">V</div>
+                                    <div className="font-mono text-[var(--text)]">{fmtSnap(d?.Voltage_Lave ?? 0, 0)}</div>
+                                  </div>
+                                  <div>
+                                    <div className="text-[11px] text-[var(--muted)]">A</div>
+                                    <div className="font-mono text-[var(--text)]">{fmtSnap(d?.Current_Ave ?? 0, 1)}</div>
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          })}
                         </div>
                       </div>
-                      <Gauge pct={pct} color={sev} />
-                    </div>
+                    ) : null}
                   </div>
                 )
               })}

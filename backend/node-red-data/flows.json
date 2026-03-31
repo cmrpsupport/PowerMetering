@@ -2,7 +2,7 @@
   {
     "id": "a1000001.0001tab",
     "type": "tab",
-    "label": "S7-1500 \u2192 HTTP API",
+    "label": "S7-1500 → HTTP API",
     "disabled": false,
     "info": "Reads PLC variables via node-red-contrib-s7 and exposes JSON for the React app.\nEdit the **S7 Endpoint** node with your CPU IP, rack, slot, and DB addresses (match TIA Portal)."
   },
@@ -11,7 +11,7 @@
     "type": "tab",
     "label": "S7-1500 Dashboard (DB1)",
     "disabled": false,
-    "info": "Reads DB1 REALs at byte offsets 0, 4, 8 via node-red-contrib-s7 (ISO-on-TCP). TIA: DB1 non-optimized; CPU protection \u2192 Permit access with PUT/GET.\nDashboard: http://localhost:1880/ui (default path)."
+    "info": "Reads DB1 REALs at byte offsets 0, 4, 8 via node-red-contrib-s7 (ISO-on-TCP). TIA: DB1 non-optimized; CPU protection → Permit access with PUT/GET.\nDashboard: http://localhost:1880/ui (default path)."
   },
   {
     "id": "a1000002.s7endpoint",
@@ -4425,7 +4425,9 @@
         "a1000004.store",
         "a1000030.trendbuf",
         "a1000013.sqlprep",
-        "a1000015.energycache"
+        "a1000015.energycache",
+        "a1000060.meterprep",
+        "a1000075.demandtrack"
       ]
     ]
   },
@@ -4653,7 +4655,7 @@
     "type": "function",
     "z": "a1000001.0001tab",
     "name": "Build JSON",
-    "func": "const snap = global.get('plcSnapshot');\nmsg.payload = snap || {\n  ts: new Date().toISOString(),\n  values: null,\n  warning: 'No S7 data received yet \u2014 check PLC IP, rack/slot, DB addresses, and TIA PUT/GET.'\n};\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
+    "func": "const snap = global.get('plcSnapshot');\nmsg.payload = snap || {\n  ts: new Date().toISOString(),\n  values: null,\n  warning: 'No S7 data received yet — check PLC IP, rack/slot, DB addresses, and TIA PUT/GET.'\n};\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -4725,8 +4727,8 @@
     "id": "a1000017.sqlcreate",
     "type": "function",
     "z": "a1000001.0001tab",
-    "name": "SQLite: create schema",
-    "func": "msg.topic = `CREATE TABLE IF NOT EXISTS plc_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  Power_kW REAL,\n  Energy_kWh REAL,\n  Voltage_V REAL,\n  Current_A REAL,\n  PowerFactor REAL,\n  Total_CrackerLine1_kWh REAL,\n  Total_CrackerLine2_kWh REAL,\n  Total_PretzelLine_kWh REAL,\n  Total_WaferLine1_kWh REAL,\n  Total_WaferLine2_kWh REAL,\n  Total_ChocoyChocoLine_kWh REAL,\n  Total_DynamiteLine_kWh REAL,\n  Total_XOLine_kWh REAL,\n  Total_MaxxLine_kWh REAL,\n  Total_MainLine_kWh REAL,\n  Total_UtilitiesJaguar_kWh REAL,\n  Total_UtilitiesLighting_kWh REAL\n);\nCREATE INDEX IF NOT EXISTS idx_plc_samples_ts ON plc_samples(ts);\nCREATE INDEX IF NOT EXISTS idx_plc_samples_epoch ON plc_samples(ts_epoch);`;\nreturn msg;",
+    "name": "SQLite: create schema (v3 — meter_samples)",
+    "func": "msg.topic = `CREATE TABLE IF NOT EXISTS plc_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  Power_kW REAL,\n  Energy_kWh REAL,\n  Voltage_V REAL,\n  Current_A REAL,\n  PowerFactor REAL,\n  Total_CrackerLine1_kWh REAL,\n  Total_CrackerLine2_kWh REAL,\n  Total_PretzelLine_kWh REAL,\n  Total_WaferLine1_kWh REAL,\n  Total_WaferLine2_kWh REAL,\n  Total_ChocoyChocoLine_kWh REAL,\n  Total_DynamiteLine_kWh REAL,\n  Total_XOLine_kWh REAL,\n  Total_MaxxLine_kWh REAL,\n  Total_MainLine_kWh REAL,\n  Total_UtilitiesJaguar_kWh REAL,\n  Total_UtilitiesLighting_kWh REAL\n);\nCREATE INDEX IF NOT EXISTS idx_plc_samples_ts ON plc_samples(ts);\nCREATE INDEX IF NOT EXISTS idx_plc_samples_epoch ON plc_samples(ts_epoch);\n\nCREATE TABLE IF NOT EXISTS meter_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  meter_id TEXT NOT NULL,\n  real_power_kw REAL,\n  reactive_power_kvar REAL,\n  apparent_power_kva REAL,\n  real_energy_kwh REAL,\n  reactive_energy_kvarh REAL,\n  apparent_energy_kvah REAL,\n  voltage_ab REAL,\n  voltage_bc REAL,\n  voltage_ca REAL,\n  voltage_ll_avg REAL,\n  voltage_an REAL,\n  voltage_bn REAL,\n  voltage_cn REAL,\n  voltage_ln_avg REAL,\n  current_a REAL,\n  current_b REAL,\n  current_c REAL,\n  current_avg REAL,\n  power_factor REAL,\n  frequency REAL\n);\nCREATE INDEX IF NOT EXISTS idx_meter_epoch_id ON meter_samples(ts_epoch, meter_id);\nCREATE INDEX IF NOT EXISTS idx_meter_id_epoch ON meter_samples(meter_id, ts_epoch);`;\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -5081,7 +5083,7 @@
     "type": "function",
     "z": "a1000001.0001tab",
     "name": "Build full JSON",
-    "func": "const snap = global.get('plcFullSnapshot');\nmsg.payload = snap || {\n  ts: new Date().toISOString(),\n  values: null,\n  warning: 'No full S7 data received yet \u2014 check PLC connection and DB16 access.'\n};\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
+    "func": "const snap = global.get('plcFullSnapshot');\nmsg.payload = snap || {\n  ts: new Date().toISOString(),\n  values: null,\n  warning: 'No full S7 data received yet — check PLC connection and DB16 access.'\n};\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -5105,6 +5107,174 @@
     "headers": {},
     "x": 740,
     "y": 500,
+    "wires": []
+  },
+  {
+    "id": "a1000060.meterprep",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "SQLite: insert meter samples (per-phase)",
+    "func": "const v = msg.payload || {};\nif (!msg.payload || typeof msg.payload !== 'object') return null;\n\n// Throttle: once per 30 seconds\nconst now = Date.now();\nconst lastMs = global.get('meterSampleLastMs') || 0;\nif (now - lastMs < 30000) return null;\nglobal.set('meterSampleLastMs', now);\n\nconst ts = new Date().toISOString();\nconst tsEpoch = Math.floor(now / 1000);\n\nconst toSql = (x) => {\n  if (x === undefined || x === null || x === '') return 'NULL';\n  const n = Number(x);\n  if (Number.isFinite(n)) return String(n);\n  return 'NULL';\n};\n\nconst meters = [\n  'RIO1CM1_EMU4_1', 'RIO1CM1_EMU4_2',\n  'RIO1CM2_EM6400_10', 'RIO1CM2_EM6400_11',\n  'RIO2CM1_EMU4_1', 'RIO2CM1_EMU4_2', 'RIO2CM1_EMU4_3', 'RIO2CM1_EMU4_4',\n  'RIO2CM1_EMU4_5', 'RIO2CM1_EMU4_6', 'RIO2CM1_EMU4_7', 'RIO2CM1_EMU4_8',\n  'RIO2CM1_EMU4_9', 'RIO2CM1_EMU4_10', 'RIO2CM1_EMU4_11', 'RIO2CM1_EMU4_12',\n  'RIO2CM2_EM6400_1', 'RIO2CM2_EM6400_2', 'RIO2CM2_EM6400_3',\n  'RIO2CM2_EM6400_4', 'RIO2CM2_EM6400_5', 'RIO2CM2_EM6400_6',\n  'RIO2_PAC3200_51', 'RIO2_PAC3200_53', 'RIO2_UMG508_52'\n];\n\nconst params = [\n  'Real_power', 'Reactive_power', 'Apparent_power',\n  'Real_energy', 'Reactive_energy', 'Apparent_energy',\n  'Voltage_ab', 'Voltage_bc', 'Voltage_ca', 'Voltage_Lave',\n  'Voltage_an', 'Voltage_bn', 'Voltage_cn', 'Voltage_Nave',\n  'Current_a', 'Current_b', 'Current_c', 'Current_Ave',\n  'Power_factor', 'Frequency'\n];\n\nconst cols = [\n  'real_power_kw', 'reactive_power_kvar', 'apparent_power_kva',\n  'real_energy_kwh', 'reactive_energy_kvarh', 'apparent_energy_kvah',\n  'voltage_ab', 'voltage_bc', 'voltage_ca', 'voltage_ll_avg',\n  'voltage_an', 'voltage_bn', 'voltage_cn', 'voltage_ln_avg',\n  'current_a', 'current_b', 'current_c', 'current_avg',\n  'power_factor', 'frequency'\n];\n\nconst rows = [];\nfor (const m of meters) {\n  const vals = params.map(p => toSql(v[m + '_' + p]));\n  rows.push(\"('\" + ts + \"', \" + tsEpoch + \", '\" + m + \"', \" + vals.join(', ') + \")\");\n}\n\nconst sql = 'INSERT INTO meter_samples (ts, ts_epoch, meter_id, ' +\n  cols.join(', ') + ') VALUES\\n' + rows.join(',\\n') + ';';\n\nmsg.topic = sql;\ndelete msg.payload;\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 540,
+    "y": 320,
+    "wires": [
+      [
+        "a1000061.sqlitewrite_meters"
+      ]
+    ]
+  },
+  {
+    "id": "a1000061.sqlitewrite_meters",
+    "type": "sqlite",
+    "z": "a1000001.0001tab",
+    "mydb": "a1000012.sqlitedb",
+    "sqlquery": "msg.topic",
+    "sql": "",
+    "name": "SQLite write (meters)",
+    "x": 780,
+    "y": 320,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "a1000062.httpmeterhistory",
+    "type": "http in",
+    "z": "a1000001.0001tab",
+    "name": "GET /api/trends/meter/history",
+    "url": "/api/trends/meter/history",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": "",
+    "x": 250,
+    "y": 860,
+    "wires": [
+      [
+        "a1000063.meterhistorysql"
+      ]
+    ]
+  },
+  {
+    "id": "a1000063.meterhistorysql",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "SQLite: query meter history (per-phase)",
+    "func": "const meterId = msg.req?.query?.meterId || '';\nconst minutes = Math.max(30, Math.min(60 * 24 * 366, Number(msg.req?.query?.minutes ?? 60 * 24)));\nconst sinceEpoch = Math.floor(Date.now() / 1000) - Math.floor(minutes * 60);\n\nlet bucketSec = 30;\nif (minutes > 60 * 24 * 90) bucketSec = 3600;\nelse if (minutes > 60 * 24 * 30) bucketSec = 900;\nelse if (minutes > 60 * 24 * 7) bucketSec = 300;\nelse if (minutes > 60 * 24) bucketSec = 60;\n\nconst meterFilter = meterId\n  ? \"AND meter_id = '\" + meterId.replace(/'/g, \"''\") + \"'\"\n  : '';\n\nmsg.topic = `WITH b AS (\n  SELECT\n    (ts_epoch / ${bucketSec}) * ${bucketSec} AS bucket_epoch,\n    meter_id,\n    AVG(real_power_kw) AS real_power_kw,\n    AVG(reactive_power_kvar) AS reactive_power_kvar,\n    AVG(apparent_power_kva) AS apparent_power_kva,\n    MAX(real_energy_kwh) AS real_energy_kwh,\n    MAX(reactive_energy_kvarh) AS reactive_energy_kvarh,\n    MAX(apparent_energy_kvah) AS apparent_energy_kvah,\n    AVG(voltage_ab) AS voltage_ab,\n    AVG(voltage_bc) AS voltage_bc,\n    AVG(voltage_ca) AS voltage_ca,\n    AVG(voltage_ll_avg) AS voltage_ll_avg,\n    AVG(voltage_an) AS voltage_an,\n    AVG(voltage_bn) AS voltage_bn,\n    AVG(voltage_cn) AS voltage_cn,\n    AVG(voltage_ln_avg) AS voltage_ln_avg,\n    AVG(current_a) AS current_a,\n    AVG(current_b) AS current_b,\n    AVG(current_c) AS current_c,\n    AVG(current_avg) AS current_avg,\n    AVG(power_factor) AS power_factor,\n    AVG(frequency) AS frequency\n  FROM meter_samples\n  WHERE ts_epoch >= ${sinceEpoch} ${meterFilter}\n  GROUP BY bucket_epoch, meter_id\n)\nSELECT\n  strftime('%Y-%m-%dT%H:%M:00.000Z', datetime(bucket_epoch, 'unixepoch')) AS ts,\n  meter_id AS meterId,\n  COALESCE(real_power_kw, 0) AS realPowerKw,\n  COALESCE(reactive_power_kvar, 0) AS reactivePowerKvar,\n  COALESCE(apparent_power_kva, 0) AS apparentPowerKva,\n  COALESCE(real_energy_kwh, 0) AS realEnergyKwh,\n  COALESCE(reactive_energy_kvarh, 0) AS reactiveEnergyKvarh,\n  COALESCE(apparent_energy_kvah, 0) AS apparentEnergyKvah,\n  COALESCE(voltage_ab, 0) AS voltageAb,\n  COALESCE(voltage_bc, 0) AS voltageBc,\n  COALESCE(voltage_ca, 0) AS voltageCa,\n  COALESCE(voltage_ll_avg, 0) AS voltageLlAvg,\n  COALESCE(voltage_an, 0) AS voltageAn,\n  COALESCE(voltage_bn, 0) AS voltageBn,\n  COALESCE(voltage_cn, 0) AS voltageCn,\n  COALESCE(voltage_ln_avg, 0) AS voltageLnAvg,\n  COALESCE(current_a, 0) AS currentA,\n  COALESCE(current_b, 0) AS currentB,\n  COALESCE(current_c, 0) AS currentC,\n  COALESCE(current_avg, 0) AS currentAvg,\n  COALESCE(power_factor, 0) AS powerFactor,\n  COALESCE(frequency, 0) AS frequency\nFROM b\nORDER BY bucket_epoch ASC, meter_id ASC;`;\n\ndelete msg.payload;\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 540,
+    "y": 860,
+    "wires": [
+      [
+        "a1000064.sqliteread_meterhist"
+      ]
+    ]
+  },
+  {
+    "id": "a1000064.sqliteread_meterhist",
+    "type": "sqlite",
+    "z": "a1000001.0001tab",
+    "mydb": "a1000012.sqlitedb",
+    "sqlquery": "msg.topic",
+    "sql": "",
+    "name": "SQLite read (meter history)",
+    "x": 790,
+    "y": 860,
+    "wires": [
+      [
+        "a1000065.httpmeterhistres"
+      ]
+    ]
+  },
+  {
+    "id": "a1000065.httpmeterhistres",
+    "type": "http response",
+    "z": "a1000001.0001tab",
+    "name": "",
+    "statusCode": "",
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8"
+    },
+    "x": 1000,
+    "y": 860,
+    "wires": []
+  },
+  {
+    "id": "a1000075.demandtrack",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "Demand tracker (15-min rolling)",
+    "func": "const v = msg.payload || {};\nif (!msg.payload || typeof msg.payload !== 'object') return null;\n\nconst now = Date.now();\nconst toNum = (x) => {\n  const n = typeof x === 'number' ? x : Number(x);\n  return Number.isFinite(n) ? n : 0;\n};\n\n// --- Read total plant kW (same logic as existing insert node) ---\nlet totalKw = toNum(v.Power_kW);\nif (!Number.isFinite(totalKw) || totalKw <= 0) {\n  const meters = [\n    'RIO1CM1_EMU4_1','RIO1CM1_EMU4_2',\n    'RIO1CM2_EM6400_10','RIO1CM2_EM6400_11',\n    'RIO2CM1_EMU4_1','RIO2CM1_EMU4_2','RIO2CM1_EMU4_3','RIO2CM1_EMU4_4',\n    'RIO2CM1_EMU4_5','RIO2CM1_EMU4_6','RIO2CM1_EMU4_7','RIO2CM1_EMU4_8',\n    'RIO2CM1_EMU4_9','RIO2CM1_EMU4_10','RIO2CM1_EMU4_11','RIO2CM1_EMU4_12',\n    'RIO2CM2_EM6400_1','RIO2CM2_EM6400_2','RIO2CM2_EM6400_3',\n    'RIO2CM2_EM6400_4','RIO2CM2_EM6400_5','RIO2CM2_EM6400_6',\n    'RIO2_PAC3200_51','RIO2_PAC3200_53','RIO2_UMG508_52'\n  ];\n  totalKw = 0;\n  for (const m of meters) totalKw += toNum(v[m + '_Real_power']);\n}\n\n// --- Rolling 15-min window (900 seconds) ---\nconst WINDOW_MS = 15 * 60 * 1000;\nconst buf = global.get('demandBuf') || [];\nbuf.push({ t: now, kw: totalKw });\n\n// Trim older than 15 min\nwhile (buf.length > 0 && buf[0].t < now - WINDOW_MS) buf.shift();\nglobal.set('demandBuf', buf);\n\n// Current 15-min average demand\nconst avgKw = buf.length > 0\n  ? buf.reduce((s, p) => s + p.kw, 0) / buf.length\n  : totalKw;\n\n// --- Monthly peak tracking ---\nconst currentMonth = new Date().toISOString().slice(0, 7); // \"2026-03\"\nlet state = global.get('demandState') || {};\nif (state.month !== currentMonth) {\n  // New month — reset\n  state = { month: currentMonth, peakKw: 0, peakTs: null, thresholdKw: state.thresholdKw || 0 };\n}\n\nif (avgKw > state.peakKw) {\n  state.peakKw = avgKw;\n  state.peakTs = new Date().toISOString();\n}\n\n// Default threshold: 110% of first observed peak (auto-calibrating)\nif (state.thresholdKw <= 0 && state.peakKw > 0) {\n  state.thresholdKw = Math.ceil(state.peakKw * 1.1);\n}\n\nconst threshold = state.thresholdKw || 0;\nconst pctOfThreshold = threshold > 0 ? (avgKw / threshold) : 0;\n\nglobal.set('demandState', state);\n\n// --- Generate alerts at 80% and 95% of threshold ---\nconst lastAlertLevel = global.get('demandAlertLevel') || 0;\nlet newLevel = 0;\nif (pctOfThreshold >= 0.95) newLevel = 2;\nelse if (pctOfThreshold >= 0.80) newLevel = 1;\n\nif (newLevel > lastAlertLevel) {\n  global.set('demandAlertLevel', newLevel);\n\n  const alerts = global.get('enhancedAlerts') || [];\n  const ts = new Date().toISOString();\n  const id = 'demand-' + ts + '-' + Math.random().toString(16).slice(2, 8);\n  const severity = newLevel === 2 ? 'critical' : 'warning';\n  const priority = newLevel === 2 ? 'urgent' : 'high';\n  const pctStr = (pctOfThreshold * 100).toFixed(0);\n  const message = newLevel === 2\n    ? 'Demand at ' + pctStr + '% of threshold — shed load NOW'\n    : 'Demand approaching threshold (' + pctStr + '%)';\n  const detail = 'Current 15-min avg: ' + avgKw.toFixed(1) + ' kW. Threshold: '\n    + threshold.toFixed(0) + ' kW. Monthly peak: ' + state.peakKw.toFixed(1) + ' kW.';\n\n  alerts.unshift({\n    id,\n    meterId: 'plant',\n    meterName: 'Plant Demand',\n    severity,\n    priority,\n    category: 'energy',\n    status: 'active',\n    message,\n    detail,\n    ts,\n    acknowledgedAt: null,\n    acknowledgedBy: null,\n    resolvedAt: null,\n    notes: [],\n    incidentId: null\n  });\n  while (alerts.length > 500) alerts.pop();\n  global.set('enhancedAlerts', alerts);\n}\n\n// Reset alert level when demand drops below 75%\nif (pctOfThreshold < 0.75 && lastAlertLevel > 0) {\n  global.set('demandAlertLevel', 0);\n}\n\nreturn null;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 540,
+    "y": 360,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "a1000076.httpdemand",
+    "type": "http in",
+    "z": "a1000001.0001tab",
+    "name": "GET /api/demand/status",
+    "url": "/api/demand/status",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": "",
+    "x": 230,
+    "y": 920,
+    "wires": [
+      [
+        "a1000077.demandjson"
+      ]
+    ]
+  },
+  {
+    "id": "a1000077.demandjson",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "Build demand status JSON",
+    "func": "const state = global.get('demandState') || {};\nconst buf = global.get('demandBuf') || [];\nconst now = Date.now();\n\n// Allow setting threshold via query param: ?setThreshold=1200\nconst setTh = Number(msg.req?.query?.setThreshold);\nif (Number.isFinite(setTh) && setTh > 0) {\n  state.thresholdKw = setTh;\n  global.set('demandState', state);\n}\n\nconst currentKw = buf.length > 0\n  ? buf.reduce((s, p) => s + p.kw, 0) / buf.length\n  : 0;\n\nconst instantKw = buf.length > 0 ? buf[buf.length - 1].kw : 0;\n\nconst threshold = state.thresholdKw || 0;\nconst pctOfThreshold = threshold > 0 ? currentKw / threshold : 0;\n\n// Build mini trend (last 2 hours of 15-min windows from plc_samples if available, else from buffer)\n// For now, return the rolling buffer downsampled to 1-min points\nconst minuteBuckets = new Map();\nfor (const p of buf) {\n  const key = Math.floor(p.t / 60000) * 60000;\n  const b = minuteBuckets.get(key);\n  if (!b) minuteBuckets.set(key, { sum: p.kw, cnt: 1 });\n  else { b.sum += p.kw; b.cnt++; }\n}\nconst trend = Array.from(minuteBuckets.entries())\n  .sort((a, b) => a[0] - b[0])\n  .map(([t, b]) => ({ ts: new Date(t).toISOString(), kw: b.sum / b.cnt }));\n\nmsg.payload = {\n  ts: new Date().toISOString(),\n  month: state.month || new Date().toISOString().slice(0, 7),\n  instantKw,\n  currentDemandKw: Math.round(currentKw * 10) / 10,\n  monthlyPeakKw: Math.round((state.peakKw || 0) * 10) / 10,\n  monthlyPeakTs: state.peakTs || null,\n  thresholdKw: threshold,\n  pctOfThreshold: Math.round(pctOfThreshold * 1000) / 10,\n  windowSeconds: 900,\n  samplesInWindow: buf.length,\n  trend\n};\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 500,
+    "y": 920,
+    "wires": [
+      [
+        "a1000078.httpdemandres"
+      ]
+    ]
+  },
+  {
+    "id": "a1000078.httpdemandres",
+    "type": "http response",
+    "z": "a1000001.0001tab",
+    "name": "",
+    "statusCode": "",
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8"
+    },
+    "x": 750,
+    "y": 920,
     "wires": []
   },
   {
@@ -5172,7 +5342,7 @@
     "type": "function",
     "z": "b2f00001.tab",
     "name": "Format for dashboard",
-    "func": "const p = msg.payload;\nif (!p || typeof p !== 'object') {\n    return [ { payload: 'Waiting for PLC\u2026' }, null, null, null ];\n}\nconst r0 = Number(p.DB1_REAL0);\nconst r4 = Number(p.DB1_REAL4);\nconst r8 = Number(p.DB1_REAL8);\nconst line = (k, v) => `${k}: ${Number.isFinite(v) ? v.toFixed(3) : '\u2014'}`;\nconst text = [\n  line('DB1,REAL0', r0),\n  line('DB1,REAL4', r4),\n  line('DB1,REAL8', r8)\n].join('\\n');\nreturn [\n  { payload: text },\n  { payload: r0 },\n  { payload: r4 },\n  { payload: r8 }\n];",
+    "func": "const p = msg.payload;\nif (!p || typeof p !== 'object') {\n    return [ { payload: 'Waiting for PLC…' }, null, null, null ];\n}\nconst r0 = Number(p.DB1_REAL0);\nconst r4 = Number(p.DB1_REAL4);\nconst r8 = Number(p.DB1_REAL8);\nconst line = (k, v) => `${k}: ${Number.isFinite(v) ? v.toFixed(3) : '—'}`;\nconst text = [\n  line('DB1,REAL0', r0),\n  line('DB1,REAL4', r4),\n  line('DB1,REAL8', r8)\n].join('\\n');\nreturn [\n  { payload: text },\n  { payload: r0 },\n  { payload: r4 },\n  { payload: r8 }\n];",
     "outputs": 4,
     "timeout": 0,
     "noerr": 0,

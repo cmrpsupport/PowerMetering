@@ -9,23 +9,91 @@ export type PlcProductionMeterDef = {
   name: string
   /** S7 / Node-RED variable name for cumulative energy (REAL). */
   totalKey: string
+  /** Underlying powermeter IDs that roll up into this line (optional). */
+  meterIds?: string[]
   /** Synthetic demand scale for mock intervals (kW). */
   baseKw: number
 }
 
 export const PLC_PRODUCTION_METERS: PlcProductionMeterDef[] = [
-  { id: 'plc-line-01', name: 'Cracker Line 1', totalKey: 'Total_CrackerLine1_kWh', baseKw: 520 },
-  { id: 'plc-line-02', name: 'Cracker Line 2', totalKey: 'Total_CrackerLine2_kWh', baseKw: 480 },
-  { id: 'plc-line-03', name: 'Pretzel Line', totalKey: 'Total_PretzelLine_kWh', baseKw: 310 },
-  { id: 'plc-line-04', name: 'Wafer Line 1', totalKey: 'Total_WaferLine1_kWh', baseKw: 290 },
-  { id: 'plc-line-05', name: 'Wafer Line 2', totalKey: 'Total_WaferLine2_kWh', baseKw: 275 },
-  { id: 'plc-line-06', name: 'Chocoy Choco Line', totalKey: 'Total_ChocoyChocoLine_kWh', baseKw: 340 },
-  { id: 'plc-line-07', name: 'Dynamite Line', totalKey: 'Total_DynamiteLine_kWh', baseKw: 380 },
-  { id: 'plc-line-08', name: 'XO Line', totalKey: 'Total_XOLine_kWh', baseKw: 265 },
+  {
+    id: 'plc-line-01',
+    name: 'Cracker Line 1',
+    totalKey: 'Total_CrackerLine1_kWh',
+    meterIds: ['RIO2CM1_EMU4_1', 'RIO2CM1_EMU4_3', 'RIO2CM1_EMU4_4'],
+    baseKw: 520,
+  },
+  {
+    id: 'plc-line-02',
+    name: 'Cracker Line 2',
+    totalKey: 'Total_CrackerLine2_kWh',
+    meterIds: ['RIO2CM1_EMU4_2', 'RIO2CM1_EMU4_5'],
+    baseKw: 480,
+  },
+  {
+    id: 'plc-line-03',
+    name: 'Pretzel Line',
+    totalKey: 'Total_PretzelLine_kWh',
+    meterIds: ['RIO2CM1_EMU4_8'],
+    baseKw: 310,
+  },
+  {
+    id: 'plc-line-04',
+    name: 'Wafer Line 1',
+    totalKey: 'Total_WaferLine1_kWh',
+    meterIds: ['RIO2CM1_EMU4_7', 'RIO2CM1_EMU4_9'],
+    baseKw: 290,
+  },
+  {
+    id: 'plc-line-05',
+    name: 'Wafer Line 2',
+    totalKey: 'Total_WaferLine2_kWh',
+    meterIds: ['RIO2CM1_EMU4_12'],
+    baseKw: 275,
+  },
+  {
+    id: 'plc-line-06',
+    name: 'Chocoy Choco Line',
+    totalKey: 'Total_ChocoyChocoLine_kWh',
+    meterIds: ['RIO2CM1_EMU4_6', 'RIO2CM1_EMU4_11'],
+    baseKw: 340,
+  },
+  {
+    id: 'plc-line-07',
+    name: 'Dynamite Line',
+    totalKey: 'Total_DynamiteLine_kWh',
+    meterIds: ['RIO1CM1_EMU4_2'],
+    baseKw: 380,
+  },
+  {
+    id: 'plc-line-08',
+    name: 'XO Line',
+    totalKey: 'Total_XOLine_kWh',
+    meterIds: ['RIO1CM1_EMU4_1'],
+    baseKw: 265,
+  },
   { id: 'plc-line-09', name: 'Maxx Line', totalKey: 'Total_MaxxLine_kWh', baseKw: 410 },
-  { id: 'plc-line-10', name: 'Main Line', totalKey: 'Total_MainLine_kWh', baseKw: 580 },
-  { id: 'plc-line-11', name: 'Utilities Jaguar', totalKey: 'Total_UtilitiesJaguar_kWh', baseKw: 195 },
-  { id: 'plc-line-12', name: 'Utilities Lighting', totalKey: 'Total_UtilitiesLighting_kWh', baseKw: 120 },
+  {
+    id: 'plc-line-10',
+    name: 'Main Line',
+    totalKey: 'Total_MainLine_kWh',
+    meterIds: ['RIO2_UMG508_52', 'RIO2CM2_EM6400_2', 'RIO2CM2_EM6400_3'],
+    baseKw: 580,
+  },
+  {
+    id: 'plc-line-11',
+    name: 'Utilities Jaguar',
+    totalKey: 'Total_UtilitiesJaguar_kWh',
+    meterIds: ['RIO2_PAC3200_51', 'RIO2_PAC3200_53'],
+    baseKw: 195,
+  },
+  {
+    id: 'plc-line-12',
+    name: 'Utilities Lighting',
+    totalKey: 'Total_UtilitiesLighting_kWh',
+    meterIds: ['RIO1CM2_EM6400_10'],
+    baseKw: 120,
+  },
 ]
 
 /** Legacy aggregate meter id (full plant snapshot: Power_kW, Energy_kWh, …). */

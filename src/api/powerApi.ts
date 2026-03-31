@@ -1,4 +1,4 @@
-import type { EnhancedAlert, EnergyInterval, PlcFullSnapshot, PlcMeterData } from '../types'
+import type { DemandStatus, EnhancedAlert, EnergyInterval, MeterSamplePoint, PlcFullSnapshot, PlcMeterData } from '../types'
 import { PLC_METERS, PLC_TOTAL_ENERGY_KEYS, METER_PARAM_SUFFIXES } from '../constants/plcMeters'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '').toString()
@@ -216,4 +216,25 @@ export async function getPowerTrend(minutes = 24 * 60): Promise<PowerTrendPoint[
       ? `/api/trends/power/history?minutes=${minutes}`
       : `/api/trends/power?minutes=${minutes}`
   return await http<PowerTrendPoint[]>(path).catch(() => [])
+}
+
+// ── Demand Status ───────────────────────────────────────
+
+export async function getDemandStatus(): Promise<DemandStatus | null> {
+  return await http<DemandStatus>('/api/demand/status').catch(() => null)
+}
+
+export async function setDemandThreshold(kw: number): Promise<DemandStatus | null> {
+  return await http<DemandStatus>(`/api/demand/status?setThreshold=${kw}`).catch(() => null)
+}
+
+// ── Per-Meter Per-Phase History ─────────────────────────
+
+export async function getMeterHistory(
+  minutes = 24 * 60,
+  meterId?: string,
+): Promise<MeterSamplePoint[]> {
+  let path = `/api/trends/meter/history?minutes=${minutes}`
+  if (meterId) path += `&meterId=${encodeURIComponent(meterId)}`
+  return await http<MeterSamplePoint[]>(path).catch(() => [])
 }

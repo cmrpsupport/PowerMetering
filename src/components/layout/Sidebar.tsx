@@ -4,16 +4,14 @@ import {
   FileBarChart,
   LayoutDashboard,
   Activity,
-  Monitor,
   type LucideIcon,
 } from 'lucide-react'
 
 type NavItem = { to: string; label: string; icon: LucideIcon; end?: boolean }
 
 const navItems: NavItem[] = [
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/dashboard', label: 'Monitoring', icon: Activity },
-  { to: '/reports/consumption', label: 'Consumption Report', icon: FileBarChart },
+  { to: '/', label: 'Consumption', icon: LayoutDashboard, end: true },
+  { to: '/dashboard', label: 'Monitoring (legacy)', icon: Activity },
   { to: '/alerts', label: 'Alerts', icon: BellRing },
 ]
 
@@ -31,19 +29,7 @@ export function Sidebar() {
       {/* Brand header */}
       <div className={['border-b border-[var(--border)] p-2', 'group-hover:p-4'].join(' ')}>
         <div className={['flex items-center justify-center', 'group-hover:justify-start group-hover:gap-2'].join(' ')}>
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-[var(--bg)] text-[var(--text)] shadow-sm ring-1 ring-[var(--border)]">
-            <Monitor size={18} />
-          </div>
-
-          <div
-            className={[
-              'min-w-0 overflow-hidden transition-all duration-200 ease-in-out',
-              'w-0 opacity-0 group-hover:w-auto group-hover:opacity-100',
-            ].join(' ')}
-          >
-            <div className="truncate text-sm font-semibold text-[var(--text)]">Power Monitoring</div>
-            <div className="truncate text-[11px] text-[var(--muted)]">25 Meters</div>
-          </div>
+          {/* intentionally empty: icon removed */}
         </div>
       </div>
 

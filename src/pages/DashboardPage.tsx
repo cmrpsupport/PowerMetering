@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { usePlcFullSnapshot, useNodeRedHealth, useEnhancedAlerts, useEnergyIntervals, usePowerTrend } from '../hooks/queries'
-import { PLC_METERS } from '../constants/plcMeters'
+import { findPlcMeter, PLC_METERS } from '../constants/plcMeters'
+import { PLC_PRODUCTION_METERS } from '../constants/plcProductionMeters'
 import { Badge, type BadgeColor } from '../components/ui/Badge'
 import { MiniKpiCard } from '../components/ui/MiniKpiCard'
 import { SegmentedControl } from '../components/ui/SegmentedControl'
@@ -86,6 +87,7 @@ export function DashboardPage() {
   const [showLoadProfile, setShowLoadProfile] = useState(true)
   const [trendView, setTrendView] = useState<'raw' | 'smooth'>('raw')
   const [trendWindow, setTrendWindow] = useState<'1h' | '6h' | '12h' | '24h' | '7d' | '30d' | '1y'>('30d')
+  const [expandedLine, setExpandedLine] = useState<string | null>(null)
   const trendMinutes =
     trendWindow === '1h'
       ? 60
@@ -790,14 +792,105 @@ export function DashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {totalEnergyLines.map(([name, kwh]) => (
-                  <tr key={name} className="border-b border-[var(--border)] last:border-0">
-                    <td className="px-4 py-2 text-[var(--text)]">{name}</td>
-                    <td className="px-4 py-2 text-right font-mono text-[var(--text)]">
-                      {kwh.toLocaleString(undefined, { maximumFractionDigits: 1 })}
-                    </td>
-                  </tr>
-                ))}
+                {totalEnergyLines.map(([name, kwh]) => {
+                  const def = PLC_PRODUCTION_METERS.find((x) => x.name === name)
+                  const ids = def?.meterIds ?? []
+                  const isExpandable = ids.length > 0
+                  const isOpen = expandedLine === name
+                  return (
+                    <Fragment key={name}>
+                      <tr
+                        className={[
+                          'border-b border-[var(--border)] last:border-0',
+                          isExpandable ? 'cursor-pointer hover:bg-[color-mix(in_srgb,var(--text)_3%,transparent)]' : '',
+                        ].join(' ')}
+                        onClick={() => {
+                          if (!isExpandable) return
+                          setExpandedLine((cur) => (cur === name ? null : name))
+                        }}
+                      >
+                        <td className="px-4 py-2 text-[var(--text)]">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{name}</span>
+                            {isExpandable ? (
+                              <span className="text-[11px] text-[var(--muted)]">
+                                {isOpen ? 'Hide meters' : 'Show meters'}
+                              </span>
+                            ) : null}
+                          </div>
+                        </td>
+                        <td className="px-4 py-2 text-right font-mono text-[var(--text)]">
+                          {kwh.toLocaleString(undefined, { maximumFractionDigits: 1 })}
+                        </td>
+                      </tr>
+
+                      {isOpen && (
+                        <tr className="border-b border-[var(--border)]">
+                          <td colSpan={2} className="px-4 py-3">
+                            <div className="rounded-xl border border-[var(--border)] bg-[var(--bg)] p-3">
+                              <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                  <span>Powermeters under {name}</span>
+                                  {def ? (
+                                    <Link
+                                      to={`/lines/${def.id}`}
+                                      className="text-[11px] font-medium text-[var(--primary)] hover:underline"
+                                    >
+                                      Open line dashboard
+                                    </Link>
+                                  ) : null}
+                                </div>
+                              </div>
+                              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                                {ids.map((meterId) => {
+                                  const meter = findPlcMeter(meterId)
+                                  const d = snap?.meters[meterId]
+                                  return (
+                                    <div
+                                      key={meterId}
+                                      className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-3"
+                                    >
+                                      <div className="flex items-start justify-between gap-2">
+                                        <div className="min-w-0">
+                                          <Link
+                                            to={`/meters/${meterId}`}
+                                            className="truncate text-sm font-semibold text-[var(--text)] hover:text-[var(--primary)]"
+                                          >
+                                            {meter?.name ?? meterId}
+                                          </Link>
+                                          <div className="mt-0.5 text-[11px] text-[var(--muted)]">
+                                            {meter?.model ?? '—'}
+                                          </div>
+                                        </div>
+                                        <Badge color={meterHasData(d) ? 'green' : 'red'}>
+                                          {meterHasData(d) ? 'ON' : 'OFF'}
+                                        </Badge>
+                                      </div>
+                                      <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
+                                        <div>
+                                          <div className="text-[11px] text-[var(--muted)]">kW</div>
+                                          <div className="font-mono text-[var(--text)]">{fmt(d?.Real_power ?? 0, 1)}</div>
+                                        </div>
+                                        <div>
+                                          <div className="text-[11px] text-[var(--muted)]">V</div>
+                                          <div className="font-mono text-[var(--text)]">{fmt(d?.Voltage_Lave ?? 0, 0)}</div>
+                                        </div>
+                                        <div>
+                                          <div className="text-[11px] text-[var(--muted)]">A</div>
+                                          <div className="font-mono text-[var(--text)]">{fmt(d?.Current_Ave ?? 0, 1)}</div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  )
+                })}
               </tbody>
             </table>
           </div>

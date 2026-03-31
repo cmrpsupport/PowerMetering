@@ -34,10 +34,10 @@ export function ReportsPage() {
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
-            to="/reports/consumption"
+            to="/"
             className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-800 shadow-sm hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/15 dark:text-indigo-100 dark:hover:bg-indigo-500/25"
           >
-            Consumption report
+            Consumption
           </Link>
           <Link
             to="/reports/schedules"

@@ -67,3 +67,45 @@ export type EnergyInterval = {
 }
 
 export type ConsumptionGranularity = 'hourly' | 'daily' | 'weekly' | 'monthly'
+
+/** Real-time demand status from /api/demand/status. */
+export type DemandStatus = {
+  ts: string
+  month: string
+  instantKw: number
+  currentDemandKw: number
+  monthlyPeakKw: number
+  monthlyPeakTs: string | null
+  thresholdKw: number
+  /** Percentage of threshold (0-100+). */
+  pctOfThreshold: number
+  windowSeconds: number
+  samplesInWindow: number
+  trend: { ts: string; kw: number }[]
+}
+
+/** Per-meter, per-phase historical sample from /api/trends/meter/history. */
+export type MeterSamplePoint = {
+  ts: string
+  meterId: string
+  realPowerKw: number
+  reactivePowerKvar: number
+  apparentPowerKva: number
+  realEnergyKwh: number
+  reactiveEnergyKvarh: number
+  apparentEnergyKvah: number
+  voltageAb: number
+  voltageBc: number
+  voltageCa: number
+  voltageLlAvg: number
+  voltageAn: number
+  voltageBn: number
+  voltageCn: number
+  voltageLnAvg: number
+  currentA: number
+  currentB: number
+  currentC: number
+  currentAvg: number
+  powerFactor: number
+  frequency: number
+}

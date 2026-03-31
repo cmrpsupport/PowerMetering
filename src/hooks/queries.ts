@@ -7,6 +7,8 @@ import {
   listEnhancedAlerts,
   getEnergyIntervals,
   getPowerTrend,
+  getMeterHistory,
+  getDemandStatus,
 } from '../api/powerApi'
 
 /** Full DB16 snapshot — all 25 meters, 20 params each. Polls every 3s. */
@@ -55,6 +57,24 @@ export function usePowerTrend(minutes = 24 * 60) {
   return useQuery({
     queryKey: ['powerTrend', minutes],
     queryFn: () => getPowerTrend(minutes),
+    refetchInterval: 60_000,
+  })
+}
+
+/** Real-time 15-min rolling demand tracking. Polls every 5s for responsiveness. */
+export function useDemandStatus() {
+  return useQuery({
+    queryKey: ['demandStatus'],
+    queryFn: getDemandStatus,
+    refetchInterval: 5_000,
+  })
+}
+
+/** Per-meter, per-phase historical data. Optionally filter by meterId. */
+export function useMeterHistory(minutes = 24 * 60, meterId?: string) {
+  return useQuery({
+    queryKey: ['meterHistory', minutes, meterId],
+    queryFn: () => getMeterHistory(minutes, meterId),
     refetchInterval: 60_000,
   })
 }
