@@ -5,8 +5,8 @@
   "description": "Node-RED backend for Siemens S7-1500 (S7 / ISO-on-TCP) — bridges PLC data to HTTP for the power-monitor frontend",
   "scripts": {
     "postinstall": "npm install --prefix ./node-red-data",
-    "start": "./node_modules/.bin/node-red --userDir ./node-red-data",
-    "start:verbose": "DEBUG=node-red:* ./node_modules/.bin/node-red --userDir ./node-red-data"
+    "start": "node-red --userDir ./node-red-data",
+    "start:verbose": "DEBUG=node-red:* node-red --userDir ./node-red-data"
   },
   "engines": {
     "node": ">=18"
