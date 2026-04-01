@@ -376,8 +376,7 @@ export function DashboardScadaPage() {
           status="normal"
           icon={<Layers size={18} />}
           deltaPct={monthKwh.deltaPct}
-          deltaLabel="vs prev month (MTD)"
-          projectionText="Hrly change (last 24h)"
+          deltaLabel="vs previous"
           sparkline={energyHourly.series}
           subtext={
             Number.isFinite(monthKwh.prevMtd) ? (
@@ -391,7 +390,7 @@ export function DashboardScadaPage() {
           footerRight={
             typeof energyHourly.lastHourDeltaPct === 'number' ? (
               <span className="text-[11px] font-medium text-[var(--muted)]">
-                Hrly: <span className="tabular-nums">{`${energyHourly.lastHourDeltaPct >= 0 ? '+' : ''}${fmt(energyHourly.lastHourDeltaPct * 100, 0)}%`}</span>
+                <span className="tabular-nums">{`${energyHourly.lastHourDeltaPct >= 0 ? '+' : ''}${fmt(energyHourly.lastHourDeltaPct * 100, 0)}%`}</span>
               </span>
             ) : null
           }
