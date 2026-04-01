@@ -255,13 +255,23 @@ export async function getEnergyIntervals(hours = 24): Promise<EnergyInterval[]> 
   return await http<EnergyInterval[]>(`/api/energy/intervals?hours=${hours}`).catch(() => [])
 }
 
-export async function getPowerTrend(minutes = 24 * 60): Promise<PowerTrendPoint[]> {
+export async function getPowerTrend(
+  minutes = 24 * 60,
+  opts?: { bucket?: '1m' | '5m' | '15m' | '1h' | '1d'; bucketSec?: number },
+): Promise<PowerTrendPoint[]> {
   const maxInMemoryMinutes = 60 * 24 * 7
-  const path =
+  const qs =
     minutes > maxInMemoryMinutes
-      ? `/api/trends/power/history?minutes=${minutes}`
+      ? (() => {
+          const p = new URLSearchParams({ minutes: String(minutes) })
+          if (opts?.bucket) p.set('bucket', opts.bucket)
+          if (typeof opts?.bucketSec === 'number' && Number.isFinite(opts.bucketSec) && opts.bucketSec > 0) {
+            p.set('bucketSec', String(Math.floor(opts.bucketSec)))
+          }
+          return `/api/trends/power/history?${p.toString()}`
+        })()
       : `/api/trends/power?minutes=${minutes}`
-  return await http<PowerTrendPoint[]>(path).catch(() => [])
+  return await http<PowerTrendPoint[]>(qs).catch(() => [])
 }
 
 // ── Demand Status ───────────────────────────────────────

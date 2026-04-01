@@ -76,10 +76,13 @@ export function useConsumptionReportIntervals(granularity: ConsumptionGranularit
   })
 }
 
-export function usePowerTrend(minutes = 24 * 60) {
+export function usePowerTrend(
+  minutes = 24 * 60,
+  opts?: { bucket?: '1m' | '5m' | '15m' | '1h' | '1d'; bucketSec?: number },
+) {
   return useQuery({
-    queryKey: ['powerTrend', minutes],
-    queryFn: () => getPowerTrend(minutes),
+    queryKey: ['powerTrend', minutes, opts?.bucket ?? null, opts?.bucketSec ?? null],
+    queryFn: () => getPowerTrend(minutes, opts),
     refetchInterval: 60_000,
   })
 }

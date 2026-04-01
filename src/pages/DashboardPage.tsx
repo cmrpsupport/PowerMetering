@@ -171,7 +171,8 @@ export function DashboardPage() {
   const powerTrendFetchMinutes =
     trendWindow === '30d' ? 30 * 24 * 60 : trendWindow === '1y' ? 365 * 24 * 60 : 7 * 24 * 60
 
-  const powerTrendQ = usePowerTrend(powerTrendFetchMinutes)
+  const powerTrendBucket = trendWindow === '30d' ? '15m' : trendWindow === '1y' ? '1h' : undefined
+  const powerTrendQ = usePowerTrend(powerTrendFetchMinutes, { bucket: powerTrendBucket })
   const energy24hQ = useEnergyIntervals(24)
   const energy30dQ = useEnergyIntervals(24 * 30)
 

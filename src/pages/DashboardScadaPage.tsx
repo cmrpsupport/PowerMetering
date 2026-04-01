@@ -80,8 +80,9 @@ export function DashboardScadaPage() {
                 : trendWindow === '6mo'
                   ? 183 * 24 * 60
                   : 365 * 24 * 60
-  const fetchMinutes = trendMinutes
-  const trendQ = usePowerTrend(fetchMinutes)
+  // Long windows are server-aggregated via /api/trends/power/history.
+  const trendBucket = trendWindow === '30d' ? '15m' : trendWindow === '6mo' ? '1h' : trendWindow === '1y' ? '1h' : undefined
+  const trendQ = usePowerTrend(trendMinutes, { bucket: trendBucket })
   const energy24hQ = useEnergyIntervals(24)
 
   const plantNow = useMemo(() => {
