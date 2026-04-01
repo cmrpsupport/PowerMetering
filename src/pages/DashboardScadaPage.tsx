@@ -4,7 +4,7 @@ import { Badge, type BadgeColor } from '../components/ui/Badge'
 import { DemandTracker } from '../components/ui/DemandTracker'
 import { SegmentedControl } from '../components/ui/SegmentedControl'
 import { KpiCard, type KpiStatus } from '../components/ui/KpiCard'
-import { Activity, Bolt, Gauge, Percent, Waves, Zap } from 'lucide-react'
+import { Activity, Bolt, Gauge, Layers, Percent, Waves, Zap } from 'lucide-react'
 import {
   Area,
   AreaChart,
@@ -86,6 +86,8 @@ export function DashboardScadaPage() {
   const fetchMinutes = Math.max(trendMinutes, 24 * 60)
   const trendQ = usePowerTrend(fetchMinutes, { bucket: trendBucket })
   const energy24hQ = useEnergyIntervals(24)
+  // Pull enough buckets to cover current + previous month for MTD comparison.
+  const energyMonthQ = useEnergyIntervals(24 * 75)
 
   const plantNow = useMemo(() => {
     const meters = snapQ.data?.meters
@@ -102,6 +104,34 @@ export function DashboardScadaPage() {
     const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : NaN)
     return { kw, kvar, amps, vAvg: avg(v), hzAvg: avg(hz), pfAvg: avg(pf) }
   }, [snapQ.data?.meters])
+
+  const monthKwh = useMemo(() => {
+    const ivs = energyMonthQ.data ?? []
+    if (ivs.length === 0) return NaN
+    const now = new Date()
+    const startThis = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0)
+    const startPrev = new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0, 0)
+    const endPrevMtd = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate() + 1, 0, 0, 0, 0)
+
+    let thisMtd = 0
+    let prevMtd = 0
+    for (const iv of ivs) {
+      const t = Date.parse(iv.ts)
+      if (!Number.isFinite(t)) continue
+      const e = Number(iv.energyKwh)
+      if (!Number.isFinite(e)) continue
+
+      if (t >= startThis.getTime()) thisMtd += e
+      else if (t >= startPrev.getTime() && t < endPrevMtd.getTime()) prevMtd += e
+    }
+
+    const deltaPct = prevMtd > 0 ? (thisMtd - prevMtd) / prevMtd : null
+    return {
+      thisMtd: thisMtd > 0 ? thisMtd : NaN,
+      prevMtd: prevMtd > 0 ? prevMtd : NaN,
+      deltaPct,
+    }
+  }, [energyMonthQ.data])
 
   const powerTrendFull = useMemo(() => {
     const pts = trendQ.data ?? []
@@ -308,6 +338,24 @@ export function DashboardScadaPage() {
           deltaPct={pvcDelta.kw}
           deltaLabel="latest tick"
           sparkline={pvcSpark.kw}
+        />
+        <KpiCard
+          title="Energy (MTD)"
+          value={Number.isFinite(monthKwh.thisMtd) ? fmt(monthKwh.thisMtd, 0) : '—'}
+          unit="kWh"
+          status="normal"
+          icon={<Layers size={18} />}
+          deltaPct={monthKwh.deltaPct}
+          deltaLabel="vs prev month (MTD)"
+          subtext={
+            Number.isFinite(monthKwh.prevMtd) ? (
+              <span>
+                Prev MTD: <span className="font-mono">{fmt(monthKwh.prevMtd, 0)}</span> kWh
+              </span>
+            ) : (
+              'Prev month data unavailable'
+            )
+          }
         />
         <KpiCard
           title="Reactive"
