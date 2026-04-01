@@ -16,6 +16,8 @@ import { Badge, type BadgeColor } from '../components/ui/Badge'
 import { FilterBar } from '../components/ui/FilterBar'
 import { SlideOver } from '../components/ui/SlideOver'
 import type { EnhancedAlert } from '../types'
+import { PLC_PRODUCTION_METERS } from '../constants/plcProductionMeters'
+import { findPlcMeter } from '../constants/plcMeters'
 
 function sevColor(sev: string): BadgeColor {
   if (sev === 'critical') return 'red'
@@ -39,6 +41,12 @@ function statusColor(s: string): BadgeColor {
 function fmtTime(ts: string | null) {
   if (!ts) return '--'
   return new Date(ts).toLocaleString()
+}
+
+function productionLineForMeterId(meterId: string): string | null {
+  if (!meterId || meterId === 'plant') return null
+  const hit = PLC_PRODUCTION_METERS.find((l) => Array.isArray(l.meterIds) && l.meterIds.includes(meterId))
+  return hit?.name ?? null
 }
 
 export function AlertsPage() {
@@ -207,6 +215,25 @@ export function AlertsPage() {
                     <div className="font-medium text-slate-900 dark:text-slate-50">
                       {a.meterName}
                     </div>
+                    {(() => {
+                      const line = productionLineForMeterId(a.meterId)
+                      const loc = findPlcMeter(a.meterId)?.location ?? null
+                      if (!line && !loc) return null
+                      return (
+                        <div className="mt-0.5 space-y-0.5 text-xs text-slate-500 dark:text-slate-400">
+                          {line ? (
+                            <div className="truncate">
+                              <span className="text-slate-400 dark:text-slate-500">Line:</span> {line}
+                            </div>
+                          ) : null}
+                          {loc ? (
+                            <div className="truncate">
+                              <span className="text-slate-400 dark:text-slate-500">Location:</span> {loc}
+                            </div>
+                          ) : null}
+                        </div>
+                      )
+                    })()}
                     <Link
                       className="text-xs text-indigo-600 hover:underline dark:text-indigo-300"
                       to={`/meters/${encodeURIComponent(a.meterId)}`}
