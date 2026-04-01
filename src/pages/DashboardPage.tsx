@@ -9,7 +9,7 @@ import { SegmentedControl } from '../components/ui/SegmentedControl'
 import { DemandTracker } from '../components/ui/DemandTracker'
 import type { PlcMeterData } from '../types'
 import MultiAxisTrendChart from '../components/charts/MultiAxisTrendChart'
-import { Activity, Bolt, Gauge, Power, Zap } from 'lucide-react'
+import { Activity, Bolt, Gauge, Zap } from 'lucide-react'
 import {
   Area,
   AreaChart,
@@ -25,6 +25,14 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import {
+  aggregateFluctuationByBucket,
+  aggregateTrendByBucket,
+  bucketMsForNavigatorFullSpan,
+  bucketMsForVisibleSpan,
+  capFluctuationSeries,
+  type FluctuationBucketPoint,
+} from '../lib/trendSeries'
 
 function fmt(n: number, decimals = 1): string {
   if (!Number.isFinite(n) || n === 0) return '\u2014'
@@ -33,18 +41,19 @@ function fmt(n: number, decimals = 1): string {
 
 type PvcTrendWindow = '1h' | '6h' | '12h' | '24h' | '7d' | '30d' | '1y'
 
+/** Brush indices refer to the downsampled navigator series (full fetched span). */
 function computeDefaultPvcBrush(
-  full: { ts: string }[],
+  nav: { ts: string }[],
   trendWindow: PvcTrendWindow,
   trendMinutes: number,
 ): { start: number; end: number } {
-  const end = full.length - 1
+  const end = nav.length - 1
   if (end < 0) return { start: 0, end: 0 }
   if (trendWindow === '30d' || trendWindow === '1y') return { start: 0, end }
   const cutoff = Date.now() - trendMinutes * 60 * 1000
   let start = 0
-  for (let i = 0; i < full.length; i++) {
-    if (Date.parse(full[i].ts) >= cutoff) {
+  for (let i = 0; i < nav.length; i++) {
+    if (Date.parse(nav[i].ts) >= cutoff) {
       start = i
       break
     }
@@ -117,7 +126,7 @@ export function DashboardPage() {
   const [energyView, setEnergyView] = useState<'hourly' | 'daily' | 'monthly'>('daily')
   const [showLoadProfile, setShowLoadProfile] = useState(true)
   const [trendView, setTrendView] = useState<'raw' | 'smooth'>('raw')
-  const [trendWindow, setTrendWindow] = useState<'1h' | '6h' | '12h' | '24h' | '7d' | '30d' | '1y'>('30d')
+  const [trendWindow, setTrendWindow] = useState<'1h' | '6h' | '12h' | '24h' | '7d' | '30d' | '1y'>('24h')
   const [expandedLine, setExpandedLine] = useState<string | null>(null)
   const loadProfileGradId = useId().replace(/:/g, '')
   const pvcTrendGradId = useId().replace(/:/g, '')
@@ -158,9 +167,29 @@ export function DashboardPage() {
     return mapped.sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts))
   }, [powerTrendQ.data])
 
+  /** Navigator strip: downsampled full span so the brush stays responsive on long histories. */
+  const pvcNavSeries = useMemo(() => {
+    if (powerTrendFull.length === 0) return []
+    const t0 = Date.parse(powerTrendFull[0].ts)
+    const t1 = Date.parse(powerTrendFull[powerTrendFull.length - 1].ts)
+    const span = Math.max(0, t1 - t0)
+    const bucketMs = bucketMsForNavigatorFullSpan(span, 1600)
+    return aggregateTrendByBucket(
+      powerTrendFull.map((p) => ({
+        ts: p.ts,
+        kw: p.kw,
+        voltageV: p.voltageV,
+        currentA: p.currentA,
+        pf: p.pf,
+        kvar: p.kvar,
+      })),
+      bucketMs,
+    )
+  }, [powerTrendFull])
+
   const defaultPvcBrush = useMemo(
-    () => computeDefaultPvcBrush(powerTrendFull, trendWindow, trendMinutes),
-    [powerTrendFull, trendWindow, trendMinutes],
+    () => computeDefaultPvcBrush(pvcNavSeries, trendWindow, trendMinutes),
+    [pvcNavSeries, trendWindow, trendMinutes],
   )
 
   const [pvcBrush, setPvcBrush] = useState<{ start: number; end: number } | null>(null)
@@ -170,15 +199,33 @@ export function DashboardPage() {
   }, [trendWindow, trendMinutes])
 
   const pvcBrushEffective = useMemo(() => {
-    const n = powerTrendFull.length
+    const n = pvcNavSeries.length
     const base = pvcBrush === null ? defaultPvcBrush : pvcBrush
     return clampPvcBrush(base, n)
-  }, [defaultPvcBrush, pvcBrush, powerTrendFull])
+  }, [defaultPvcBrush, pvcBrush, pvcNavSeries])
+
+  const pvcTimeRange = useMemo(() => {
+    const { start, end } = pvcBrushEffective
+    if (pvcNavSeries.length === 0) return { startMs: 0, endMs: 0 }
+    const s = clampPvcBrush({ start, end }, pvcNavSeries.length)
+    return {
+      startMs: Date.parse(pvcNavSeries[s.start].ts),
+      endMs: Date.parse(pvcNavSeries[s.end].ts),
+    }
+  }, [pvcBrushEffective, pvcNavSeries])
 
   const powerTrendVisible = useMemo(() => {
-    const { start, end } = pvcBrushEffective
-    return powerTrendFull.slice(start, end + 1)
-  }, [powerTrendFull, pvcBrushEffective])
+    if (powerTrendFull.length === 0) return []
+    const { startMs, endMs } = pvcTimeRange
+    if (endMs <= startMs) {
+      const last = powerTrendFull[powerTrendFull.length - 1]
+      return last ? [last] : []
+    }
+    return powerTrendFull.filter((p) => {
+      const t = Date.parse(p.ts)
+      return t >= startMs && t <= endMs
+    })
+  }, [powerTrendFull, pvcTimeRange])
 
   const pvcMainXAxisSpanMs = useMemo(() => {
     if (powerTrendVisible.length < 2) return 0
@@ -341,6 +388,26 @@ export function DashboardPage() {
     return { points, alerts: sorted, nominalVoltage: safeNomV }
   }, [powerTrendVisible])
 
+  const fluctuationChartPoints = useMemo(() => {
+    const pts = fluctuation.points as FluctuationBucketPoint[]
+    if (pts.length === 0) return pts
+    const span = pvcMainXAxisSpanMs
+    const bucketMs = bucketMsForVisibleSpan(span)
+    const agg = aggregateFluctuationByBucket(pts, bucketMs)
+    return capFluctuationSeries(agg)
+  }, [fluctuation.points, pvcMainXAxisSpanMs])
+
+  const pvcRangeLabel = useMemo(() => {
+    if (powerTrendVisible.length < 1) return ''
+    const a = new Date(powerTrendVisible[0].ts)
+    const b = new Date(powerTrendVisible[powerTrendVisible.length - 1].ts)
+    const longSpan = pvcMainXAxisSpanMs > 36 * 60 * 60 * 1000
+    const opts: Intl.DateTimeFormatOptions = longSpan
+      ? { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }
+      : { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }
+    return `${a.toLocaleString([], opts)} – ${b.toLocaleString([], opts)}`
+  }, [powerTrendVisible, pvcMainXAxisSpanMs])
+
   const totalDemandSeries24h = useMemo(() => {
     const ivs = energy24hQ.data ?? []
     const map = new Map<string, { ts: string; demandKw: number }>()
@@ -502,10 +569,9 @@ export function DashboardPage() {
             <div className="min-w-0">
               <div className="text-sm font-semibold text-[var(--text)]">Power / Voltage / Current</div>
               <div className="text-xs text-[var(--muted)]">
-                Shaded trends (plant cumulative). Default view matches {trendWindow}
-                {trendWindow !== '30d' && trendWindow !== '1y'
-                  ? ' (7‑day log, ≈1/min). Drag the range on the strip below to pan to earlier times.'
-                  : '. Drag the strip below to move along the timeline.'}
+                Shaded trends (plant cumulative). Top presets load history and snap the navigator; drag handles or the
+                selection to pan and zoom. Fetched span:{' '}
+                {trendWindow === '30d' || trendWindow === '1y' ? trendWindow : '7 days in memory (≈1/min)'}.
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -536,7 +602,7 @@ export function DashboardPage() {
           <div className="flex min-h-[320px] w-full min-w-0 flex-col gap-2">
             <div className="h-[400px] min-h-[240px] w-full min-w-0">
               <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={fluctuation.points} margin={{ left: 6, right: 10, top: 8, bottom: 0 }}>
+              <ComposedChart data={fluctuationChartPoints} margin={{ left: 6, right: 10, top: 8, bottom: 0 }}>
                 <defs>
                   <linearGradient id={`pvc-kw-${pvcTrendGradId}`} x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.45} />
@@ -601,7 +667,8 @@ export function DashboardPage() {
                   fill={`url(#pvc-kw-${pvcTrendGradId})`}
                   dot={false}
                   connectNulls
-                  isAnimationActive={false}
+                  isAnimationActive
+                  animationDuration={280}
                 />
                 <Area
                   yAxisId="right"
@@ -613,7 +680,8 @@ export function DashboardPage() {
                   fill={`url(#pvc-v-${pvcTrendGradId})`}
                   dot={false}
                   connectNulls
-                  isAnimationActive={false}
+                  isAnimationActive
+                  animationDuration={280}
                 />
                 <Area
                   yAxisId="right"
@@ -625,10 +693,11 @@ export function DashboardPage() {
                   fill={`url(#pvc-i-${pvcTrendGradId})`}
                   dot={false}
                   connectNulls
-                  isAnimationActive={false}
+                  isAnimationActive
+                  animationDuration={280}
                 />
 
-                {fluctuation.points
+                {fluctuationChartPoints
                   .filter((p) => (p.flagKw ?? null) !== null)
                   .map((p) => (
                     <ReferenceDot
@@ -641,7 +710,7 @@ export function DashboardPage() {
                       stroke="none"
                     />
                   ))}
-                {fluctuation.points
+                {fluctuationChartPoints
                   .filter((p) => (p.flagVoltage ?? null) !== null)
                   .map((p) => (
                     <ReferenceDot
@@ -654,7 +723,7 @@ export function DashboardPage() {
                       stroke="none"
                     />
                   ))}
-                {fluctuation.points
+                {fluctuationChartPoints
                   .filter((p) => (p.flagCurrent ?? null) !== null)
                   .map((p) => (
                     <ReferenceDot
@@ -671,51 +740,84 @@ export function DashboardPage() {
             </ResponsiveContainer>
             </div>
 
-            {powerTrendFull.length > 0 ? (
-              <div className="h-20 w-full min-w-0 shrink-0">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={powerTrendFull} margin={{ left: 6, right: 10, top: 2, bottom: 2 }}>
-                    <defs>
-                      <linearGradient id={`pvc-nav-${pvcTrendGradId}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.35} />
-                        <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0.02} />
-                      </linearGradient>
-                    </defs>
-                    <Area
-                      type="monotone"
-                      dataKey="kw"
-                      stroke="var(--chart-1)"
-                      strokeWidth={1}
-                      fill={`url(#pvc-nav-${pvcTrendGradId})`}
-                      dot={false}
-                      isAnimationActive={false}
-                    />
-                    <XAxis dataKey="ts" hide height={0} />
-                    <YAxis hide width={0} />
-                    <Brush
-                      dataKey="ts"
-                      height={22}
-                      stroke="var(--primary)"
-                      fill="color-mix(in srgb, var(--primary) 10%, var(--card))"
-                      travellerWidth={9}
-                      startIndex={pvcBrushEffective.start}
-                      endIndex={pvcBrushEffective.end}
-                      tickFormatter={(v) =>
-                        new Date(String(v)).toLocaleDateString([], { month: 'short', day: 'numeric' })
-                      }
-                      onChange={(e) => {
-                        if (
-                          e &&
-                          typeof e.startIndex === 'number' &&
-                          typeof e.endIndex === 'number' &&
-                          e.startIndex <= e.endIndex
-                        ) {
-                          setPvcBrush({ start: e.startIndex, end: e.endIndex })
+            {pvcNavSeries.length > 0 ? (
+              <div className="pvc-timeline-nav w-full min-w-0 shrink-0 space-y-1">
+                <div className="h-20 w-full rounded-lg border border-[var(--border)] bg-[color-mix(in_srgb,var(--muted)_8%,var(--card))] px-0.5 pt-0.5">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={pvcNavSeries} margin={{ left: 6, right: 10, top: 2, bottom: 2 }}>
+                      <defs>
+                        <linearGradient id={`pvc-nav-${pvcTrendGradId}`} x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.22} />
+                          <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0.02} />
+                        </linearGradient>
+                      </defs>
+                      <Area
+                        type="monotone"
+                        dataKey="kw"
+                        stroke="color-mix(in srgb, var(--chart-1) 55%, var(--chart-axis))"
+                        strokeWidth={1}
+                        fill={`url(#pvc-nav-${pvcTrendGradId})`}
+                        dot={false}
+                        isAnimationActive
+                        animationDuration={220}
+                      />
+                      <XAxis dataKey="ts" hide height={0} />
+                      <YAxis hide width={0} />
+                      <Tooltip
+                        cursor={{ stroke: 'color-mix(in srgb, var(--chart-2) 50%, transparent)' }}
+                        content={({ active, payload }) => {
+                          if (!active || !payload?.length) return null
+                          const row = payload[0]?.payload as { ts: string; kw: number }
+                          if (!row?.ts) return null
+                          return (
+                            <div className="rounded-md border border-[var(--chart-tooltip-border)] bg-[var(--chart-tooltip-bg)] px-2 py-1.5 text-[11px] text-[var(--chart-tooltip-text)] shadow-sm">
+                              <div className="font-medium">
+                                {new Date(row.ts).toLocaleString([], {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </div>
+                              <div className="text-[var(--muted)]">kW {fmt(row.kw, 1)}</div>
+                            </div>
+                          )
+                        }}
+                      />
+                      <Brush
+                        dataKey="ts"
+                        height={24}
+                        className="pvc-timeline-brush"
+                        stroke="var(--chart-2)"
+                        fill="color-mix(in srgb, var(--muted) 14%, var(--card))"
+                        travellerWidth={10}
+                        startIndex={pvcBrushEffective.start}
+                        endIndex={pvcBrushEffective.end}
+                        tickFormatter={(v) =>
+                          new Date(String(v)).toLocaleDateString([], { month: 'short', day: 'numeric' })
                         }
-                      }}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+                        onChange={(e) => {
+                          if (
+                            e &&
+                            typeof e.startIndex === 'number' &&
+                            typeof e.endIndex === 'number' &&
+                            e.startIndex <= e.endIndex
+                          ) {
+                            setPvcBrush({ start: e.startIndex, end: e.endIndex })
+                          }
+                        }}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+                {pvcRangeLabel ? (
+                  <div className="flex flex-wrap items-center justify-between gap-2 px-0.5 text-[11px] text-[var(--muted)]">
+                    <span className="truncate font-medium text-[var(--text)]">{pvcRangeLabel}</span>
+                    <span className="shrink-0 text-[var(--muted)]">
+                      Navigator: full loaded range · selection drives chart
+                    </span>
+                  </div>
+                ) : null}
               </div>
             ) : null}
           </div>
