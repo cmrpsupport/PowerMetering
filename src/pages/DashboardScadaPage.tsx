@@ -6,6 +6,7 @@ import { DemandTracker } from '../components/ui/DemandTracker'
 import { SegmentedControl } from '../components/ui/SegmentedControl'
 import { KpiCard, type KpiStatus } from '../components/ui/KpiCard'
 import { Activity, Bolt, Gauge, Layers, Percent, Waves, Zap } from 'lucide-react'
+import { PLC_PRODUCTION_METERS } from '../constants/plcProductionMeters'
 import {
   Area,
   AreaChart,
@@ -67,6 +68,7 @@ export function DashboardScadaPage() {
 
   const [trendWindow, setTrendWindow] = useState<TrendWindow>('30d')
   const [energyWindow, setEnergyWindow] = useState<EnergyWindow>('30d')
+  const [showLineEnergy, setShowLineEnergy] = useState(false)
   const trendMinutes =
     trendWindow === '1h'
       ? 60
@@ -184,25 +186,48 @@ export function DashboardScadaPage() {
     return { series }
   }, [energy48hQ.data])
 
+  const lineDefs = useMemo(() => PLC_PRODUCTION_METERS.filter((l) => Array.isArray(l.meterIds) && l.meterIds.length > 0), [])
+
+  const meterToLineKey = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const l of lineDefs) {
+      for (const id of l.meterIds ?? []) map.set(id, l.id)
+    }
+    return map
+  }, [lineDefs])
+
   const energyTrend = useMemo(() => {
     const ivs = energyTrendQ.data ?? []
-    if (ivs.length === 0) return { series: [] as { ts: string; kwh: number }[], spanMs: 0 }
+    if (ivs.length === 0) return { series: [] as Array<Record<string, number | string>>, spanMs: 0 }
 
-    const byTs = new Map<string, number>()
+    const byTsTotal = new Map<string, number>()
+    const byTsLine = new Map<string, Record<string, number>>()
+
     for (const iv of ivs) {
       const ts = iv.ts
       if (!ts) continue
       const e = Number(iv.energyKwh)
       if (!Number.isFinite(e)) continue
-      byTs.set(ts, (byTs.get(ts) ?? 0) + e)
+
+      byTsTotal.set(ts, (byTsTotal.get(ts) ?? 0) + e)
+
+      const lineKey = meterToLineKey.get(iv.meterId)
+      if (lineKey) {
+        const row = byTsLine.get(ts) ?? {}
+        row[lineKey] = (row[lineKey] ?? 0) + e
+        byTsLine.set(ts, row)
+      }
     }
 
-    const rows = Array.from(byTs.entries())
-      .map(([ts, kwh]) => ({ ts, kwh }))
-      .sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts))
+    const rows = Array.from(byTsTotal.entries())
+      .map(([ts, total]) => {
+        const lineRow = byTsLine.get(ts) ?? {}
+        return { ts, kwh: total, ...lineRow }
+      })
+      .sort((a, b) => Date.parse(String(a.ts)) - Date.parse(String(b.ts)))
 
-    const t0 = rows.length ? Date.parse(rows[0].ts) : 0
-    const t1 = rows.length ? Date.parse(rows[rows.length - 1].ts) : 0
+    const t0 = rows.length ? Date.parse(String(rows[0].ts)) : 0
+    const t1 = rows.length ? Date.parse(String(rows[rows.length - 1].ts)) : 0
     const spanMs = Number.isFinite(t0) && Number.isFinite(t1) ? Math.max(0, t1 - t0) : 0
 
     const maxPts = 2200
@@ -212,7 +237,7 @@ export function DashboardScadaPage() {
     }
 
     return { series: rows, spanMs }
-  }, [energyTrendQ.data])
+  }, [energyTrendQ.data, meterToLineKey])
 
   const energyTick = useMemo(() => {
     if (energyTrend.spanMs >= 1000 * 60 * 60 * 24 * 14) {
@@ -226,7 +251,7 @@ export function DashboardScadaPage() {
   }, [energyTrend.spanMs])
 
   const energyNavSeries = useMemo(() => {
-    const rows = energyTrend.series
+    const rows = energyTrend.series as Array<{ ts: string; kwh: number }>
     if (rows.length === 0) return [] as { ts: string; kwh: number }[]
     const pts: TrendPoint[] = rows.map((r) => ({
       ts: r.ts,
@@ -520,6 +545,19 @@ export function DashboardScadaPage() {
                 <div className="text-xs text-[var(--muted)]">Hourly kWh totals with navigator.</div>
               </div>
               <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowLineEnergy((v) => !v)}
+                  className={[
+                    'rounded-xl border px-2.5 py-1.5 text-xs font-medium transition',
+                    showLineEnergy
+                      ? 'border-[color-mix(in_srgb,var(--chart-4)_35%,var(--border))] bg-[color-mix(in_srgb,var(--chart-4)_10%,var(--card))] text-[var(--text)]'
+                      : 'border-[var(--border)] bg-[color-mix(in_srgb,var(--text)_4%,transparent)] text-[var(--muted)] hover:text-[var(--text)]',
+                  ].join(' ')}
+                  title="Show/hide per-line energy series"
+                >
+                  Lines
+                </button>
                 <SegmentedControl
                   value={energyWindow}
                   onChange={(id) => setEnergyWindow(id as EnergyWindow)}
@@ -572,6 +610,27 @@ export function DashboardScadaPage() {
                     />
                     <Legend wrapperStyle={{ color: 'var(--muted)', fontSize: 12 }} />
                     <Area type="monotone" dataKey="kwh" name="kWh" stroke="var(--chart-4)" strokeWidth={2} fill="url(#energy-kwh-scada)" dot={false} connectNulls />
+                    {showLineEnergy
+                      ? lineDefs.map((l, idx) => {
+                          const colors = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)']
+                          const stroke = colors[idx % colors.length]
+                          return (
+                            <Area
+                              key={l.id}
+                              type="monotone"
+                              dataKey={l.id}
+                              name={l.name}
+                              stroke={stroke}
+                              strokeWidth={1.5}
+                              fill="transparent"
+                              dot={false}
+                              connectNulls
+                              isAnimationActive={false}
+                              opacity={0.9}
+                            />
+                          )
+                        })
+                      : null}
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
