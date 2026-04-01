@@ -259,7 +259,9 @@ export async function getPowerTrend(
   minutes = 24 * 60,
   opts?: { bucket?: '1m' | '5m' | '15m' | '1h' | '1d'; bucketSec?: number },
 ): Promise<PowerTrendPoint[]> {
-  const maxInMemoryMinutes = 60 * 24 * 7
+  // The in-memory Node-RED buffer can be short after restarts; use SQLite history for >= 24h
+  // so 1h vs 24h windows remain meaningfully different.
+  const maxInMemoryMinutes = 60 * 24
   const qs =
     minutes >= maxInMemoryMinutes
       ? (() => {
