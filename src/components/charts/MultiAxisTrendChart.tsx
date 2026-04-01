@@ -92,6 +92,7 @@ export default function MultiAxisTrendChart({
               stroke={s.color}
               strokeWidth={2}
               dot={false}
+              connectNulls
               activeDot={{ r: 4 }}
             />
           ))}

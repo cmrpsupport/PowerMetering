@@ -106,7 +106,12 @@ export function DashboardPage() {
               : trendWindow === '30d'
                 ? 30 * 24 * 60
                 : 365 * 24 * 60
-  const powerTrendQ = usePowerTrend(trendMinutes)
+
+  /** Fetch max in-memory window (7d) for 1h–7d, then slice client-side so the curve stays one continuous log when switching range. 30d/1y use SQLite for the full span. */
+  const powerTrendFetchMinutes =
+    trendWindow === '30d' ? 30 * 24 * 60 : trendWindow === '1y' ? 365 * 24 * 60 : 7 * 24 * 60
+
+  const powerTrendQ = usePowerTrend(powerTrendFetchMinutes)
   const energy24hQ = useEnergyIntervals(24)
   const energy30dQ = useEnergyIntervals(24 * 30)
 
@@ -143,7 +148,7 @@ export function DashboardPage() {
 
   const powerTrendData = useMemo(() => {
     const pts = powerTrendQ.data ?? []
-    return pts.map((p) => ({
+    const mapped = pts.map((p) => ({
       ts: p.ts,
       kw: p.kw,
       voltageV: (p as unknown as { voltageV?: number }).voltageV ?? 0,
@@ -151,7 +156,14 @@ export function DashboardPage() {
       pf: p.pf,
       kvar: p.kvar,
     }))
-  }, [powerTrendQ.data])
+    if (trendWindow === '30d' || trendWindow === '1y') {
+      return mapped.sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts))
+    }
+    const cutoff = Date.now() - trendMinutes * 60 * 1000
+    return mapped
+      .filter((p) => Date.parse(p.ts) >= cutoff)
+      .sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts))
+  }, [powerTrendQ.data, trendMinutes, trendWindow])
 
   const fluctuation = useMemo(() => {
     const pts = powerTrendData
@@ -437,7 +449,10 @@ export function DashboardPage() {
             <div className="min-w-0">
               <div className="text-sm font-semibold text-[var(--text)]">Power / Voltage / Current</div>
               <div className="text-xs text-[var(--muted)]">
-                Shaded trends (plant cumulative) — last {trendWindow}
+                Shaded trends (plant cumulative). Showing the last {trendWindow}
+                {trendWindow !== '30d' && trendWindow !== '1y'
+                  ? ' from a continuous 7‑day log (≈1 sample/min).'
+                  : ' from stored samples.'}
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -528,6 +543,7 @@ export function DashboardPage() {
                   strokeWidth={2}
                   fill={`url(#pvc-kw-${pvcTrendGradId})`}
                   dot={false}
+                  connectNulls
                   isAnimationActive={false}
                 />
                 <Area
@@ -539,6 +555,7 @@ export function DashboardPage() {
                   strokeWidth={2}
                   fill={`url(#pvc-v-${pvcTrendGradId})`}
                   dot={false}
+                  connectNulls
                   isAnimationActive={false}
                 />
                 <Area
@@ -550,6 +567,7 @@ export function DashboardPage() {
                   strokeWidth={2}
                   fill={`url(#pvc-i-${pvcTrendGradId})`}
                   dot={false}
+                  connectNulls
                   isAnimationActive={false}
                 />
 
