@@ -1,4 +1,4 @@
-import { Fragment, useId, useMemo, useState } from 'react'
+import { Fragment, useEffect, useId, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { usePlcFullSnapshot, useNodeRedHealth, useEnhancedAlerts, useEnergyIntervals, usePowerTrend } from '../hooks/queries'
 import { findPlcMeter, PLC_METERS } from '../constants/plcMeters'
@@ -15,6 +15,7 @@ import {
   AreaChart,
   Bar,
   BarChart,
+  Brush,
   CartesianGrid,
   ComposedChart,
   Legend,
@@ -28,6 +29,34 @@ import {
 function fmt(n: number, decimals = 1): string {
   if (!Number.isFinite(n) || n === 0) return '\u2014'
   return n.toFixed(decimals)
+}
+
+type PvcTrendWindow = '1h' | '6h' | '12h' | '24h' | '7d' | '30d' | '1y'
+
+function computeDefaultPvcBrush(
+  full: { ts: string }[],
+  trendWindow: PvcTrendWindow,
+  trendMinutes: number,
+): { start: number; end: number } {
+  const end = full.length - 1
+  if (end < 0) return { start: 0, end: 0 }
+  if (trendWindow === '30d' || trendWindow === '1y') return { start: 0, end }
+  const cutoff = Date.now() - trendMinutes * 60 * 1000
+  let start = 0
+  for (let i = 0; i < full.length; i++) {
+    if (Date.parse(full[i].ts) >= cutoff) {
+      start = i
+      break
+    }
+  }
+  return { start, end }
+}
+
+function clampPvcBrush(b: { start: number; end: number }, length: number): { start: number; end: number } {
+  if (length === 0) return { start: 0, end: 0 }
+  const end = Math.min(Math.max(0, b.end), length - 1)
+  const start = Math.min(Math.max(0, b.start), end)
+  return { start, end }
 }
 
 type FluctuationSeverity = 'warning' | 'critical'
@@ -115,6 +144,49 @@ export function DashboardPage() {
   const energy24hQ = useEnergyIntervals(24)
   const energy30dQ = useEnergyIntervals(24 * 30)
 
+  /** Full fetched series (7d buffer or 30d/1y history). Visible window is chosen with the brush below. */
+  const powerTrendFull = useMemo(() => {
+    const pts = powerTrendQ.data ?? []
+    const mapped = pts.map((p) => ({
+      ts: p.ts,
+      kw: p.kw,
+      voltageV: (p as unknown as { voltageV?: number }).voltageV ?? 0,
+      currentA: (p as unknown as { currentA?: number }).currentA ?? 0,
+      pf: p.pf,
+      kvar: p.kvar,
+    }))
+    return mapped.sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts))
+  }, [powerTrendQ.data])
+
+  const defaultPvcBrush = useMemo(
+    () => computeDefaultPvcBrush(powerTrendFull, trendWindow, trendMinutes),
+    [powerTrendFull, trendWindow, trendMinutes],
+  )
+
+  const [pvcBrush, setPvcBrush] = useState<{ start: number; end: number } | null>(null)
+
+  useEffect(() => {
+    setPvcBrush(null)
+  }, [trendWindow, trendMinutes])
+
+  const pvcBrushEffective = useMemo(() => {
+    const n = powerTrendFull.length
+    const base = pvcBrush === null ? defaultPvcBrush : pvcBrush
+    return clampPvcBrush(base, n)
+  }, [defaultPvcBrush, pvcBrush, powerTrendFull])
+
+  const powerTrendVisible = useMemo(() => {
+    const { start, end } = pvcBrushEffective
+    return powerTrendFull.slice(start, end + 1)
+  }, [powerTrendFull, pvcBrushEffective])
+
+  const pvcMainXAxisSpanMs = useMemo(() => {
+    if (powerTrendVisible.length < 2) return 0
+    return (
+      Date.parse(powerTrendVisible[powerTrendVisible.length - 1].ts) - Date.parse(powerTrendVisible[0].ts)
+    )
+  }, [powerTrendVisible])
+
   const snap = snapQ.data
   const nodeRedUp = healthQ.data?.ok === true
   // Important: snapshot values can remain cached even when PLC is disconnected.
@@ -146,27 +218,8 @@ export function DashboardPage() {
       .sort((a, b) => b[1] - a[1])
   }, [snap])
 
-  const powerTrendData = useMemo(() => {
-    const pts = powerTrendQ.data ?? []
-    const mapped = pts.map((p) => ({
-      ts: p.ts,
-      kw: p.kw,
-      voltageV: (p as unknown as { voltageV?: number }).voltageV ?? 0,
-      currentA: (p as unknown as { currentA?: number }).currentA ?? 0,
-      pf: p.pf,
-      kvar: p.kvar,
-    }))
-    if (trendWindow === '30d' || trendWindow === '1y') {
-      return mapped.sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts))
-    }
-    const cutoff = Date.now() - trendMinutes * 60 * 1000
-    return mapped
-      .filter((p) => Date.parse(p.ts) >= cutoff)
-      .sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts))
-  }, [powerTrendQ.data, trendMinutes, trendWindow])
-
   const fluctuation = useMemo(() => {
-    const pts = powerTrendData
+    const pts = powerTrendVisible
     if (pts.length < 2) {
       return {
         points: pts.map((p) => ({
@@ -286,7 +339,7 @@ export function DashboardPage() {
       .slice(0, 25)
 
     return { points, alerts: sorted, nominalVoltage: safeNomV }
-  }, [powerTrendData])
+  }, [powerTrendVisible])
 
   const totalDemandSeries24h = useMemo(() => {
     const ivs = energy24hQ.data ?? []
@@ -449,10 +502,10 @@ export function DashboardPage() {
             <div className="min-w-0">
               <div className="text-sm font-semibold text-[var(--text)]">Power / Voltage / Current</div>
               <div className="text-xs text-[var(--muted)]">
-                Shaded trends (plant cumulative). Showing the last {trendWindow}
+                Shaded trends (plant cumulative). Default view matches {trendWindow}
                 {trendWindow !== '30d' && trendWindow !== '1y'
-                  ? ' from a continuous 7‑day log (≈1 sample/min).'
-                  : ' from stored samples.'}
+                  ? ' (7‑day log, ≈1/min). Drag the range on the strip below to pan to earlier times.'
+                  : '. Drag the strip below to move along the timeline.'}
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -480,8 +533,9 @@ export function DashboardPage() {
             </div>
           </div>
 
-          <div className="h-[480px] min-h-[320px] w-full min-w-0">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="flex min-h-[320px] w-full min-w-0 flex-col gap-2">
+            <div className="h-[400px] min-h-[240px] w-full min-w-0">
+              <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={fluctuation.points} margin={{ left: 6, right: 10, top: 8, bottom: 0 }}>
                 <defs>
                   <linearGradient id={`pvc-kw-${pvcTrendGradId}`} x1="0" y1="0" x2="0" y2="1">
@@ -502,9 +556,12 @@ export function DashboardPage() {
                   dataKey="ts"
                   tick={{ fontSize: 10 }}
                   minTickGap={22}
-                  tickFormatter={(v) =>
-                    new Date(String(v)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                  }
+                  tickFormatter={(v) => {
+                    const d = new Date(String(v))
+                    return pvcMainXAxisSpanMs > 36 * 60 * 60 * 1000
+                      ? d.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                      : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                  }}
                 />
                 <YAxis yAxisId="left" tick={{ fontSize: 11 }} width={60} />
                 <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} width={60} />
@@ -612,6 +669,55 @@ export function DashboardPage() {
                   ))}
               </ComposedChart>
             </ResponsiveContainer>
+            </div>
+
+            {powerTrendFull.length > 0 ? (
+              <div className="h-20 w-full min-w-0 shrink-0">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={powerTrendFull} margin={{ left: 6, right: 10, top: 2, bottom: 2 }}>
+                    <defs>
+                      <linearGradient id={`pvc-nav-${pvcTrendGradId}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.35} />
+                        <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0.02} />
+                      </linearGradient>
+                    </defs>
+                    <Area
+                      type="monotone"
+                      dataKey="kw"
+                      stroke="var(--chart-1)"
+                      strokeWidth={1}
+                      fill={`url(#pvc-nav-${pvcTrendGradId})`}
+                      dot={false}
+                      isAnimationActive={false}
+                    />
+                    <XAxis dataKey="ts" hide height={0} />
+                    <YAxis hide width={0} />
+                    <Brush
+                      dataKey="ts"
+                      height={22}
+                      stroke="var(--primary)"
+                      fill="color-mix(in srgb, var(--primary) 10%, var(--card))"
+                      travellerWidth={9}
+                      startIndex={pvcBrushEffective.start}
+                      endIndex={pvcBrushEffective.end}
+                      tickFormatter={(v) =>
+                        new Date(String(v)).toLocaleDateString([], { month: 'short', day: 'numeric' })
+                      }
+                      onChange={(e) => {
+                        if (
+                          e &&
+                          typeof e.startIndex === 'number' &&
+                          typeof e.endIndex === 'number' &&
+                          e.startIndex <= e.endIndex
+                        ) {
+                          setPvcBrush({ start: e.startIndex, end: e.endIndex })
+                        }
+                      }}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            ) : null}
           </div>
 
           <div className="mt-2 text-xs text-[var(--muted)]">
@@ -659,7 +765,7 @@ export function DashboardPage() {
         <div className="card card-hover p-5">
           <div className="mb-2 text-sm font-semibold text-[var(--text)]">kW (Active Power) vs Time</div>
           <MultiAxisTrendChart
-            data={powerTrendData}
+            data={powerTrendVisible}
             height={260}
             series={[
               { key: 'kw', label: 'kW', color: 'var(--chart-1)', yAxisId: 'left' },
