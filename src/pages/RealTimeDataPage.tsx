@@ -9,6 +9,12 @@ function fmt(n: number, decimals = 1): string {
   return n.toFixed(decimals)
 }
 
+/** Format numeric values where zero is meaningful (e.g. kWh totals). */
+function fmtQty(n: number, decimals = 1): string {
+  if (!Number.isFinite(n)) return '—'
+  return n.toFixed(decimals)
+}
+
 function meterHasData(data: PlcMeterData | undefined): boolean {
   if (!data) return false
   return data.Real_power !== 0 || data.Voltage_Lave !== 0 || data.Current_Ave !== 0
@@ -27,15 +33,16 @@ function MeterTable({
   return (
     <div className="card overflow-hidden rounded-none border-0 bg-[color-mix(in_srgb,var(--card)_92%,#0b1220)]">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[560px] table-fixed text-xs">
+        <table className="w-full min-w-[680px] table-fixed text-xs">
           <thead>
             <tr className="sticky top-0 z-10 border-b border-[color-mix(in_srgb,var(--border)_75%,transparent)] bg-[color-mix(in_srgb,var(--muted)_6%,#0b1220)] text-left text-[11px] font-semibold uppercase tracking-wide text-[color-mix(in_srgb,var(--muted)_85%,var(--text))]">
-              <th className="w-[40%] px-3 py-3">Meter / Location</th>
-              <th className="w-[14%] px-3 py-3">Status</th>
-              <th className="w-[12%] px-3 py-3 text-right">kW</th>
-              <th className="w-[12%] px-3 py-3 text-center">V</th>
+              <th className="w-[36%] px-3 py-3">Meter / Location</th>
+              <th className="w-[12%] px-3 py-3">Status</th>
+              <th className="w-[10%] px-3 py-3 text-right">kW</th>
+              <th className="w-[12%] px-3 py-3 text-right">kWh</th>
+              <th className="w-[10%] px-3 py-3 text-center">V</th>
               <th className="w-[10%] px-3 py-3 text-center">I</th>
-              <th className="w-[12%] px-3 py-3 text-center">PF</th>
+              <th className="w-[10%] px-3 py-3 text-center">PF</th>
             </tr>
           </thead>
           <tbody>
@@ -79,6 +86,9 @@ function MeterTable({
                   <td className="px-3 py-3 text-right font-mono font-semibold text-[var(--text)]">
                     {online ? fmt(data?.Real_power ?? 0, 1) : '—'}
                   </td>
+                  <td className="px-3 py-3 text-right font-mono text-[var(--muted)]">
+                    {online ? fmtQty(data?.Real_energy ?? 0, 0) : '—'}
+                  </td>
                   <td className="px-3 py-3 text-center font-mono text-[var(--muted)]">
                     {online ? fmt(data?.Voltage_Lave ?? 0, 0) : '—'}
                   </td>
@@ -111,6 +121,7 @@ function MeterTable({
                   >
                     <td className="px-3 py-3">.</td>
                     <td className="px-3 py-3">.</td>
+                    <td className="px-3 py-3 text-right">.</td>
                     <td className="px-3 py-3 text-right">.</td>
                     <td className="px-3 py-3 text-center">.</td>
                     <td className="px-3 py-3 text-center">.</td>
