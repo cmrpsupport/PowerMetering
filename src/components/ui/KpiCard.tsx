@@ -1,116 +1,173 @@
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import type { ReactNode } from 'react'
+import { TrendingDown, TrendingUp, Minus } from 'lucide-react'
+
+export type KpiStatus = 'normal' | 'good' | 'warning' | 'critical'
+
+function clamp01(n: number) {
+  return Math.max(0, Math.min(1, n))
+}
+
+function sparkPath(values: number[]) {
+  const xs = values.filter((v) => Number.isFinite(v))
+  if (xs.length < 2) return ''
+  const min = Math.min(...xs)
+  const max = Math.max(...xs)
+  const span = Math.max(1e-9, max - min)
+  return xs
+    .map((v, i) => {
+      const x = (i / (xs.length - 1)) * 100
+      const y = (1 - clamp01((v - min) / span)) * 24
+      return `${x.toFixed(2)},${y.toFixed(2)}`
+    })
+    .join(' ')
+}
+
+function trendFromDelta(deltaPct: number | null | undefined): 'up' | 'down' | 'flat' {
+  if (!Number.isFinite(deltaPct as number)) return 'flat'
+  const d = Number(deltaPct)
+  if (Math.abs(d) < 0.0025) return 'flat'
+  return d > 0 ? 'up' : 'down'
+}
+
+function statusStyles(status: KpiStatus) {
+  if (status === 'critical') {
+    return {
+      ring: 'ring-1 ring-[color-mix(in_srgb,var(--danger)_60%,transparent)]',
+      glow: 'shadow-[0_0_0_1px_color-mix(in_srgb,var(--danger)_45%,transparent),0_10px_30px_rgba(220,38,38,0.14)]',
+      accent: 'text-[var(--danger)]',
+    }
+  }
+  if (status === 'warning') {
+    return {
+      ring: 'ring-1 ring-[color-mix(in_srgb,var(--warning)_45%,transparent)]',
+      glow: 'shadow-[0_1px_2px_rgba(16,24,40,0.06),0_12px_24px_rgba(16,24,40,0.10)]',
+      accent: 'text-[var(--warning)]',
+    }
+  }
+  if (status === 'good') {
+    return {
+      ring: 'ring-1 ring-[color-mix(in_srgb,var(--success)_40%,transparent)]',
+      glow: 'shadow-[0_1px_2px_rgba(16,24,40,0.06),0_12px_24px_rgba(16,24,40,0.10)]',
+      accent: 'text-[var(--success)]',
+    }
+  }
+  return {
+    ring: 'ring-1 ring-[color-mix(in_srgb,var(--text)_10%,transparent)]',
+    glow: 'shadow-[0_1px_2px_rgba(16,24,40,0.06),0_12px_24px_rgba(16,24,40,0.10)]',
+    accent: 'text-[var(--muted)]',
+  }
+}
 
 export function KpiCard({
-  name,
+  title,
+  value,
   unit,
-  currentValue,
-  targetValue,
-  previousValue,
-  trend,
-  status,
+  subtext,
+  icon,
+  status = 'normal',
+  deltaPct,
+  deltaLabel = 'vs previous',
+  targetText,
+  projectionText,
+  sparkline,
+  footerRight,
+  onClick,
 }: {
-  name: string
-  unit: string
-  currentValue: number
-  targetValue: number
-  previousValue: number
-  trend: 'up' | 'down' | 'flat'
-  status: 'on-track' | 'at-risk' | 'off-track'
+  title: string
+  value: ReactNode
+  unit?: ReactNode
+  subtext?: ReactNode
+  icon?: ReactNode
+  status?: KpiStatus
+  /** Decimal percent, e.g. 0.024 for +2.4% */
+  deltaPct?: number | null
+  deltaLabel?: ReactNode
+  targetText?: ReactNode
+  projectionText?: ReactNode
+  sparkline?: number[]
+  footerRight?: ReactNode
+  onClick?: () => void
 }) {
-  const progressPercent = targetValue > 0 ? Math.min(100, (currentValue / targetValue) * 100) : 0
-
-  const statusColors = {
-    'on-track':
-      'border-emerald-300 dark:border-emerald-500/30',
-    'at-risk':
-      'border-amber-300 dark:border-amber-500/30',
-    'off-track':
-      'border-rose-300 dark:border-rose-500/30',
-  }
-
-  const statusBadgeColors = {
-    'on-track':
-      'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-200',
-    'at-risk':
-      'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-200',
-    'off-track':
-      'bg-rose-50 text-rose-700 dark:bg-rose-500/15 dark:text-rose-200',
-  }
-
-  const barColors = {
-    'on-track': 'bg-emerald-500 dark:bg-emerald-400',
-    'at-risk': 'bg-amber-500 dark:bg-amber-400',
-    'off-track': 'bg-rose-500 dark:bg-rose-400',
-  }
-
-  const trendColors = {
-    up: 'text-emerald-600 dark:text-emerald-400',
-    down: 'text-rose-600 dark:text-rose-400',
-    flat: 'text-slate-500 dark:text-slate-400',
-  }
-
+  const st = statusStyles(status)
+  const trend = trendFromDelta(deltaPct)
   const TrendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : Minus
-
-  const delta = previousValue !== 0 ? ((currentValue - previousValue) / previousValue) * 100 : 0
+  const deltaStr =
+    typeof deltaPct === 'number' && Number.isFinite(deltaPct) ? `${deltaPct >= 0 ? '↑' : '↓'} ${Math.abs(deltaPct * 100).toFixed(1)}%` : null
+  const path = sparkline && sparkline.length >= 2 ? sparkPath(sparkline) : ''
 
   return (
     <div
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onClick={onClick}
+      onKeyDown={
+        onClick
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') onClick()
+            }
+          : undefined
+      }
       className={[
-        'rounded-xl border bg-white p-4 dark:bg-slate-900',
-        statusColors[status],
+        'card card-hover relative overflow-hidden p-4',
+        'bg-[linear-gradient(145deg,color-mix(in_srgb,var(--card)_88%,transparent),color-mix(in_srgb,var(--muted)_6%,var(--card)))]',
+        'backdrop-blur-[2px]',
+        st.ring,
+        st.glow,
+        onClick ? 'cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--primary)_45%,transparent)]' : '',
       ].join(' ')}
     >
-      <div className="flex items-start justify-between gap-2">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.16] [mask-image:radial-gradient(160px_120px_at_80%_20%,black,transparent)]">
+        <div className="h-full w-full bg-[color-mix(in_srgb,var(--primary)_18%,transparent)]" />
+      </div>
+
+      <div className="relative flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="truncate text-xs font-medium text-slate-500 dark:text-slate-400">
-            {name}
+          <div className="text-[11px] font-medium uppercase tracking-wide text-[var(--muted)]">{title}</div>
+          <div className="mt-1 flex min-w-0 items-baseline gap-1">
+            <div className="truncate text-2xl font-semibold text-[var(--text)]">{value}</div>
+            {unit ? <div className="text-xs font-medium text-[var(--muted)]">{unit}</div> : null}
           </div>
-          <div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-50">
-            {currentValue.toLocaleString()}
-            <span className="ml-1 text-sm font-normal text-slate-500 dark:text-slate-400">
-              {unit}
-            </span>
-          </div>
+          {subtext ? <div className="mt-1 text-xs text-[var(--muted)]">{subtext}</div> : null}
         </div>
-        <span
-          className={[
-            'inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium',
-            statusBadgeColors[status],
-          ].join(' ')}
-        >
-          {status.replace('-', ' ')}
-        </span>
+
+        {icon ? (
+          <div className="relative shrink-0">
+            <div className="absolute -inset-2 rounded-2xl bg-[color-mix(in_srgb,var(--muted)_10%,transparent)] opacity-40 blur-[6px]" />
+            <div className="relative opacity-45">{icon}</div>
+          </div>
+        ) : null}
       </div>
 
-      {/* Trend indicator */}
-      <div className="mt-2 flex items-center gap-1.5">
-        <TrendIcon size={14} className={trendColors[trend]} />
-        <span className={['text-xs font-medium', trendColors[trend]].join(' ')}>
-          {delta >= 0 ? '+' : ''}
-          {delta.toFixed(1)}%
-        </span>
-        <span className="text-xs text-slate-400 dark:text-slate-500">
-          vs previous
-        </span>
-      </div>
+      {(deltaStr || path || targetText || projectionText || footerRight) && (
+        <div className="relative mt-3 grid grid-cols-[1fr_auto] items-end gap-3">
+          <div className="min-w-0">
+            {(deltaStr || path) && (
+              <div className="flex items-center gap-2">
+                <div className={['inline-flex items-center gap-1 text-xs font-medium', st.accent].join(' ')}>
+                  <TrendIcon size={14} className={st.accent} />
+                  {deltaStr ? <span className="tabular-nums">{deltaStr}</span> : <span>{trend === 'flat' ? '—' : ''}</span>}
+                </div>
+                <div className="text-xs text-[var(--muted)]">{deltaLabel}</div>
+              </div>
+            )}
+            {targetText || projectionText ? (
+              <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-[var(--muted)]">
+                {targetText ? <div>{targetText}</div> : null}
+                {projectionText ? <div>{projectionText}</div> : null}
+              </div>
+            ) : null}
+          </div>
 
-      {/* Progress toward target */}
-      <div className="mt-3">
-        <div className="mb-1 flex items-center justify-between text-[11px]">
-          <span className="text-slate-500 dark:text-slate-400">
-            Target: {targetValue.toLocaleString()} {unit}
-          </span>
-          <span className="font-medium text-slate-600 dark:text-slate-300">
-            {progressPercent.toFixed(0)}%
-          </span>
+          <div className="flex items-end gap-2">
+            {footerRight}
+            {path ? (
+              <svg width="96" height="24" viewBox="0 0 100 24" className="opacity-70">
+                <polyline fill="none" stroke="var(--primary)" strokeWidth="2" points={path} />
+              </svg>
+            ) : null}
+          </div>
         </div>
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
-          <div
-            className={['h-full rounded-full transition-all', barColors[status]].join(' ')}
-            style={{ width: `${progressPercent}%` }}
-          />
-        </div>
-      </div>
+      )}
     </div>
   )
 }

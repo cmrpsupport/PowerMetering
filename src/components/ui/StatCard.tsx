@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { KpiCard, type KpiStatus } from './KpiCard'
 
 export function StatCard({
   title,
@@ -11,21 +12,20 @@ export function StatCard({
   subtitle?: ReactNode
   right?: ReactNode
 }) {
+  let kpiValue: ReactNode = value
+  let kpiUnit: ReactNode | undefined
+  if (typeof value === 'string') {
+    const m = value.trim().match(/^(-?\d[\d,]*\.?\d*)\s*([A-Za-z%/]+)$/)
+    if (m) {
+      kpiValue = m[1]
+      kpiUnit = m[2]
+    }
+  }
+
+  // StatCard historically had no status; treat "right" as a footer affordance.
+  const status: KpiStatus = 'normal'
   return (
-    <div className="card p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="text-xs font-medium text-[var(--muted)]">{title}</div>
-          <div className="mt-1 truncate text-2xl font-semibold text-[var(--text)]">
-            {value}
-          </div>
-          {subtitle ? (
-            <div className="mt-1 text-xs text-[var(--muted)]">{subtitle}</div>
-          ) : null}
-        </div>
-        {right ? <div className="shrink-0">{right}</div> : null}
-      </div>
-    </div>
+    <KpiCard title={title} value={kpiValue} unit={kpiUnit} subtext={subtitle} footerRight={right} status={status} />
   )
 }
 

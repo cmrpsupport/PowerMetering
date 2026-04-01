@@ -1,5 +1,7 @@
 import { useKpis } from '../hooks/queries'
 import { Badge } from '../components/ui/Badge'
+import { KpiCard } from '../components/ui/KpiCard'
+import { Gauge, Target, TrendingUp } from 'lucide-react'
 
 function fmtNum(n: number, decimals = 1) {
   if (!Number.isFinite(n)) return '--'
@@ -24,37 +26,36 @@ export function KpisPage() {
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
         {kpis.map((k) => (
-          <div key={k.id} className="card p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <div className="text-sm font-semibold text-slate-900 dark:text-slate-50">
-                  {k.name}
-                </div>
-                <div className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                  Previous: {fmtNum(k.previousValue)} {k.unit} · Trend: {k.trend}
-                </div>
-              </div>
-              <Badge
-                color={
-                  k.status === 'on-track'
-                    ? 'green'
-                    : k.status === 'at-risk'
-                      ? 'yellow'
-                      : 'red'
-                }
-              >
-                {k.status}
+          <KpiCard
+            key={k.id}
+            title={k.name}
+            value={fmtNum(k.currentValue)}
+            unit={k.unit}
+            subtext={
+              <span>
+                Prev: {fmtNum(k.previousValue)} {k.unit} · Trend: {k.trend}
+              </span>
+            }
+            icon={<Gauge size={18} />}
+            status={k.status === 'on-track' ? 'good' : k.status === 'at-risk' ? 'warning' : 'critical'}
+            deltaPct={k.previousValue ? (k.currentValue - k.previousValue) / k.previousValue : null}
+            deltaLabel="from previous"
+            targetText={
+              <span className="inline-flex items-center gap-1">
+                <Target size={12} /> Target {fmtNum(k.targetValue)} {k.unit}
+              </span>
+            }
+            footerRight={
+              <Badge color={k.status === 'on-track' ? 'green' : k.status === 'at-risk' ? 'yellow' : 'red'}>
+                <span className="inline-flex items-center gap-1">
+                  <TrendingUp size={12} />
+                  {k.status}
+                </span>
               </Badge>
-            </div>
-            <div className="mt-3 text-2xl font-semibold text-slate-900 dark:text-slate-50">
-              {fmtNum(k.currentValue)} {k.unit}
-            </div>
-            <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              Target: {fmtNum(k.targetValue)} {k.unit}
-            </div>
-          </div>
+            }
+          />
         ))}
 
         {kpis.length === 0 && (

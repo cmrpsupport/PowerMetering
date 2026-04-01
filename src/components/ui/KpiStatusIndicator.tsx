@@ -1,10 +1,5 @@
 import type { KpiStatusLevel } from '../../lib/kpiStatus'
-
-const EMOJI: Record<Exclude<KpiStatusLevel, 'unknown'>, string> = {
-  ok: '🟢',
-  warning: '⚠️',
-  critical: '🔻',
-}
+import { AlertTriangle, OctagonAlert, CircleCheck } from 'lucide-react'
 
 const TONE_CLASS: Record<Exclude<KpiStatusLevel, 'unknown'>, string> = {
   ok: 'text-emerald-600 dark:text-emerald-400',
@@ -25,19 +20,21 @@ export function KpiStatusIndicator({
 }) {
   if (level === 'unknown') return null
 
+  const Icon = level === 'ok' ? CircleCheck : level === 'warning' ? AlertTriangle : OctagonAlert
+
   return (
     <span
       title={detail}
       role="img"
       aria-label={detail}
       className={[
-        'inline-block origin-center select-none text-lg leading-none transition-all duration-500 ease-out will-change-transform',
+        'inline-flex origin-center select-none items-center leading-none transition-all duration-500 ease-out will-change-transform',
         TONE_CLASS[level],
         level === 'critical' ? 'motion-safe:animate-pulse' : '',
         level === 'warning' ? 'kpi-status-soft motion-safe:opacity-100' : '',
       ].join(' ')}
     >
-      {EMOJI[level]}
+      <Icon size={18} />
     </span>
   )
 }

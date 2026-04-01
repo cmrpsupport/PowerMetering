@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
 import { useEnergyIntervals, useNodeRedHealth, usePlcFullSnapshot, usePowerTrend } from '../hooks/queries'
 import { Badge, type BadgeColor } from '../components/ui/Badge'
-import { StatCard } from '../components/ui/StatCard'
 import { DemandTracker } from '../components/ui/DemandTracker'
 import { SegmentedControl } from '../components/ui/SegmentedControl'
+import { KpiCard, type KpiStatus } from '../components/ui/KpiCard'
+import { Activity, Bolt, Gauge, Percent, Waves, Zap } from 'lucide-react'
 import {
   Area,
   AreaChart,
@@ -30,7 +31,14 @@ function fmt(n: number, decimals = 1): string {
   return n.toFixed(decimals)
 }
 
-type TrendWindow = '1h' | '6h' | '12h' | '24h' | '7d' | '30d'
+function pfStatus(pf: number): KpiStatus {
+  if (!Number.isFinite(pf) || pf <= 0) return 'normal'
+  if (pf >= 0.95) return 'good'
+  if (pf >= 0.85) return 'warning'
+  return 'critical'
+}
+
+type TrendWindow = '1h' | '6h' | '12h' | '24h' | '7d' | '30d' | '6mo' | '1y'
 
 type FluctuationSeverity = 'warning' | 'critical'
 type FluctuationMetric = 'kw' | 'voltage' | 'current'
@@ -55,7 +63,7 @@ export function DashboardScadaPage() {
   const healthQ = useNodeRedHealth()
   const plcUp = healthQ.data?.plcLink?.up === true
 
-  const [trendWindow, setTrendWindow] = useState<TrendWindow>('24h')
+  const [trendWindow, setTrendWindow] = useState<TrendWindow>('30d')
   const trendMinutes =
     trendWindow === '1h'
       ? 60
@@ -67,8 +75,12 @@ export function DashboardScadaPage() {
             ? 24 * 60
             : trendWindow === '7d'
               ? 7 * 24 * 60
-              : 30 * 24 * 60
-  const fetchMinutes = trendWindow === '30d' ? 30 * 24 * 60 : 7 * 24 * 60
+              : trendWindow === '30d'
+                ? 30 * 24 * 60
+                : trendWindow === '6mo'
+                  ? 183 * 24 * 60
+                  : 365 * 24 * 60
+  const fetchMinutes = trendMinutes
   const trendQ = usePowerTrend(fetchMinutes)
   const energy24hQ = useEnergyIntervals(24)
 
@@ -151,6 +163,33 @@ export function DashboardScadaPage() {
     return aggregateTrendByBucket(down, bucketMs)
   }, [powerTrendVisible, pvcSpanMs])
 
+  const pvcSpark = useMemo(() => {
+    const last = pvcMainSeries.slice(-28)
+    return {
+      kw: last.map((p) => p.kw),
+      v: last.map((p) => p.voltageV),
+      i: last.map((p) => p.currentA),
+      pf: last.map((p) => p.pf),
+    }
+  }, [pvcMainSeries])
+
+  const pvcDelta = useMemo(() => {
+    const last = pvcMainSeries
+    const prev = last.length >= 2 ? last[last.length - 2] : null
+    const cur = last.length >= 1 ? last[last.length - 1] : null
+    const pct = (a: number | undefined, b: number | undefined) => {
+      if (!Number.isFinite(a) || !Number.isFinite(b)) return null
+      const denom = Math.max(1e-9, Math.abs(Number(a)))
+      return (Number(b) - Number(a)) / denom
+    }
+    return {
+      kw: prev && cur ? pct(prev.kw, cur.kw) : null,
+      v: prev && cur ? pct(prev.voltageV, cur.voltageV) : null,
+      i: prev && cur ? pct(prev.currentA, cur.currentA) : null,
+      pf: prev && cur ? pct(prev.pf, cur.pf) : null,
+    }
+  }, [pvcMainSeries])
+
   const fluctuationAlerts = useMemo<FluctuationAlert[]>(() => {
     const pts = pvcMainSeries
     if (pts.length < 3) return []
@@ -224,13 +263,62 @@ export function DashboardScadaPage() {
         </div>
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-6">
-        <StatCard title="Plant kW" value={plantNow ? `${fmt(plantNow.kw, 1)} kW` : '—'} />
-        <StatCard title="Plant kVAR" value={plantNow ? `${fmt(plantNow.kvar, 1)} kVAR` : '—'} />
-        <StatCard title="I avg" value={plantNow ? `${fmt(plantNow.amps, 0)} A` : '—'} />
-        <StatCard title="V L-L avg" value={plantNow ? `${fmt(plantNow.vAvg, 0)} V` : '—'} />
-        <StatCard title="Hz avg" value={plantNow ? `${fmt(plantNow.hzAvg, 2)} Hz` : '—'} />
-        <StatCard title="PF avg" value={plantNow ? fmt(plantNow.pfAvg, 3) : '—'} />
+      <div className="grid gap-2 [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]">
+        <KpiCard
+          title="Plant power"
+          value={plantNow ? fmt(plantNow.kw, 1) : '—'}
+          unit="kW"
+          status="normal"
+          icon={<Bolt size={18} />}
+          deltaPct={pvcDelta.kw}
+          deltaLabel="latest tick"
+          sparkline={pvcSpark.kw}
+        />
+        <KpiCard
+          title="Reactive"
+          value={plantNow ? fmt(plantNow.kvar, 1) : '—'}
+          unit="kVAR"
+          status="normal"
+          icon={<Zap size={18} />}
+          sparkline={pvcSpark.kw}
+        />
+        <KpiCard
+          title="Current avg"
+          value={plantNow ? fmt(plantNow.amps, 0) : '—'}
+          unit="A"
+          status="normal"
+          icon={<Activity size={18} />}
+          deltaPct={pvcDelta.i}
+          deltaLabel="latest tick"
+          sparkline={pvcSpark.i}
+        />
+        <KpiCard
+          title="Voltage L-L avg"
+          value={plantNow ? fmt(plantNow.vAvg, 0) : '—'}
+          unit="V"
+          status="normal"
+          icon={<Waves size={18} />}
+          deltaPct={pvcDelta.v}
+          deltaLabel="latest tick"
+          sparkline={pvcSpark.v}
+        />
+        <KpiCard
+          title="Frequency avg"
+          value={plantNow ? fmt(plantNow.hzAvg, 2) : '—'}
+          unit="Hz"
+          status="normal"
+          icon={<Gauge size={18} />}
+        />
+        <KpiCard
+          title="Power factor avg"
+          value={plantNow ? fmt(plantNow.pfAvg, 3) : '—'}
+          status={plantNow ? pfStatus(plantNow.pfAvg) : 'normal'}
+          icon={<Percent size={18} />}
+          deltaPct={pvcDelta.pf}
+          deltaLabel="latest tick"
+          targetText="Target ≥ 0.950"
+          sparkline={pvcSpark.pf}
+        />
       </div>
 
       <div className="grid min-h-0 gap-3 lg:grid-cols-4">
@@ -253,6 +341,8 @@ export function DashboardScadaPage() {
                   { id: '24h', label: '24h' },
                   { id: '7d', label: '7d' },
                   { id: '30d', label: '30d' },
+                  { id: '6mo', label: '6mo' },
+                  { id: '1y', label: '1y' },
                 ]}
               />
             </div>
@@ -369,7 +459,7 @@ export function DashboardScadaPage() {
             <div className="card card-hover overflow-hidden p-4">
               <DemandTracker variant="embedded" />
             </div>
-            <div className="card card-hover min-h-0 overflow-hidden p-4">
+            <div className="card card-hover flex min-h-0 flex-col overflow-hidden p-4">
               <div className="mb-2 flex items-center justify-between gap-2">
                 <div className="text-sm font-semibold text-[var(--text)]">Fluctuations</div>
                 <div className="text-[11px] text-[var(--muted)]">Δ &gt; 25% warn · &gt; 40% crit</div>
@@ -380,7 +470,8 @@ export function DashboardScadaPage() {
                   No spikes detected in current window.
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="min-h-0 flex-1 overflow-auto pr-1 [scrollbar-gutter:stable]">
+                  <div className="space-y-2">
                   {fluctuationAlerts.map((a) => (
                     <div
                       key={a.id}
@@ -414,6 +505,7 @@ export function DashboardScadaPage() {
                       </div>
                     </div>
                   ))}
+                  </div>
                 </div>
               )}
             </div>
