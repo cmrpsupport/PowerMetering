@@ -506,7 +506,8 @@ export function ConsumptionReportPage() {
                               const cell = b.byMeter[m]
                               const cum = cell?.cumulativeKwhEnd ?? null
                               const daily = cell?.energyKwh ?? 0
-                              const notRunning = granularity === 'hourly' && cell && Number.isFinite(daily) && Math.abs(daily) <= 0.0001
+                              // Hourly "Period" is kWh for the hour. Treat <2 kWh (~<2 kW avg) as not running.
+                              const notRunning = granularity === 'hourly' && cell && Number.isFinite(daily) && Math.abs(daily) < 2
                               return (
                                 <Fragment key={`${b.key}:${m}`}>
                                   <td
