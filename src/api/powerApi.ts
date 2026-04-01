@@ -5,6 +5,8 @@ import type {
   MeterSamplePoint,
   PlcFullSnapshot,
   PlcMeterData,
+  VoltageEvent,
+  VoltageEventType,
 } from '../types'
 
 export type DemandTrendRange = '24h' | '7d' | '30d' | 'all'
@@ -235,6 +237,51 @@ export async function getNodeRedHealth(): Promise<NodeRedHealth | null> {
 
 export async function listEnhancedAlerts(): Promise<EnhancedAlert[]> {
   return await http<EnhancedAlert[]>('/api/alarms').catch(() => [])
+}
+
+function parseVoltageDetail(detail: string): { voltage: number | null; nominal: number | null } {
+  // Example: "Voltage 392.12V vs nominal 400.00V."
+  const m = String(detail).match(/Voltage\s+([-+]?\d+(?:\.\d+)?)V\s+vs\s+nominal\s+([-+]?\d+(?:\.\d+)?)V/i)
+  if (!m) return { voltage: null, nominal: null }
+  const voltage = Number(m[1])
+  const nominal = Number(m[2])
+  return { voltage: Number.isFinite(voltage) ? voltage : null, nominal: Number.isFinite(nominal) ? nominal : null }
+}
+
+function voltageEventTypeFromAlert(message: string, detail: string): VoltageEventType {
+  const msg = String(message).toLowerCase()
+  if (msg.includes('interruption')) return 'interruption'
+  if (msg.includes('transient')) return 'transient'
+  // For "Voltage out of band", infer sag/swell from value vs nominal.
+  const { voltage, nominal } = parseVoltageDetail(detail)
+  if (voltage !== null && nominal !== null && nominal > 0) {
+    return voltage < nominal ? 'sag' : 'swell'
+  }
+  return 'transient'
+}
+
+export async function getVoltageEvents(meterId?: string): Promise<VoltageEvent[]> {
+  // Backend currently logs PQ events as Enhanced Alerts (category=power_quality).
+  // Convert them into voltage-event rows for the PQ Events page.
+  const alerts = await listEnhancedAlerts()
+  const pq = alerts.filter((a) => a.category === 'power_quality')
+  const filtered = meterId ? pq.filter((a) => a.meterId === meterId) : pq
+  return filtered.map((a) => {
+    const { voltage, nominal } = parseVoltageDetail(a.detail)
+    const magnitudePu =
+      voltage !== null && nominal !== null && nominal > 0 ? Math.max(0, voltage / nominal) : 0
+    return {
+      id: a.id,
+      meterId: a.meterId,
+      meterName: a.meterName,
+      ts: a.ts,
+      type: voltageEventTypeFromAlert(a.message, a.detail),
+      phase: 'L-L',
+      durationMs: 0,
+      magnitudePu,
+      description: a.message,
+    } satisfies VoltageEvent
+  })
 }
 
 export async function acknowledgeAlert(alertId: string, _by: string): Promise<EnhancedAlert | null> {

@@ -16,6 +16,8 @@ const RANGE_OPTIONS: RangeOpt[] = [
   { id: '30d', label: 'Last 30 days', minutes: 30 * 24 * 60 },
 ]
 
+const ALL_METERS_ID = '__all__'
+
 function fmt(n: number, digits = 1) {
   if (!Number.isFinite(n)) return '—'
   return n.toFixed(digits)
@@ -38,17 +40,18 @@ export function PowerQualityTrendsPage() {
   const plcUp = health?.plcLink?.up === true
 
   const meterIds = useMemo(() => Object.keys(snap?.meters ?? {}).sort(), [snap?.meters])
-  const [meterId, setMeterId] = useState<string>(() => meterIds[0] ?? '')
+  const [meterId, setMeterId] = useState<string>(() => ALL_METERS_ID)
   const [rangeId, setRangeId] = useState<string>('24h')
 
   // Keep selection stable if meter list loads later / changes.
   const effectiveMeterId = useMemo(() => {
+    if (meterId === ALL_METERS_ID) return ALL_METERS_ID
     if (meterId && meterIds.includes(meterId)) return meterId
-    return meterIds[0] ?? ''
+    return ALL_METERS_ID
   }, [meterId, meterIds])
 
   const minutes = useMemo(() => RANGE_OPTIONS.find((r) => r.id === rangeId)?.minutes ?? 24 * 60, [rangeId])
-  const historyQ = useMeterHistory(minutes, effectiveMeterId || undefined)
+  const historyQ = useMeterHistory(minutes, effectiveMeterId === ALL_METERS_ID ? undefined : effectiveMeterId || undefined)
   const raw: MeterSamplePoint[] = useMemo(() => historyQ.data ?? [], [historyQ.data])
 
   const spanMs = useMemo(() => {
@@ -62,7 +65,39 @@ export function PowerQualityTrendsPage() {
   const bucketMs = useMemo(() => bucketMsForVisibleSpan(spanMs), [spanMs])
 
   const chartData = useMemo(() => {
-    const pts = raw.map(toTrendPoint)
+    const ptsRaw = raw.map(toTrendPoint)
+    const pts =
+      effectiveMeterId === ALL_METERS_ID
+        ? (() => {
+            // Average across meters per timestamp.
+            const acc = new Map<
+              string,
+              { ts: string; n: number; kw: number; voltageV: number; currentA: number; pf: number; kvar: number }
+            >()
+            for (const p of ptsRaw) {
+              const key = p.ts
+              const cur = acc.get(key) ?? { ts: key, n: 0, kw: 0, voltageV: 0, currentA: 0, pf: 0, kvar: 0 }
+              cur.n += 1
+              cur.kw += p.kw
+              cur.voltageV += p.voltageV
+              cur.currentA += p.currentA
+              cur.pf += p.pf ?? 0
+              cur.kvar += p.kvar ?? 0
+              acc.set(key, cur)
+            }
+            return Array.from(acc.values())
+              .map((r) => ({
+                ts: r.ts,
+                kw: r.kw / Math.max(1, r.n),
+                voltageV: r.voltageV / Math.max(1, r.n),
+                currentA: r.currentA / Math.max(1, r.n),
+                pf: r.pf / Math.max(1, r.n),
+                kvar: r.kvar / Math.max(1, r.n),
+              }))
+              .sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts))
+          })()
+        : ptsRaw
+
     const down = downsampleTrendForChart(pts, spanMs)
     return down.map((p) => ({
       ts: p.ts,
@@ -86,18 +121,28 @@ export function PowerQualityTrendsPage() {
   )
 
   const stats = useMemo(() => {
-    if (!snap?.meters || !effectiveMeterId) return null
-    const d = snap.meters[effectiveMeterId]
-    if (!d) return null
+    if (!snap?.meters) return null
+    if (effectiveMeterId !== ALL_METERS_ID) {
+      const d = snap.meters[effectiveMeterId]
+      if (!d) return null
+      return { v: d.Voltage_Lave, f: d.Frequency, pf: d.Power_factor, i: d.Current_Ave }
+    }
+
+    const list = Object.values(snap.meters)
+    if (list.length === 0) return null
+    const xs = (sel: (m: (typeof list)[number]) => number) =>
+      list.map(sel).filter((n) => Number.isFinite(n) && n > 0)
+    const avg = (a: number[]) => (a.length ? a.reduce((s, v) => s + v, 0) / a.length : NaN)
     return {
-      v: d.Voltage_Lave,
-      f: d.Frequency,
-      pf: d.Power_factor,
-      i: d.Current_Ave,
+      v: avg(xs((m) => m.Voltage_Lave)),
+      f: avg(xs((m) => m.Frequency)),
+      pf: avg(list.map((m) => m.Power_factor).filter((n) => Number.isFinite(n) && n > 0)),
+      i: avg(xs((m) => m.Current_Ave)),
     }
   }, [snap?.meters, effectiveMeterId])
 
   const meterName = useMemo(() => {
+    if (effectiveMeterId === ALL_METERS_ID) return 'All meters (avg)'
     if (!effectiveMeterId) return '—'
     return findPlcMeter(effectiveMeterId)?.name ?? effectiveMeterId
   }, [effectiveMeterId])
@@ -129,6 +174,7 @@ export function PowerQualityTrendsPage() {
             className="nr-input px-2.5 py-1.5"
           >
             {meterIds.length === 0 ? <option value="">No meters</option> : null}
+            <option value={ALL_METERS_ID}>All meters (avg)</option>
             {meterIds.map((id) => (
               <option key={id} value={id}>
                 {findPlcMeter(id)?.name ?? id}

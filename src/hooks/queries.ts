@@ -7,6 +7,7 @@ import {
   listEnhancedAlerts,
   getEnergyIntervals,
   getPowerTrend,
+  getVoltageEvents,
   getMeterHistory,
   getDemandStatus,
   type DemandTrendRange,
@@ -167,7 +168,7 @@ export function useReadings(meterId: string, minutes = 60) {
 export function useVoltageEvents(meterId?: string) {
   return useQuery({
     queryKey: ['voltageEvents', meterId ?? 'all'],
-    queryFn: async () => [],
+    queryFn: () => getVoltageEvents(meterId),
     staleTime: 30_000,
     refetchInterval: 60_000,
   })

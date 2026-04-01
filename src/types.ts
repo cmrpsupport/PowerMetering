@@ -111,3 +111,22 @@ export type MeterSamplePoint = {
   powerFactor: number
   frequency: number
 }
+
+// ── Power Quality Events ──────────────────────────────────
+
+export type VoltageEventType = 'sag' | 'swell' | 'interruption' | 'transient'
+
+export type VoltageEvent = {
+  id: string
+  meterId: string
+  meterName: string
+  ts: string
+  type: VoltageEventType
+  /** Phase descriptor (best-effort when derived from alerts). */
+  phase: string
+  /** Duration in milliseconds (0 when unknown). */
+  durationMs: number
+  /** Magnitude in per-unit (pu), 1.0 = nominal. */
+  magnitudePu: number
+  description: string
+}
