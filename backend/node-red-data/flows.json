@@ -2,7 +2,7 @@
   {
     "id": "a1000001.0001tab",
     "type": "tab",
-    "label": "S7-1500 → HTTP API",
+    "label": "S7-1500 \u2192 HTTP API",
     "disabled": false,
     "info": "Reads PLC variables via node-red-contrib-s7 and exposes JSON for the React app.\nEdit the **S7 Endpoint** node with your CPU IP, rack, slot, and DB addresses (match TIA Portal)."
   },
@@ -11,7 +11,7 @@
     "type": "tab",
     "label": "S7-1500 Dashboard (DB1)",
     "disabled": false,
-    "info": "Reads DB1 REALs at byte offsets 0, 4, 8 via node-red-contrib-s7 (ISO-on-TCP). TIA: DB1 non-optimized; CPU protection → Permit access with PUT/GET.\nDashboard: http://localhost:1880/ui (default path)."
+    "info": "Reads DB1 REALs at byte offsets 0, 4, 8 via node-red-contrib-s7 (ISO-on-TCP). TIA: DB1 non-optimized; CPU protection \u2192 Permit access with PUT/GET.\nDashboard: http://localhost:1880/ui (default path)."
   },
   {
     "id": "a1000002.s7endpoint",
@@ -4655,7 +4655,7 @@
     "type": "function",
     "z": "a1000001.0001tab",
     "name": "Build JSON",
-    "func": "const snap = global.get('plcSnapshot');\nmsg.payload = snap || {\n  ts: new Date().toISOString(),\n  values: null,\n  warning: 'No S7 data received yet — check PLC IP, rack/slot, DB addresses, and TIA PUT/GET.'\n};\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
+    "func": "const snap = global.get('plcSnapshot');\nmsg.payload = snap || {\n  ts: new Date().toISOString(),\n  values: null,\n  warning: 'No S7 data received yet \u2014 check PLC IP, rack/slot, DB addresses, and TIA PUT/GET.'\n};\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -4727,8 +4727,8 @@
     "id": "a1000017.sqlcreate",
     "type": "function",
     "z": "a1000001.0001tab",
-    "name": "SQLite: create schema (v3 — meter_samples)",
-    "func": "msg.topic = `CREATE TABLE IF NOT EXISTS plc_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  Power_kW REAL,\n  Energy_kWh REAL,\n  Voltage_V REAL,\n  Current_A REAL,\n  PowerFactor REAL,\n  Total_CrackerLine1_kWh REAL,\n  Total_CrackerLine2_kWh REAL,\n  Total_PretzelLine_kWh REAL,\n  Total_WaferLine1_kWh REAL,\n  Total_WaferLine2_kWh REAL,\n  Total_ChocoyChocoLine_kWh REAL,\n  Total_DynamiteLine_kWh REAL,\n  Total_XOLine_kWh REAL,\n  Total_MaxxLine_kWh REAL,\n  Total_MainLine_kWh REAL,\n  Total_UtilitiesJaguar_kWh REAL,\n  Total_UtilitiesLighting_kWh REAL\n);\nCREATE INDEX IF NOT EXISTS idx_plc_samples_ts ON plc_samples(ts);\nCREATE INDEX IF NOT EXISTS idx_plc_samples_epoch ON plc_samples(ts_epoch);\n\nCREATE TABLE IF NOT EXISTS meter_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  meter_id TEXT NOT NULL,\n  real_power_kw REAL,\n  reactive_power_kvar REAL,\n  apparent_power_kva REAL,\n  real_energy_kwh REAL,\n  reactive_energy_kvarh REAL,\n  apparent_energy_kvah REAL,\n  voltage_ab REAL,\n  voltage_bc REAL,\n  voltage_ca REAL,\n  voltage_ll_avg REAL,\n  voltage_an REAL,\n  voltage_bn REAL,\n  voltage_cn REAL,\n  voltage_ln_avg REAL,\n  current_a REAL,\n  current_b REAL,\n  current_c REAL,\n  current_avg REAL,\n  power_factor REAL,\n  frequency REAL\n);\nCREATE INDEX IF NOT EXISTS idx_meter_epoch_id ON meter_samples(ts_epoch, meter_id);\nCREATE INDEX IF NOT EXISTS idx_meter_id_epoch ON meter_samples(meter_id, ts_epoch);`;\nreturn msg;",
+    "name": "SQLite: create schema (v3 \u2014 meter_samples)",
+    "func": "msg.topic = `CREATE TABLE IF NOT EXISTS plc_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  Power_kW REAL,\n  Energy_kWh REAL,\n  Voltage_V REAL,\n  Current_A REAL,\n  PowerFactor REAL,\n  Total_CrackerLine1_kWh REAL,\n  Total_CrackerLine2_kWh REAL,\n  Total_PretzelLine_kWh REAL,\n  Total_WaferLine1_kWh REAL,\n  Total_WaferLine2_kWh REAL,\n  Total_ChocoyChocoLine_kWh REAL,\n  Total_DynamiteLine_kWh REAL,\n  Total_XOLine_kWh REAL,\n  Total_MaxxLine_kWh REAL,\n  Total_MainLine_kWh REAL,\n  Total_UtilitiesJaguar_kWh REAL,\n  Total_UtilitiesLighting_kWh REAL\n);\nCREATE INDEX IF NOT EXISTS idx_plc_samples_ts ON plc_samples(ts);\nCREATE INDEX IF NOT EXISTS idx_plc_samples_epoch ON plc_samples(ts_epoch);\n\nCREATE TABLE IF NOT EXISTS meter_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  meter_id TEXT NOT NULL,\n  real_power_kw REAL,\n  reactive_power_kvar REAL,\n  apparent_power_kva REAL,\n  real_energy_kwh REAL,\n  reactive_energy_kvarh REAL,\n  apparent_energy_kvah REAL,\n  voltage_ab REAL,\n  voltage_bc REAL,\n  voltage_ca REAL,\n  voltage_ll_avg REAL,\n  voltage_an REAL,\n  voltage_bn REAL,\n  voltage_cn REAL,\n  voltage_ln_avg REAL,\n  current_a REAL,\n  current_b REAL,\n  current_c REAL,\n  current_avg REAL,\n  power_factor REAL,\n  frequency REAL\n);\nCREATE INDEX IF NOT EXISTS idx_meter_epoch_id ON meter_samples(ts_epoch, meter_id);\nCREATE INDEX IF NOT EXISTS idx_meter_id_epoch ON meter_samples(meter_id, ts_epoch);\n\nCREATE TABLE IF NOT EXISTS demand_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  current_demand_kw REAL NOT NULL,\n  instant_kw REAL NOT NULL\n);\nCREATE INDEX IF NOT EXISTS idx_demand_samples_epoch ON demand_samples(ts_epoch);`;\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -5083,7 +5083,7 @@
     "type": "function",
     "z": "a1000001.0001tab",
     "name": "Build full JSON",
-    "func": "const snap = global.get('plcFullSnapshot');\nmsg.payload = snap || {\n  ts: new Date().toISOString(),\n  values: null,\n  warning: 'No full S7 data received yet — check PLC connection and DB16 access.'\n};\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
+    "func": "const snap = global.get('plcFullSnapshot');\nmsg.payload = snap || {\n  ts: new Date().toISOString(),\n  values: null,\n  warning: 'No full S7 data received yet \u2014 check PLC connection and DB16 access.'\n};\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -5214,7 +5214,7 @@
     "type": "function",
     "z": "a1000001.0001tab",
     "name": "Demand tracker (15-min rolling)",
-    "func": "const v = msg.payload || {};\nif (!msg.payload || typeof msg.payload !== 'object') return null;\n\nconst now = Date.now();\nconst toNum = (x) => {\n  const n = typeof x === 'number' ? x : Number(x);\n  return Number.isFinite(n) ? n : 0;\n};\n\n// --- Read total plant kW (same logic as existing insert node) ---\nlet totalKw = toNum(v.Power_kW);\nif (!Number.isFinite(totalKw) || totalKw <= 0) {\n  const meters = [\n    'RIO1CM1_EMU4_1','RIO1CM1_EMU4_2',\n    'RIO1CM2_EM6400_10','RIO1CM2_EM6400_11',\n    'RIO2CM1_EMU4_1','RIO2CM1_EMU4_2','RIO2CM1_EMU4_3','RIO2CM1_EMU4_4',\n    'RIO2CM1_EMU4_5','RIO2CM1_EMU4_6','RIO2CM1_EMU4_7','RIO2CM1_EMU4_8',\n    'RIO2CM1_EMU4_9','RIO2CM1_EMU4_10','RIO2CM1_EMU4_11','RIO2CM1_EMU4_12',\n    'RIO2CM2_EM6400_1','RIO2CM2_EM6400_2','RIO2CM2_EM6400_3',\n    'RIO2CM2_EM6400_4','RIO2CM2_EM6400_5','RIO2CM2_EM6400_6',\n    'RIO2_PAC3200_51','RIO2_PAC3200_53','RIO2_UMG508_52'\n  ];\n  totalKw = 0;\n  for (const m of meters) totalKw += toNum(v[m + '_Real_power']);\n}\n\n// --- Rolling 15-min window (900 seconds) ---\nconst WINDOW_MS = 15 * 60 * 1000;\nconst buf = global.get('demandBuf') || [];\nbuf.push({ t: now, kw: totalKw });\n\n// Trim older than 15 min\nwhile (buf.length > 0 && buf[0].t < now - WINDOW_MS) buf.shift();\nglobal.set('demandBuf', buf);\n\n// Current 15-min average demand\nconst avgKw = buf.length > 0\n  ? buf.reduce((s, p) => s + p.kw, 0) / buf.length\n  : totalKw;\n\n// --- Monthly peak tracking ---\nconst currentMonth = new Date().toISOString().slice(0, 7); // \"2026-03\"\nlet state = global.get('demandState') || {};\nif (state.month !== currentMonth) {\n  // New month — reset\n  state = { month: currentMonth, peakKw: 0, peakTs: null, thresholdKw: state.thresholdKw || 0 };\n}\n\nif (avgKw > state.peakKw) {\n  state.peakKw = avgKw;\n  state.peakTs = new Date().toISOString();\n}\n\n// Default threshold: 110% of first observed peak (auto-calibrating)\nif (state.thresholdKw <= 0 && state.peakKw > 0) {\n  state.thresholdKw = Math.ceil(state.peakKw * 1.1);\n}\n\nconst threshold = state.thresholdKw || 0;\nconst pctOfThreshold = threshold > 0 ? (avgKw / threshold) : 0;\n\nglobal.set('demandState', state);\n\n// --- Generate alerts at 80% and 95% of threshold ---\nconst lastAlertLevel = global.get('demandAlertLevel') || 0;\nlet newLevel = 0;\nif (pctOfThreshold >= 0.95) newLevel = 2;\nelse if (pctOfThreshold >= 0.80) newLevel = 1;\n\nif (newLevel > lastAlertLevel) {\n  global.set('demandAlertLevel', newLevel);\n\n  const alerts = global.get('enhancedAlerts') || [];\n  const ts = new Date().toISOString();\n  const id = 'demand-' + ts + '-' + Math.random().toString(16).slice(2, 8);\n  const severity = newLevel === 2 ? 'critical' : 'warning';\n  const priority = newLevel === 2 ? 'urgent' : 'high';\n  const pctStr = (pctOfThreshold * 100).toFixed(0);\n  const message = newLevel === 2\n    ? 'Demand at ' + pctStr + '% of threshold — shed load NOW'\n    : 'Demand approaching threshold (' + pctStr + '%)';\n  const detail = 'Current 15-min avg: ' + avgKw.toFixed(1) + ' kW. Threshold: '\n    + threshold.toFixed(0) + ' kW. Monthly peak: ' + state.peakKw.toFixed(1) + ' kW.';\n\n  alerts.unshift({\n    id,\n    meterId: 'plant',\n    meterName: 'Plant Demand',\n    severity,\n    priority,\n    category: 'energy',\n    status: 'active',\n    message,\n    detail,\n    ts,\n    acknowledgedAt: null,\n    acknowledgedBy: null,\n    resolvedAt: null,\n    notes: [],\n    incidentId: null\n  });\n  while (alerts.length > 500) alerts.pop();\n  global.set('enhancedAlerts', alerts);\n}\n\n// Reset alert level when demand drops below 75%\nif (pctOfThreshold < 0.75 && lastAlertLevel > 0) {\n  global.set('demandAlertLevel', 0);\n}\n\nreturn null;",
+    "func": "const v = msg.payload || {};\nif (!msg.payload || typeof msg.payload !== 'object') return null;\n\nconst now = Date.now();\nconst toNum = (x) => {\n  const n = typeof x === 'number' ? x : Number(x);\n  return Number.isFinite(n) ? n : 0;\n};\n\n// --- Read total plant kW (same logic as existing insert node) ---\nlet totalKw = toNum(v.Power_kW);\nif (!Number.isFinite(totalKw) || totalKw <= 0) {\n  const meters = [\n    'RIO1CM1_EMU4_1','RIO1CM1_EMU4_2',\n    'RIO1CM2_EM6400_10','RIO1CM2_EM6400_11',\n    'RIO2CM1_EMU4_1','RIO2CM1_EMU4_2','RIO2CM1_EMU4_3','RIO2CM1_EMU4_4',\n    'RIO2CM1_EMU4_5','RIO2CM1_EMU4_6','RIO2CM1_EMU4_7','RIO2CM1_EMU4_8',\n    'RIO2CM1_EMU4_9','RIO2CM1_EMU4_10','RIO2CM1_EMU4_11','RIO2CM1_EMU4_12',\n    'RIO2CM2_EM6400_1','RIO2CM2_EM6400_2','RIO2CM2_EM6400_3',\n    'RIO2CM2_EM6400_4','RIO2CM2_EM6400_5','RIO2CM2_EM6400_6',\n    'RIO2_PAC3200_51','RIO2_PAC3200_53','RIO2_UMG508_52'\n  ];\n  totalKw = 0;\n  for (const m of meters) totalKw += toNum(v[m + '_Real_power']);\n}\n\n// --- Rolling 15-min window (900 seconds) ---\nconst WINDOW_MS = 15 * 60 * 1000;\nconst buf = global.get('demandBuf') || [];\nbuf.push({ t: now, kw: totalKw });\n\n// Trim older than 15 min\nwhile (buf.length > 0 && buf[0].t < now - WINDOW_MS) buf.shift();\nglobal.set('demandBuf', buf);\n\n// Current 15-min average demand\nconst avgKw = buf.length > 0\n  ? buf.reduce((s, p) => s + p.kw, 0) / buf.length\n  : totalKw;\n\n// --- Monthly peak tracking ---\nconst currentMonth = new Date().toISOString().slice(0, 7); // \"2026-03\"\nlet state = global.get('demandState') || {};\nif (state.month !== currentMonth) {\n  // New month \u2014 reset\n  state = { month: currentMonth, peakKw: 0, peakTs: null, thresholdKw: state.thresholdKw || 0 };\n}\n\nif (avgKw > state.peakKw) {\n  state.peakKw = avgKw;\n  state.peakTs = new Date().toISOString();\n}\n\n// Default threshold: 110% of first observed peak (auto-calibrating)\nif (state.thresholdKw <= 0 && state.peakKw > 0) {\n  state.thresholdKw = Math.ceil(state.peakKw * 1.1);\n}\n\nconst threshold = state.thresholdKw || 0;\nconst pctOfThreshold = threshold > 0 ? (avgKw / threshold) : 0;\n\nglobal.set('demandState', state);\n\n// --- Generate alerts at 80% and 95% of threshold ---\nconst lastAlertLevel = global.get('demandAlertLevel') || 0;\nlet newLevel = 0;\nif (pctOfThreshold >= 0.95) newLevel = 2;\nelse if (pctOfThreshold >= 0.80) newLevel = 1;\n\nif (newLevel > lastAlertLevel) {\n  global.set('demandAlertLevel', newLevel);\n\n  const alerts = global.get('enhancedAlerts') || [];\n  const ts = new Date().toISOString();\n  const id = 'demand-' + ts + '-' + Math.random().toString(16).slice(2, 8);\n  const severity = newLevel === 2 ? 'critical' : 'warning';\n  const priority = newLevel === 2 ? 'urgent' : 'high';\n  const pctStr = (pctOfThreshold * 100).toFixed(0);\n  const message = newLevel === 2\n    ? 'Demand at ' + pctStr + '% of threshold \u2014 shed load NOW'\n    : 'Demand approaching threshold (' + pctStr + '%)';\n  const detail = 'Current 15-min avg: ' + avgKw.toFixed(1) + ' kW. Threshold: '\n    + threshold.toFixed(0) + ' kW. Monthly peak: ' + state.peakKw.toFixed(1) + ' kW.';\n\n  alerts.unshift({\n    id,\n    meterId: 'plant',\n    meterName: 'Plant Demand',\n    severity,\n    priority,\n    category: 'energy',\n    status: 'active',\n    message,\n    detail,\n    ts,\n    acknowledgedAt: null,\n    acknowledgedBy: null,\n    resolvedAt: null,\n    notes: [],\n    incidentId: null\n  });\n  while (alerts.length > 500) alerts.pop();\n  global.set('enhancedAlerts', alerts);\n}\n\n// Reset alert level when demand drops below 75%\nif (pctOfThreshold < 0.75 && lastAlertLevel > 0) {\n  global.set('demandAlertLevel', 0);\n}\n\nconst insertEveryMs = 60_000;\nconst lastIns = global.get('demandSampleLastMs') || 0;\nif (now - lastIns >= insertEveryMs) {\n  global.set('demandSampleLastMs', now);\n  const ts = new Date().toISOString().replace(/'/g, \"''\");\n  const tsEpoch = Math.floor(now / 1000);\n  msg.topic = `INSERT INTO demand_samples (ts, ts_epoch, current_demand_kw, instant_kw) VALUES ('${ts}', ${tsEpoch}, ${Number(avgKw)}, ${Number(totalKw)});`;\n  return msg;\n}\nreturn null;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -5224,7 +5224,9 @@
     "x": 540,
     "y": 360,
     "wires": [
-      []
+      [
+        "a1000079.sqlitedemandwrite"
+      ]
     ]
   },
   {
@@ -5240,16 +5242,16 @@
     "y": 920,
     "wires": [
       [
-        "a1000077.demandjson"
+        "a1000077.demandprep"
       ]
     ]
   },
   {
-    "id": "a1000077.demandjson",
+    "id": "a1000077.demandprep",
     "type": "function",
     "z": "a1000001.0001tab",
-    "name": "Build demand status JSON",
-    "func": "const state = global.get('demandState') || {};\nconst buf = global.get('demandBuf') || [];\nconst now = Date.now();\n\n// Allow setting threshold via query param: ?setThreshold=1200\nconst setTh = Number(msg.req?.query?.setThreshold);\nif (Number.isFinite(setTh) && setTh > 0) {\n  state.thresholdKw = setTh;\n  global.set('demandState', state);\n}\n\nconst currentKw = buf.length > 0\n  ? buf.reduce((s, p) => s + p.kw, 0) / buf.length\n  : 0;\n\nconst instantKw = buf.length > 0 ? buf[buf.length - 1].kw : 0;\n\nconst threshold = state.thresholdKw || 0;\nconst pctOfThreshold = threshold > 0 ? currentKw / threshold : 0;\n\n// Build mini trend (last 2 hours of 15-min windows from plc_samples if available, else from buffer)\n// For now, return the rolling buffer downsampled to 1-min points\nconst minuteBuckets = new Map();\nfor (const p of buf) {\n  const key = Math.floor(p.t / 60000) * 60000;\n  const b = minuteBuckets.get(key);\n  if (!b) minuteBuckets.set(key, { sum: p.kw, cnt: 1 });\n  else { b.sum += p.kw; b.cnt++; }\n}\nconst trend = Array.from(minuteBuckets.entries())\n  .sort((a, b) => a[0] - b[0])\n  .map(([t, b]) => ({ ts: new Date(t).toISOString(), kw: b.sum / b.cnt }));\n\nmsg.payload = {\n  ts: new Date().toISOString(),\n  month: state.month || new Date().toISOString().slice(0, 7),\n  instantKw,\n  currentDemandKw: Math.round(currentKw * 10) / 10,\n  monthlyPeakKw: Math.round((state.peakKw || 0) * 10) / 10,\n  monthlyPeakTs: state.peakTs || null,\n  thresholdKw: threshold,\n  pctOfThreshold: Math.round(pctOfThreshold * 1000) / 10,\n  windowSeconds: 900,\n  samplesInWindow: buf.length,\n  trend\n};\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
+    "name": "Demand: prepare SQL",
+    "func": "const state = global.get('demandState') || {};\nconst buf = global.get('demandBuf') || [];\n\nconst setTh = Number(msg.req?.query?.setThreshold);\nif (Number.isFinite(setTh) && setTh > 0) {\n  state.thresholdKw = setTh;\n  global.set('demandState', state);\n}\n\nconst currentKw = buf.length > 0\n  ? buf.reduce((s, p) => s + p.kw, 0) / buf.length\n  : 0;\n\nconst instantKw = buf.length > 0 ? buf[buf.length - 1].kw : 0;\n\nconst threshold = state.thresholdKw || 0;\nconst pctOfThreshold = threshold > 0 ? currentKw / threshold : 0;\n\nconst minutesParam = msg.req?.query?.minutes;\nconst allHistory = !minutesParam || minutesParam === 'all' || minutesParam === '';\nlet minutes = allHistory ? (60 * 24 * 366 * 5) : Math.max(15, Math.min(60 * 24 * 800, Number(minutesParam)));\nconst sinceEpoch = allHistory ? 0 : Math.floor(Date.now() / 1000) - Math.floor(minutes * 60);\n\nlet bucketSec = 60;\nif (minutes > 60 * 24 * 90) bucketSec = 3600;\nelse if (minutes > 60 * 24 * 30) bucketSec = 900;\nelse if (minutes > 60 * 24 * 7) bucketSec = 300;\n\nmsg._demandMeta = {\n  ts: new Date().toISOString(),\n  month: state.month || new Date().toISOString().slice(0, 7),\n  instantKw,\n  currentDemandKw: Math.round(currentKw * 10) / 10,\n  monthlyPeakKw: Math.round((state.peakKw || 0) * 10) / 10,\n  monthlyPeakTs: state.peakTs || null,\n  thresholdKw: threshold,\n  pctOfThreshold: Math.round(pctOfThreshold * 1000) / 10,\n  windowSeconds: 900,\n  samplesInWindow: buf.length,\n  allHistory\n};\n\nmsg.topic = `WITH b AS (\n  SELECT\n    (ts_epoch / ${bucketSec}) * ${bucketSec} AS bucket_epoch,\n    MAX(ts_epoch) AS last_epoch,\n    AVG(current_demand_kw) AS kw\n  FROM demand_samples\n  WHERE ts_epoch >= ${sinceEpoch}\n  GROUP BY bucket_epoch\n)\nSELECT\n  strftime('%Y-%m-%dT%H:%M:%SZ', datetime(last_epoch, 'unixepoch')) AS ts,\n  COALESCE(kw, 0) AS current_demand_kw\nFROM b\nORDER BY last_epoch ASC\nLIMIT 200000;`;\n\ndelete msg.payload;\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -5257,6 +5259,42 @@
     "finalize": "",
     "libs": [],
     "x": 500,
+    "y": 920,
+    "wires": [
+      [
+        "a1000080.sqlitedemandread"
+      ]
+    ]
+  },
+  {
+    "id": "a1000080.sqlitedemandread",
+    "type": "sqlite",
+    "z": "a1000001.0001tab",
+    "mydb": "a1000012.sqlitedb",
+    "sqlquery": "msg.topic",
+    "sql": "",
+    "name": "SQLite read (demand trend)",
+    "x": 720,
+    "y": 920,
+    "wires": [
+      [
+        "a1000081.demandmerge"
+      ]
+    ]
+  },
+  {
+    "id": "a1000081.demandmerge",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "Demand: merge JSON",
+    "func": "const meta = msg._demandMeta || {};\nconst rows = Array.isArray(msg.payload) ? msg.payload : [];\n\nlet trend = rows.map((r) => ({\n  ts: r.ts,\n  kw: Number(r.current_demand_kw) || 0\n}));\n\nconst nowIso = meta.ts;\nconst curKw = meta.currentDemandKw;\nconst lastTs = trend.length > 0 ? Date.parse(trend[trend.length - 1].ts) : NaN;\nif (trend.length === 0 || !Number.isFinite(lastTs) || Date.parse(nowIso) > lastTs + 25000) {\n  trend = trend.concat([{ ts: nowIso, kw: curKw }]);\n}\n\nconst trendStartTs = trend.length > 0 ? trend[0].ts : null;\n\nmsg.payload = {\n  ts: meta.ts,\n  month: meta.month,\n  instantKw: meta.instantKw,\n  currentDemandKw: meta.currentDemandKw,\n  monthlyPeakKw: meta.monthlyPeakKw,\n  monthlyPeakTs: meta.monthlyPeakTs,\n  thresholdKw: meta.thresholdKw,\n  pctOfThreshold: meta.pctOfThreshold,\n  windowSeconds: meta.windowSeconds,\n  samplesInWindow: meta.samplesInWindow,\n  trend,\n  trendStartTs\n};\n\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\ndelete msg._demandMeta;\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 940,
     "y": 920,
     "wires": [
       [
@@ -5342,7 +5380,7 @@
     "type": "function",
     "z": "b2f00001.tab",
     "name": "Format for dashboard",
-    "func": "const p = msg.payload;\nif (!p || typeof p !== 'object') {\n    return [ { payload: 'Waiting for PLC…' }, null, null, null ];\n}\nconst r0 = Number(p.DB1_REAL0);\nconst r4 = Number(p.DB1_REAL4);\nconst r8 = Number(p.DB1_REAL8);\nconst line = (k, v) => `${k}: ${Number.isFinite(v) ? v.toFixed(3) : '—'}`;\nconst text = [\n  line('DB1,REAL0', r0),\n  line('DB1,REAL4', r4),\n  line('DB1,REAL8', r8)\n].join('\\n');\nreturn [\n  { payload: text },\n  { payload: r0 },\n  { payload: r4 },\n  { payload: r8 }\n];",
+    "func": "const p = msg.payload;\nif (!p || typeof p !== 'object') {\n    return [ { payload: 'Waiting for PLC\u2026' }, null, null, null ];\n}\nconst r0 = Number(p.DB1_REAL0);\nconst r4 = Number(p.DB1_REAL4);\nconst r8 = Number(p.DB1_REAL8);\nconst line = (k, v) => `${k}: ${Number.isFinite(v) ? v.toFixed(3) : '\u2014'}`;\nconst text = [\n  line('DB1,REAL0', r0),\n  line('DB1,REAL4', r4),\n  line('DB1,REAL8', r8)\n].join('\\n');\nreturn [\n  { payload: text },\n  { payload: r0 },\n  { payload: r4 },\n  { payload: r8 }\n];",
     "outputs": 4,
     "timeout": 0,
     "noerr": 0,
@@ -5516,5 +5554,19 @@
     "x": 420,
     "y": 100,
     "wires": []
+  },
+  {
+    "id": "a1000079.sqlitedemandwrite",
+    "type": "sqlite",
+    "z": "a1000001.0001tab",
+    "mydb": "a1000012.sqlitedb",
+    "sqlquery": "msg.topic",
+    "sql": "",
+    "name": "SQLite write (demand)",
+    "x": 720,
+    "y": 360,
+    "wires": [
+      []
+    ]
   }
 ]

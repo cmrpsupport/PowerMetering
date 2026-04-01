@@ -9,6 +9,7 @@ import {
   getPowerTrend,
   getMeterHistory,
   getDemandStatus,
+  type DemandTrendRange,
 } from '../api/powerApi'
 
 /** Full DB16 snapshot — all 25 meters, 20 params each. Polls every 3s. */
@@ -61,11 +62,11 @@ export function usePowerTrend(minutes = 24 * 60) {
   })
 }
 
-/** Real-time 15-min rolling demand tracking. Polls every 5s for responsiveness. */
-export function useDemandStatus() {
+/** Real-time 15-min rolling demand + stored trend (SQLite). Polls every 5s. */
+export function useDemandStatus(range: DemandTrendRange = 'all') {
   return useQuery({
-    queryKey: ['demandStatus'],
-    queryFn: getDemandStatus,
+    queryKey: ['demandStatus', range],
+    queryFn: () => getDemandStatus(range),
     refetchInterval: 5_000,
   })
 }

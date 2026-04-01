@@ -82,6 +82,8 @@ export type DemandStatus = {
   windowSeconds: number
   samplesInWindow: number
   trend: { ts: string; kw: number }[]
+  /** First timestamp in stored demand history (if any). */
+  trendStartTs?: string | null
 }
 
 /** Per-meter, per-phase historical sample from /api/trends/meter/history. */

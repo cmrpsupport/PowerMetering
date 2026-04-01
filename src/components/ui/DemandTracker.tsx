@@ -1,8 +1,19 @@
-import { useMemo, useState } from 'react'
+import { useId, useMemo, useState } from 'react'
 import { useDemandStatus } from '../../hooks/queries'
-import { setDemandThreshold } from '../../api/powerApi'
+import { setDemandThreshold, type DemandTrendRange } from '../../api/powerApi'
 import { useQueryClient } from '@tanstack/react-query'
 import { AlertTriangle, TrendingUp } from 'lucide-react'
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+  ReferenceLine,
+} from 'recharts'
+import { SegmentedControl } from './SegmentedControl'
 
 function fmt(n: number, decimals = 1): string {
   if (!Number.isFinite(n) || n === 0) return '\u2014'
@@ -11,96 +22,108 @@ function fmt(n: number, decimals = 1): string {
 
 function barColor(pct: number): string {
   if (pct >= 95) return 'var(--accent-red)'
-  if (pct >= 80) return '#f59e0b' // amber
-  if (pct >= 60) return '#eab308' // yellow
+  if (pct >= 80) return '#f59e0b'
+  if (pct >= 60) return '#eab308'
   return 'var(--accent-green)'
 }
 
-export function DemandTracker() {
-  const { data: demand } = useDemandStatus()
+function formatTick(ts: string) {
+  const t = Date.parse(ts)
+  if (!Number.isFinite(t)) return ''
+  return new Date(t).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
+
+type DemandTrackerProps = {
+  /** `embedded`: no outer card — use inside a parent panel (e.g. combined load profile). */
+  variant?: 'card' | 'embedded'
+}
+
+export function DemandTracker({ variant = 'card' }: DemandTrackerProps) {
+  const [range, setRange] = useState<DemandTrendRange>('all')
+  const { data: demand } = useDemandStatus(range)
   const queryClient = useQueryClient()
+  const gradId = useId().replace(/:/g, '')
   const [editing, setEditing] = useState(false)
   const [thresholdInput, setThresholdInput] = useState('')
 
   const pct = demand?.pctOfThreshold ?? 0
   const color = barColor(pct)
 
-  const trendSvg = useMemo(() => {
-    if (!demand?.trend || demand.trend.length < 2) return null
-    const pts = demand.trend
-    const maxKw = Math.max(...pts.map((p) => p.kw), 1)
-    const minKw = Math.min(...pts.map((p) => p.kw), 0)
-    const range = maxKw - minKw || 1
-    const w = 200
-    const h = 40
-    const points = pts
-      .map((p, i) => {
-        const x = (i / (pts.length - 1)) * w
-        const y = h - ((p.kw - minKw) / range) * h
-        return `${x},${y}`
-      })
-      .join(' ')
-    return (
-      <svg viewBox={`0 0 ${w} ${h}`} className="h-10 w-full" preserveAspectRatio="none">
-        <polyline points={points} fill="none" stroke={color} strokeWidth="2" vectorEffect="non-scaling-stroke" />
-        {demand.thresholdKw > 0 && (
-          <line
-            x1="0"
-            y1={h - ((demand.thresholdKw - minKw) / range) * h}
-            x2={w}
-            y2={h - ((demand.thresholdKw - minKw) / range) * h}
-            stroke="var(--accent-red)"
-            strokeWidth="1"
-            strokeDasharray="4 3"
-            vectorEffect="non-scaling-stroke"
-          />
-        )}
-      </svg>
-    )
-  }, [demand, color])
+  const chartData = useMemo(() => {
+    const t = demand?.trend ?? []
+    return t.map((p) => ({
+      ...p,
+      t: Date.parse(p.ts),
+    }))
+  }, [demand?.trend])
 
   const handleSetThreshold = async () => {
     const kw = Number(thresholdInput)
     if (Number.isFinite(kw) && kw > 0) {
-      await setDemandThreshold(kw)
+      await setDemandThreshold(kw, range)
       queryClient.invalidateQueries({ queryKey: ['demandStatus'] })
     }
     setEditing(false)
     setThresholdInput('')
   }
 
+  const shell = variant === 'card' ? 'card card-hover p-5' : ''
+
   if (!demand) {
     return (
-      <div className="card card-hover p-5">
-        <div className="text-sm font-semibold text-[var(--text)]">15-Min Demand Tracking</div>
+      <div className={shell}>
+        <div className="text-sm font-semibold text-[var(--text)]">
+          {variant === 'embedded' ? 'Rolling demand (logged)' : 'Load demand'}
+        </div>
         <div className="mt-2 text-xs text-[var(--muted)]">Waiting for data...</div>
       </div>
     )
   }
 
   return (
-    <div className="card card-hover p-5">
-      <div className="mb-3 flex items-center justify-between">
+    <div className={shell}>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <TrendingUp size={16} className="text-[var(--muted)]" />
-          <div className="text-sm font-semibold text-[var(--text)]">15-Min Rolling Demand</div>
-        </div>
-        {pct >= 80 && (
-          <div className="flex items-center gap-1 text-xs font-medium" style={{ color }}>
-            <AlertTriangle size={14} />
-            {pct >= 95 ? 'SHED LOAD' : 'Approaching limit'}
+          <div>
+            <div className="text-sm font-semibold text-[var(--text)]">
+              {variant === 'embedded' ? 'Rolling demand (15-min, logged)' : '15-min rolling demand'}
+            </div>
+            <div className="text-[11px] text-[var(--muted)]">
+              Logged continuously from Node-RED; chart range below.
+              {demand.trendStartTs ? (
+                <span className="ml-1 tabular-nums">
+                  Since {new Date(demand.trendStartTs).toLocaleString()}
+                </span>
+              ) : null}
+            </div>
           </div>
-        )}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <SegmentedControl
+            value={range}
+            onChange={setRange}
+            options={[
+              { id: '24h', label: '24h' },
+              { id: '7d', label: '7d' },
+              { id: '30d', label: '30d' },
+              { id: 'all', label: 'All' },
+            ]}
+          />
+          {pct >= 80 && (
+            <div className="flex items-center gap-1 text-xs font-medium" style={{ color }}>
+              <AlertTriangle size={14} />
+              {pct >= 95 ? 'SHED LOAD' : 'Approaching limit'}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Gauge bar */}
       <div className="mb-1 flex items-baseline justify-between">
         <span className="text-2xl font-bold text-[var(--text)]">
           {fmt(demand.currentDemandKw, 1)} <span className="text-sm font-normal text-[var(--muted)]">kW</span>
         </span>
-        <span className="text-xs text-[var(--muted)]">
-          {fmt(pct, 1)}% of threshold
-        </span>
+        <span className="text-xs text-[var(--muted)]">{fmt(pct, 1)}% of threshold</span>
       </div>
 
       <div className="relative h-4 w-full overflow-hidden rounded-full bg-[var(--border)]">
@@ -108,12 +131,7 @@ export function DemandTracker() {
           className="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
           style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: color }}
         />
-        {/* 80% marker */}
-        <div
-          className="absolute inset-y-0 w-px bg-amber-500/60"
-          style={{ left: '80%' }}
-        />
-        {/* 95% marker */}
+        <div className="absolute inset-y-0 w-px bg-amber-500/60" style={{ left: '80%' }} />
         <div
           className="absolute inset-y-0 w-px"
           style={{ left: '95%', backgroundColor: 'var(--accent-red)', opacity: 0.6 }}
@@ -127,18 +145,17 @@ export function DemandTracker() {
         <span>Threshold: {demand.thresholdKw > 0 ? `${fmt(demand.thresholdKw, 0)} kW` : 'auto'}</span>
       </div>
 
-      {/* Stats row */}
       <div className="mt-3 grid grid-cols-3 gap-3 text-center">
         <div>
           <div className="text-[10px] font-medium uppercase text-[var(--muted)]">Instant</div>
           <div className="text-sm font-semibold text-[var(--text)]">{fmt(demand.instantKw, 1)} kW</div>
         </div>
         <div>
-          <div className="text-[10px] font-medium uppercase text-[var(--muted)]">Monthly Peak</div>
+          <div className="text-[10px] font-medium uppercase text-[var(--muted)]">Monthly peak</div>
           <div className="text-sm font-semibold text-[var(--text)]">{fmt(demand.monthlyPeakKw, 1)} kW</div>
         </div>
         <div>
-          <div className="text-[10px] font-medium uppercase text-[var(--muted)]">Peak Time</div>
+          <div className="text-[10px] font-medium uppercase text-[var(--muted)]">Peak time</div>
           <div className="text-sm font-semibold text-[var(--text)]">
             {demand.monthlyPeakTs
               ? new Date(demand.monthlyPeakTs).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -147,10 +164,69 @@ export function DemandTracker() {
         </div>
       </div>
 
-      {/* Mini trend sparkline */}
-      {trendSvg && <div className="mt-3">{trendSvg}</div>}
+      {chartData.length > 0 ? (
+        <div className="mt-4 h-[200px] w-full min-w-0 rounded-xl border border-[var(--border)] bg-[var(--card)] p-2">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={chartData} margin={{ left: 4, right: 8, top: 8, bottom: 0 }}>
+              <defs>
+                <linearGradient id={`demandShade-${gradId}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="var(--primary)" stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
+              <XAxis
+                dataKey="ts"
+                tickFormatter={formatTick}
+                tick={{ fill: 'var(--chart-axis)', fontSize: 10 }}
+                stroke="var(--chart-axis)"
+                minTickGap={28}
+              />
+              <YAxis
+                tick={{ fill: 'var(--chart-axis)', fontSize: 10 }}
+                stroke="var(--chart-axis)"
+                width={44}
+                tickFormatter={(v) => `${v}`}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'var(--chart-tooltip-bg)',
+                  border: '1px solid var(--chart-tooltip-border)',
+                  borderRadius: 8,
+                  color: 'var(--chart-tooltip-text)',
+                  fontSize: 12,
+                }}
+                labelFormatter={(l) => (typeof l === 'string' ? formatTick(l) : String(l))}
+                formatter={(v: number) => [`${fmt(v, 1)} kW`, 'Demand']}
+              />
+              {demand.thresholdKw > 0 ? (
+                <ReferenceLine
+                  y={demand.thresholdKw}
+                  stroke="var(--accent-red)"
+                  strokeDasharray="4 3"
+                  strokeOpacity={0.85}
+                />
+              ) : null}
+              <Area
+                type="monotone"
+                dataKey="kw"
+                name="kW"
+                stroke="var(--primary)"
+                strokeWidth={2}
+                fill={`url(#demandShade-${gradId})`}
+                isAnimationActive={false}
+                dot={false}
+                activeDot={{ r: 3 }}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      ) : (
+        <div className="mt-4 rounded-xl border border-dashed border-[var(--border)] px-3 py-6 text-center text-xs text-[var(--muted)]">
+          No logged demand samples yet. After a minute of PLC data, history will appear here.
+        </div>
+      )}
 
-      {/* Threshold edit */}
       <div className="mt-3 flex items-center gap-2">
         {editing ? (
           <>
@@ -170,18 +246,17 @@ export function DemandTracker() {
             >
               Set
             </button>
-            <button
-              type="button"
-              onClick={() => setEditing(false)}
-              className="text-xs text-[var(--muted)]"
-            >
+            <button type="button" onClick={() => setEditing(false)} className="text-xs text-[var(--muted)]">
               Cancel
             </button>
           </>
         ) : (
           <button
             type="button"
-            onClick={() => { setEditing(true); setThresholdInput(String(demand.thresholdKw || '')) }}
+            onClick={() => {
+              setEditing(true)
+              setThresholdInput(String(demand.thresholdKw || ''))
+            }}
             className="text-xs text-[var(--muted)] underline decoration-dotted hover:text-[var(--text)]"
           >
             Set demand threshold

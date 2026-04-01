@@ -1,4 +1,13 @@
-import type { DemandStatus, EnhancedAlert, EnergyInterval, MeterSamplePoint, PlcFullSnapshot, PlcMeterData } from '../types'
+import type {
+  DemandStatus,
+  EnhancedAlert,
+  EnergyInterval,
+  MeterSamplePoint,
+  PlcFullSnapshot,
+  PlcMeterData,
+} from '../types'
+
+export type DemandTrendRange = '24h' | '7d' | '30d' | 'all'
 import { PLC_METERS, PLC_TOTAL_ENERGY_KEYS, METER_PARAM_SUFFIXES } from '../constants/plcMeters'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '').toString()
@@ -220,12 +229,23 @@ export async function getPowerTrend(minutes = 24 * 60): Promise<PowerTrendPoint[
 
 // ── Demand Status ───────────────────────────────────────
 
-export async function getDemandStatus(): Promise<DemandStatus | null> {
-  return await http<DemandStatus>('/api/demand/status').catch(() => null)
+function demandStatusQuery(range: DemandTrendRange): string {
+  if (range === 'all') return 'minutes=all'
+  const minutes = range === '24h' ? 24 * 60 : range === '7d' ? 7 * 24 * 60 : 30 * 24 * 60
+  return `minutes=${minutes}`
 }
 
-export async function setDemandThreshold(kw: number): Promise<DemandStatus | null> {
-  return await http<DemandStatus>(`/api/demand/status?setThreshold=${kw}`).catch(() => null)
+export async function getDemandStatus(range: DemandTrendRange = 'all'): Promise<DemandStatus | null> {
+  const q = demandStatusQuery(range)
+  return await http<DemandStatus>(`/api/demand/status?${q}`).catch(() => null)
+}
+
+export async function setDemandThreshold(
+  kw: number,
+  range: DemandTrendRange = 'all',
+): Promise<DemandStatus | null> {
+  const q = demandStatusQuery(range)
+  return await http<DemandStatus>(`/api/demand/status?setThreshold=${encodeURIComponent(kw)}&${q}`).catch(() => null)
 }
 
 // ── Per-Meter Per-Phase History ─────────────────────────

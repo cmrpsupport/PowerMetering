@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useId, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { usePlcFullSnapshot, useNodeRedHealth, useEnhancedAlerts, useEnergyIntervals, usePowerTrend } from '../hooks/queries'
 import { findPlcMeter, PLC_METERS } from '../constants/plcMeters'
@@ -6,10 +6,13 @@ import { PLC_PRODUCTION_METERS } from '../constants/plcProductionMeters'
 import { Badge, type BadgeColor } from '../components/ui/Badge'
 import { MiniKpiCard } from '../components/ui/MiniKpiCard'
 import { SegmentedControl } from '../components/ui/SegmentedControl'
+import { DemandTracker } from '../components/ui/DemandTracker'
 import type { PlcMeterData } from '../types'
 import MultiAxisTrendChart from '../components/charts/MultiAxisTrendChart'
 import { Activity, Bolt, Gauge, Power, Zap } from 'lucide-react'
 import {
+  Area,
+  AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
@@ -88,6 +91,7 @@ export function DashboardPage() {
   const [trendView, setTrendView] = useState<'raw' | 'smooth'>('raw')
   const [trendWindow, setTrendWindow] = useState<'1h' | '6h' | '12h' | '24h' | '7d' | '30d' | '1y'>('30d')
   const [expandedLine, setExpandedLine] = useState<string | null>(null)
+  const loadProfileGradId = useId().replace(/:/g, '')
   const trendMinutes =
     trendWindow === '1h'
       ? 60
@@ -654,37 +658,84 @@ export function DashboardPage() {
           </div>
         </div>
 
-        <div className="card card-hover p-5">
-          <div className="mb-2 flex items-center justify-between">
-            <div className="text-sm font-semibold text-[var(--text)]">Load Profile (24-hour curve)</div>
+        <div className="card card-hover p-5 lg:col-span-2">
+          <div className="mb-4">
+            <div className="text-sm font-semibold text-[var(--text)]">Load profile & demand</div>
+            <div className="mt-0.5 text-[11px] text-[var(--muted)]">
+              Rolling 15-min demand (Node-RED log) and a typical 24-hour curve from recent energy intervals.
+            </div>
+          </div>
+
+          <DemandTracker variant="embedded" />
+
+          <div className="my-5 border-t border-[var(--border)]" />
+
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <div className="text-sm font-semibold text-[var(--text)]">24-hour load profile</div>
+              <div className="text-[11px] text-[var(--muted)]">Demand by time-of-day (last ~24h of intervals)</div>
+            </div>
             <button
               type="button"
               onClick={() => setShowLoadProfile((s) => !s)}
-              className="rounded-xl border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs font-medium text-[var(--muted)] shadow-sm transition hover:text-[var(--text)] dark:bg-[var(--card)]"
+              className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-2.5 py-1.5 text-xs font-medium text-[var(--muted)] shadow-sm transition hover:text-[var(--text)]"
             >
-              {showLoadProfile ? 'Hide' : 'Show'}
+              {showLoadProfile ? 'Hide curve' : 'Show curve'}
             </button>
           </div>
           {showLoadProfile ? (
             <div className="h-72 min-h-[220px] w-full min-w-0">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={loadProfile24h} margin={{ left: 4, right: 12, top: 8, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-slate-200 dark:stroke-slate-700" />
-                  <XAxis dataKey="tod" tick={{ fontSize: 10 }} interval={7} />
-                  <YAxis tick={{ fontSize: 11 }} width={60} />
-                  <Tooltip formatter={(v) => [`${fmt(Number(v), 1)} kW`, 'Demand']} />
-                  <Bar dataKey="demandKw" name="kW" fill="var(--chart-2)" radius={[6, 6, 0, 0]} isAnimationActive={false} />
-                </BarChart>
+                <AreaChart data={loadProfile24h} margin={{ left: 4, right: 12, top: 8, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id={`loadProfileShade-${loadProfileGradId}`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--chart-2)" stopOpacity={0.4} />
+                      <stop offset="100%" stopColor="var(--chart-2)" stopOpacity={0.04} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
+                  <XAxis
+                    dataKey="tod"
+                    tick={{ fill: 'var(--chart-axis)', fontSize: 10 }}
+                    stroke="var(--chart-axis)"
+                    interval={7}
+                  />
+                  <YAxis
+                    tick={{ fill: 'var(--chart-axis)', fontSize: 11 }}
+                    stroke="var(--chart-axis)"
+                    width={60}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'var(--chart-tooltip-bg)',
+                      border: '1px solid var(--chart-tooltip-border)',
+                      borderRadius: 8,
+                      color: 'var(--chart-tooltip-text)',
+                    }}
+                    formatter={(v) => [`${fmt(Number(v), 1)} kW`, 'Demand']}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="demandKw"
+                    name="kW"
+                    stroke="var(--chart-2)"
+                    strokeWidth={2}
+                    fill={`url(#loadProfileShade-${loadProfileGradId})`}
+                    isAnimationActive={false}
+                    dot={false}
+                    activeDot={{ r: 4 }}
+                  />
+                </AreaChart>
               </ResponsiveContainer>
             </div>
           ) : (
             <div className="rounded-lg border border-dashed border-[var(--border)] p-3 text-sm text-[var(--muted)]">
-              Load profile hidden.
+              24-hour curve hidden.
             </div>
           )}
         </div>
 
-        <div className="card card-hover p-5">
+        <div className="card card-hover p-5 lg:col-span-2">
           <div className="mb-2 text-sm font-semibold text-[var(--text)]">Peak Demand Tracking (daily max)</div>
           <div className="h-72 min-h-[220px] w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%">
