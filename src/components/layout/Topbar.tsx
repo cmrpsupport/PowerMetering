@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 import { useUiStore } from '../../store/uiStore'
 import { useNodeRedHealth, usePlcFullSnapshot } from '../../hooks/queries'
 import { Badge } from '../ui/Badge'
+import { GIT_SHA } from '../../constants/version'
 import urcLogo from '../../assets/urc-logo.svg'
 
 function titleForPath(pathname: string) {
@@ -81,7 +82,15 @@ export function Topbar() {
         <div className="border-t border-[var(--border)] py-2 md:hidden">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0 truncate text-sm font-medium text-[var(--muted)]">{title}</div>
-            <Badge color={plcUp ? 'green' : 'red'}>{plcUp ? 'PLC Connected' : 'PLC Disconnected'}</Badge>
+            <div className="flex shrink-0 items-center gap-2">
+              <span
+                className="rounded-md border border-[var(--border)] bg-[var(--bg)] px-1.5 py-0.5 font-mono text-[10px] font-medium tabular-nums text-[var(--muted)]"
+                title={`Git commit ${GIT_SHA}`}
+              >
+                {GIT_SHA}
+              </span>
+              <Badge color={plcUp ? 'green' : 'red'}>{plcUp ? 'PLC Connected' : 'PLC Disconnected'}</Badge>
+            </div>
           </div>
           <div className="mt-1 text-xs text-[var(--muted)]">
             {metersOnline} meter{metersOnline !== 1 ? 's' : ''} reporting

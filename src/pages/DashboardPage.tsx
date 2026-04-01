@@ -917,7 +917,7 @@ export function DashboardPage() {
                                           {meterHasData(d) ? 'ON' : 'OFF'}
                                         </Badge>
                                       </div>
-                                      <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
+                                      <div className="mt-2 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
                                         <div>
                                           <div className="text-[11px] text-[var(--muted)]">kW</div>
                                           <div className="font-mono text-[var(--text)]">{fmt(d?.Real_power ?? 0, 1)}</div>
@@ -929,6 +929,10 @@ export function DashboardPage() {
                                         <div>
                                           <div className="text-[11px] text-[var(--muted)]">A</div>
                                           <div className="font-mono text-[var(--text)]">{fmt(d?.Current_Ave ?? 0, 1)}</div>
+                                        </div>
+                                        <div>
+                                          <div className="text-[11px] text-[var(--muted)]">E (kWh)</div>
+                                          <div className="font-mono text-[var(--text)]">{fmt(d?.Real_energy ?? 0, 1)}</div>
                                         </div>
                                       </div>
                                     </div>

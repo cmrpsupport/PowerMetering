@@ -184,10 +184,29 @@ export function LineDashboardPage() {
             </div>
           </div>
           <div className="p-4">
-            <MultiAxisTrendChart data={lineHistory} series={series} height={320} />
-            <div className="mt-2 text-xs text-[var(--muted)]">
-              kW is summed across meters; V/A are averages across meters.
-            </div>
+            {histQ.isPending ? (
+              <div className="flex min-h-[320px] items-center justify-center text-sm text-[var(--muted)]">
+                Loading trend…
+              </div>
+            ) : histQ.isError ? (
+              <div className="flex min-h-[320px] items-center justify-center text-sm text-[var(--danger)]">
+                Could not load meter history. Check that Node-RED is running and the SQLite store has samples.
+              </div>
+            ) : lineHistory.length === 0 ? (
+              <div className="flex min-h-[320px] flex-col items-center justify-center gap-1 px-2 text-center text-sm text-[var(--muted)]">
+                <div>No trend data for this line in the selected window.</div>
+                <div className="text-xs">
+                  History comes from stored meter samples (about every 30s). If the plant just started, wait a few minutes or try a shorter window.
+                </div>
+              </div>
+            ) : (
+              <>
+                <MultiAxisTrendChart data={lineHistory} series={series} height={320} />
+                <div className="mt-2 text-xs text-[var(--muted)]">
+                  kW is summed across meters; V/A are averages across meters.
+                </div>
+              </>
+            )}
           </div>
         </div>
       ) : (
@@ -219,7 +238,7 @@ export function LineDashboardPage() {
                     </div>
                     <Badge color={meterHasData(d) ? 'green' : 'red'}>{meterHasData(d) ? 'ON' : 'OFF'}</Badge>
                   </div>
-                  <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
+                  <div className="mt-2 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
                     <div>
                       <div className="text-[11px] text-[var(--muted)]">kW</div>
                       <div className="font-mono text-[var(--text)]">{fmtSnap(d?.Real_power ?? 0, 1)}</div>
@@ -231,6 +250,10 @@ export function LineDashboardPage() {
                     <div>
                       <div className="text-[11px] text-[var(--muted)]">A</div>
                       <div className="font-mono text-[var(--text)]">{fmtSnap(d?.Current_Ave ?? 0, 1)}</div>
+                    </div>
+                    <div>
+                      <div className="text-[11px] text-[var(--muted)]">E (kWh)</div>
+                      <div className="font-mono text-[var(--text)]">{fmtSnap(d?.Real_energy ?? 0, 1)}</div>
                     </div>
                   </div>
                 </div>

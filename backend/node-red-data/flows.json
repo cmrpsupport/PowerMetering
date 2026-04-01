@@ -4728,7 +4728,7 @@
     "type": "function",
     "z": "a1000001.0001tab",
     "name": "SQLite: create schema (v3 \u2014 meter_samples)",
-    "func": "msg.topic = `CREATE TABLE IF NOT EXISTS plc_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  Power_kW REAL,\n  Energy_kWh REAL,\n  Voltage_V REAL,\n  Current_A REAL,\n  PowerFactor REAL,\n  Total_CrackerLine1_kWh REAL,\n  Total_CrackerLine2_kWh REAL,\n  Total_PretzelLine_kWh REAL,\n  Total_WaferLine1_kWh REAL,\n  Total_WaferLine2_kWh REAL,\n  Total_ChocoyChocoLine_kWh REAL,\n  Total_DynamiteLine_kWh REAL,\n  Total_XOLine_kWh REAL,\n  Total_MaxxLine_kWh REAL,\n  Total_MainLine_kWh REAL,\n  Total_UtilitiesJaguar_kWh REAL,\n  Total_UtilitiesLighting_kWh REAL\n);\nCREATE INDEX IF NOT EXISTS idx_plc_samples_ts ON plc_samples(ts);\nCREATE INDEX IF NOT EXISTS idx_plc_samples_epoch ON plc_samples(ts_epoch);\n\nCREATE TABLE IF NOT EXISTS meter_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  meter_id TEXT NOT NULL,\n  real_power_kw REAL,\n  reactive_power_kvar REAL,\n  apparent_power_kva REAL,\n  real_energy_kwh REAL,\n  reactive_energy_kvarh REAL,\n  apparent_energy_kvah REAL,\n  voltage_ab REAL,\n  voltage_bc REAL,\n  voltage_ca REAL,\n  voltage_ll_avg REAL,\n  voltage_an REAL,\n  voltage_bn REAL,\n  voltage_cn REAL,\n  voltage_ln_avg REAL,\n  current_a REAL,\n  current_b REAL,\n  current_c REAL,\n  current_avg REAL,\n  power_factor REAL,\n  frequency REAL\n);\nCREATE INDEX IF NOT EXISTS idx_meter_epoch_id ON meter_samples(ts_epoch, meter_id);\nCREATE INDEX IF NOT EXISTS idx_meter_id_epoch ON meter_samples(meter_id, ts_epoch);\n\nCREATE TABLE IF NOT EXISTS demand_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  current_demand_kw REAL NOT NULL,\n  instant_kw REAL NOT NULL\n);\nCREATE INDEX IF NOT EXISTS idx_demand_samples_epoch ON demand_samples(ts_epoch);`;\nreturn msg;",
+    "func": "msg.topic = `CREATE TABLE IF NOT EXISTS plc_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  Power_kW REAL,\n  Energy_kWh REAL,\n  Voltage_V REAL,\n  Current_A REAL,\n  PowerFactor REAL,\n  Total_CrackerLine1_kWh REAL,\n  Total_CrackerLine2_kWh REAL,\n  Total_PretzelLine_kWh REAL,\n  Total_WaferLine1_kWh REAL,\n  Total_WaferLine2_kWh REAL,\n  Total_ChocoyChocoLine_kWh REAL,\n  Total_DynamiteLine_kWh REAL,\n  Total_XOLine_kWh REAL,\n  Total_MaxxLine_kWh REAL,\n  Total_MainLine_kWh REAL,\n  Total_UtilitiesJaguar_kWh REAL,\n  Total_UtilitiesLighting_kWh REAL\n);\nCREATE INDEX IF NOT EXISTS idx_plc_samples_ts ON plc_samples(ts);\nCREATE INDEX IF NOT EXISTS idx_plc_samples_epoch ON plc_samples(ts_epoch);\n\nCREATE TABLE IF NOT EXISTS meter_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  meter_id TEXT NOT NULL,\n  real_power_kw REAL,\n  reactive_power_kvar REAL,\n  apparent_power_kva REAL,\n  real_energy_kwh REAL,\n  reactive_energy_kvarh REAL,\n  apparent_energy_kvah REAL,\n  voltage_ab REAL,\n  voltage_bc REAL,\n  voltage_ca REAL,\n  voltage_ll_avg REAL,\n  voltage_an REAL,\n  voltage_bn REAL,\n  voltage_cn REAL,\n  voltage_ln_avg REAL,\n  current_a REAL,\n  current_b REAL,\n  current_c REAL,\n  current_avg REAL,\n  power_factor REAL,\n  frequency REAL\n);\nCREATE INDEX IF NOT EXISTS idx_meter_epoch_id ON meter_samples(ts_epoch, meter_id);\nCREATE INDEX IF NOT EXISTS idx_meter_id_epoch ON meter_samples(meter_id, ts_epoch);\n\nCREATE TABLE IF NOT EXISTS demand_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  current_demand_kw REAL NOT NULL,\n  instant_kw REAL NOT NULL\n);\nCREATE INDEX IF NOT EXISTS idx_demand_samples_epoch ON demand_samples(ts_epoch);\\n\\nCREATE TABLE IF NOT EXISTS enhanced_alerts (\\n  id TEXT PRIMARY KEY NOT NULL,\\n  ts TEXT NOT NULL,\\n  ts_epoch INTEGER NOT NULL,\\n  payload TEXT NOT NULL\\n);\\nCREATE INDEX IF NOT EXISTS idx_enhanced_alerts_ts_epoch ON enhanced_alerts(ts_epoch DESC);`;\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -5565,6 +5565,148 @@
     "name": "SQLite write (demand)",
     "x": 720,
     "y": 360,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "a1000100.alerts_load_inject",
+    "type": "inject",
+    "z": "a1000001.0001tab",
+    "name": "Load alerts from DB (once)",
+    "props": [
+      {
+        "p": "payload",
+        "v": "",
+        "vt": "str"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": true,
+    "onceDelay": "2",
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 120,
+    "y": 620,
+    "wires": [
+      [
+        "a1000101.alerts_load_query"
+      ]
+    ]
+  },
+  {
+    "id": "a1000101.alerts_load_query",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "SQLite: SELECT enhanced_alerts",
+    "func": "msg.topic = `SELECT id, ts, ts_epoch, payload FROM enhanced_alerts ORDER BY ts_epoch DESC LIMIT 2000`;\ndelete msg.payload;\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 360,
+    "y": 620,
+    "wires": [
+      [
+        "a1000102.alerts_sqlread"
+      ]
+    ]
+  },
+  {
+    "id": "a1000102.alerts_sqlread",
+    "type": "sqlite",
+    "z": "a1000001.0001tab",
+    "mydb": "a1000012.sqlitedb",
+    "sqlquery": "msg.topic",
+    "sql": "",
+    "name": "SQLite read (alerts)",
+    "x": 560,
+    "y": 620,
+    "wires": [
+      [
+        "a1000103.alerts_load_parse"
+      ]
+    ]
+  },
+  {
+    "id": "a1000103.alerts_load_parse",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "Hydrate global enhancedAlerts",
+    "func": "const rows = Array.isArray(msg.payload) ? msg.payload : [];\nconst fromDb = [];\nfor (const r of rows) {\n  try {\n    fromDb.push(JSON.parse(r.payload));\n  } catch (e) {}\n}\nconst mem = global.get('enhancedAlerts') || [];\nif (fromDb.length === 0) return null;\nconst byId = new Map();\nfor (const a of fromDb) byId.set(a.id, a);\nfor (const a of mem) {\n  if (!byId.has(a.id)) byId.set(a.id, a);\n}\nconst merged = Array.from(byId.values()).sort((a, b) => Date.parse(b.ts) - Date.parse(a.ts));\nwhile (merged.length > 2000) merged.pop();\nglobal.set('enhancedAlerts', merged);\nreturn null;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 780,
+    "y": 620,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "a1000104.alerts_sync_inject",
+    "type": "inject",
+    "z": "a1000001.0001tab",
+    "name": "Sync alerts to DB (30s)",
+    "props": [
+      {
+        "p": "payload",
+        "v": "",
+        "vt": "str"
+      }
+    ],
+    "repeat": "30",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 120,
+    "y": 680,
+    "wires": [
+      [
+        "a1000105.alerts_sync_batch"
+      ]
+    ]
+  },
+  {
+    "id": "a1000105.alerts_sync_batch",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "SQLite: UPSERT enhanced_alerts batch",
+    "func": "const arr = global.get('enhancedAlerts') || [];\nif (arr.length === 0) return null;\nconst esc = (s) => String(s).replace(/'/g, \"''\");\nconst batchSize = 40;\nconst msgs = [];\nfor (let i = 0; i < arr.length; i += batchSize) {\n  const part = arr.slice(i, i + batchSize);\n  const vals = part.map((a) => {\n    const ts = a.ts || new Date().toISOString();\n    const te = Math.floor(Date.parse(ts) / 1000) || 0;\n    const p = esc(JSON.stringify(a));\n    return `('${esc(a.id)}', '${esc(ts)}', ${te}, '${p}')`;\n  });\n  msgs.push({\n    topic: `INSERT OR REPLACE INTO enhanced_alerts (id, ts, ts_epoch, payload) VALUES ${vals.join(',')};`,\n    payload: null\n  });\n}\nreturn msgs;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 380,
+    "y": 680,
+    "wires": [
+      [
+        "a1000106.alerts_sqlwrite"
+      ]
+    ]
+  },
+  {
+    "id": "a1000106.alerts_sqlwrite",
+    "type": "sqlite",
+    "z": "a1000001.0001tab",
+    "mydb": "a1000012.sqlitedb",
+    "sqlquery": "msg.topic",
+    "sql": "",
+    "name": "SQLite write (alerts)",
+    "x": 620,
+    "y": 680,
     "wires": [
       []
     ]

@@ -49,6 +49,43 @@ function toNumber(v: unknown): number {
   return Number.isFinite(n) ? n : 0
 }
 
+function firstDefined(r: Record<string, unknown>, keys: string[]): unknown {
+  for (const k of keys) {
+    if (r[k] !== undefined && r[k] !== null) return r[k]
+  }
+  return undefined
+}
+
+/** Node-RED SQLite often returns snake_case column names; normalize to MeterSamplePoint. */
+function normalizeMeterSampleRow(r: Record<string, unknown>): MeterSamplePoint {
+  const n = (...keys: string[]) => toNumber(firstDefined(r, keys))
+  const s = (...keys: string[]) => String(firstDefined(r, keys) ?? '')
+  return {
+    ts: s('ts'),
+    meterId: s('meterId', 'meter_id'),
+    realPowerKw: n('realPowerKw', 'real_power_kw'),
+    reactivePowerKvar: n('reactivePowerKvar', 'reactive_power_kvar'),
+    apparentPowerKva: n('apparentPowerKvar', 'apparent_power_kva'),
+    realEnergyKwh: n('realEnergyKwh', 'real_energy_kwh'),
+    reactiveEnergyKvarh: n('reactiveEnergyKvarh', 'reactive_energy_kvarh'),
+    apparentEnergyKvah: n('apparentEnergyKvah', 'apparent_energy_kvah'),
+    voltageAb: n('voltageAb', 'voltage_ab'),
+    voltageBc: n('voltageBc', 'voltage_bc'),
+    voltageCa: n('voltageCa', 'voltage_ca'),
+    voltageLlAvg: n('voltageLlAvg', 'voltage_ll_avg'),
+    voltageAn: n('voltageAn', 'voltage_an'),
+    voltageBn: n('voltageBn', 'voltage_bn'),
+    voltageCn: n('voltageCn', 'voltage_cn'),
+    voltageLnAvg: n('voltageLnAvg', 'voltage_ln_avg'),
+    currentA: n('currentA', 'current_a'),
+    currentB: n('currentB', 'current_b'),
+    currentC: n('currentC', 'current_c'),
+    currentAvg: n('currentAvg', 'current_avg'),
+    powerFactor: n('powerFactor', 'power_factor'),
+    frequency: n('frequency'),
+  }
+}
+
 function readFloat64FromDwordsBE(hi: unknown, lo: unknown): number | null {
   const hiU = toNumber(hi)
   const loU = toNumber(lo)
@@ -256,5 +293,11 @@ export async function getMeterHistory(
 ): Promise<MeterSamplePoint[]> {
   let path = `/api/trends/meter/history?minutes=${minutes}`
   if (meterId) path += `&meterId=${encodeURIComponent(meterId)}`
-  return await http<MeterSamplePoint[]>(path).catch(() => [])
+  const raw = await http<unknown>(path).catch(() => [])
+  if (!Array.isArray(raw)) return []
+  return raw.map((row) =>
+    normalizeMeterSampleRow(
+      typeof row === 'object' && row !== null ? (row as Record<string, unknown>) : {},
+    ),
+  )
 }
