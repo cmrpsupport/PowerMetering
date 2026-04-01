@@ -17,6 +17,10 @@ export type TopologyDisplayNode = {
   name: string
   kw: number
   amps: number
+  /** Line-to-line average voltage (V), from PLC `Voltage_Lave`. */
+  voltageV: number
+  /** Cumulative real energy (kWh), from PLC `Real_energy`. */
+  energyKwh: number
   online: boolean
 }
 
@@ -26,6 +30,8 @@ export type TopologyMeterNode = {
   name: string
   kw: number
   amps: number
+  voltageV: number
+  energyKwh: number
   online: boolean
 }
 
@@ -34,6 +40,8 @@ export type TopologyLineBranch = {
   name: string
   kw: number
   amps: number
+  voltageV: number
+  energyKwh: number
   online: boolean
   meters: TopologyMeterNode[]
 }
@@ -53,6 +61,8 @@ export type TopologyGraphNode = {
   name: string
   kw: number
   amps: number
+  voltageV: number
+  energyKwh: number
   online: boolean
   /** Physical meter id for routes (meters only). */
   meterId?: string
@@ -127,6 +137,8 @@ export function buildTopologyGraph(model: ElectricalTopologyModel): ElectricalTo
     name: model.root.name,
     kw: model.root.kw,
     amps: model.root.amps,
+    voltageV: model.root.voltageV,
+    energyKwh: model.root.energyKwh,
     online: model.root.online,
   })
 
@@ -140,6 +152,8 @@ export function buildTopologyGraph(model: ElectricalTopologyModel): ElectricalTo
       name: line.name,
       kw: line.kw,
       amps: line.amps,
+      voltageV: line.voltageV,
+      energyKwh: line.energyKwh,
       online: line.online,
     })
   }
@@ -154,6 +168,8 @@ export function buildTopologyGraph(model: ElectricalTopologyModel): ElectricalTo
         name: m.name,
         kw: m.kw,
         amps: m.amps,
+        voltageV: m.voltageV,
+        energyKwh: m.energyKwh,
         online: m.online,
         meterId: m.meterId,
         lineId: line.id,
@@ -231,6 +247,8 @@ export function buildElectricalTopology(snap: PlcFullSnapshot | undefined, plcLi
     name: 'Utility Grid',
     kw: NaN,
     amps: NaN,
+    voltageV: NaN,
+    energyKwh: NaN,
     online: false,
   })
 
@@ -242,6 +260,8 @@ export function buildElectricalTopology(snap: PlcFullSnapshot | undefined, plcLi
         name: findPlcMeter(meterId)?.name ?? meterId,
         kw: 0,
         amps: 0,
+        voltageV: NaN,
+        energyKwh: NaN,
         online: false,
       }))
     }
@@ -249,11 +269,15 @@ export function buildElectricalTopology(snap: PlcFullSnapshot | undefined, plcLi
       const d = snap.meters[meterId]
       const kw = d ? d.Real_power : 0
       const amps = d ? d.Current_Ave : 0
+      const voltageV = d && Number.isFinite(d.Voltage_Lave) ? d.Voltage_Lave : NaN
+      const energyKwh = d && Number.isFinite(d.Real_energy) ? d.Real_energy : NaN
       return {
         meterId,
         name: findPlcMeter(meterId)?.name ?? meterId,
         kw,
         amps,
+        voltageV,
+        energyKwh,
         online: plcLinkUp && meterHasData(d),
       }
     })
@@ -266,16 +290,28 @@ export function buildElectricalTopology(snap: PlcFullSnapshot | undefined, plcLi
       let kw = 0
       let amps = 0
       let anyOnline = false
+      const voltages: number[] = []
+      let energySum = 0
+      let energyAny = false
       for (const m of meters) {
         if (Number.isFinite(m.kw)) kw += m.kw
         if (Number.isFinite(m.amps)) amps += m.amps
         if (m.online) anyOnline = true
+        if (Number.isFinite(m.voltageV)) voltages.push(m.voltageV)
+        if (Number.isFinite(m.energyKwh)) {
+          energySum += m.energyKwh
+          energyAny = true
+        }
       }
+      const voltageV = voltages.length ? voltages.reduce((a, b) => a + b, 0) / voltages.length : NaN
+      const energyKwh = energyAny ? energySum : NaN
       return {
         id: line.id,
         name: line.name,
         kw: meters.length ? kw : 0,
         amps: meters.length ? amps : 0,
+        voltageV,
+        energyKwh,
         online: meters.length > 0 && plcLinkUp && anyOnline,
         meters,
       }
@@ -285,9 +321,23 @@ export function buildElectricalTopology(snap: PlcFullSnapshot | undefined, plcLi
     return { root: emptyRoot(), lines }
   }
 
-  const plantKw = Object.values(snap.meters).reduce((s, d) => s + d.Real_power, 0)
-  const plantAmps = Object.values(snap.meters).reduce((s, d) => s + d.Current_Ave, 0)
-  const plantOnline = Object.values(snap.meters).some((d) => meterHasData(d))
+  const allMeters = Object.values(snap.meters)
+  const plantKw = allMeters.reduce((s, d) => s + d.Real_power, 0)
+  const plantAmps = allMeters.reduce((s, d) => s + d.Current_Ave, 0)
+  const plantOnline = allMeters.some((d) => meterHasData(d))
+  const plantVoltages = allMeters.filter((d) => Number.isFinite(d.Voltage_Lave)).map((d) => d.Voltage_Lave)
+  const plantVoltageV = plantVoltages.length
+    ? plantVoltages.reduce((a, b) => a + b, 0) / plantVoltages.length
+    : NaN
+  let plantEnergySum = 0
+  let plantEnergyAny = false
+  for (const d of allMeters) {
+    if (Number.isFinite(d.Real_energy)) {
+      plantEnergySum += d.Real_energy
+      plantEnergyAny = true
+    }
+  }
+  const plantEnergyKwh = plantEnergyAny ? plantEnergySum : NaN
 
   return {
     root: {
@@ -296,6 +346,8 @@ export function buildElectricalTopology(snap: PlcFullSnapshot | undefined, plcLi
       name: 'Utility Grid',
       kw: plantKw,
       amps: plantAmps,
+      voltageV: plantVoltageV,
+      energyKwh: plantEnergyKwh,
       online: plcLinkUp && plantOnline,
     },
     lines,

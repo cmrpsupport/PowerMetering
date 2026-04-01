@@ -85,7 +85,7 @@ export const PLC_TOTAL_ENERGY_KEYS = [
   { key: 'Total_EnergyCon_kwh_Pretzel_Line', name: 'Pretzel Line' },
   { key: 'Total_EnergyCon_kwh_Wafer_Line_1', name: 'Wafer Line 1' },
   { key: 'Total_EnergyCon_kwh_Wafer_Line_2', name: 'Wafer Line 2' },
-  { key: 'Total_EnergyCon_kwh_Chooey_Choco_Line', name: 'Chocoy Choco Line' },
+  { key: 'Total_EnergyCon_kwh_Chooey_Choco_Line', name: 'Choco Choco Line' },
   { key: 'Total_EnergyCon_kwh_Dynamite_Line', name: 'Dynamite Line' },
   { key: 'Total_EnergyCon_kwh_XO_Line', name: 'XO Line' },
   { key: 'Total_EnergyCon_kwh_Maxx_Line', name: 'Maxx Line' },

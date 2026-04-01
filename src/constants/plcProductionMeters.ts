@@ -53,7 +53,7 @@ export const PLC_PRODUCTION_METERS: PlcProductionMeterDef[] = [
   },
   {
     id: 'plc-line-06',
-    name: 'Chocoy Choco Line',
+    name: 'Choco Choco Line',
     totalKey: 'Total_ChocoyChocoLine_kWh',
     meterIds: ['RIO2CM1_EMU4_6', 'RIO2CM1_EMU4_11'],
     baseKw: 340,

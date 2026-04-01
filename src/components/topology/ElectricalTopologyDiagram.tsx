@@ -4,6 +4,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type ReactNode,
   type RefObject,
 } from 'react'
 import { Link } from 'react-router-dom'
@@ -30,32 +31,45 @@ function mainLinePowerMeterNodeId(): string {
   return meterNodeId(PLC_MAIN_LINE_ID, PLC_MAIN_LINE_POWER_METER_ID)
 }
 
-/** Thicker strokes on Main Line card and Main Line power-meter branches. */
+/* ── formatting ────────────────────────────────────────────────────── */
+
+function fmtKw(n: number): string {
+  if (!Number.isFinite(n)) return '—'
+  return n.toFixed(1)
+}
+function fmtA(n: number): string {
+  if (!Number.isFinite(n)) return '—'
+  return n.toFixed(0)
+}
+function fmtV(n: number): string {
+  if (!Number.isFinite(n)) return '—'
+  return n.toFixed(0)
+}
+function fmtKwh(n: number): string {
+  if (!Number.isFinite(n)) return '—'
+  return n.toLocaleString(undefined, { maximumFractionDigits: 0 })
+}
+
 function edgeStrokeWidths(e: TopologyGraphEdge): { base: number; hover: number } {
   const p = mainLinePowerMeterNodeId()
   const a = e.parentId
   const b = e.childId
   if (a === PLC_MAIN_LINE_ID || b === PLC_MAIN_LINE_ID) return { base: 2.5, hover: 3.25 }
   if (a === p || b === p) return { base: 2, hover: 2.75 }
+  if (a === ROOT_ID || b === ROOT_ID) return { base: 2.5, hover: 3.25 }
   return { base: 1.25, hover: 2 }
 }
 
-function fmtKw(n: number): string {
-  if (!Number.isFinite(n)) return '—'
-  return n.toFixed(1)
-}
-
-function fmtA(n: number): string {
-  if (!Number.isFinite(n)) return '—'
-  return n.toFixed(0)
-}
+/* ── status dot ────────────────────────────────────────────────────── */
 
 function StatusDot({ online }: { online: boolean }) {
   return (
     <span
       className={[
         'inline-block h-2.5 w-2.5 shrink-0 rounded-full ring-2 ring-[var(--card)]',
-        online ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.45)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.35)]',
+        online
+          ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.45)]'
+          : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.35)]',
       ].join(' ')}
       title={online ? 'Online / normal' : 'Offline or alarm'}
       aria-hidden
@@ -70,9 +84,13 @@ function graphNodeToDisplay(n: TopologyGraphNode): TopologyDisplayNode {
     name: n.name,
     kw: n.kw,
     amps: n.amps,
+    voltageV: n.voltageV,
+    energyKwh: n.energyKwh,
     online: n.online,
   }
 }
+
+/* ── card ───────────────────────────────────────────────────────────── */
 
 function NodeCard({
   node,
@@ -95,7 +113,12 @@ function NodeCard({
       ].join(' ')}
     >
       <div className="mb-2 flex items-start justify-between gap-2">
-        <div className={['min-w-0 truncate font-semibold text-[var(--text)]', titleCls].join(' ')}>{node.name}</div>
+        <div
+          className={['min-w-0 truncate font-semibold text-[var(--text)]', titleCls].join(' ')}
+          title={node.name}
+        >
+          {node.name}
+        </div>
         <StatusDot online={node.online} />
       </div>
       <div className={['space-y-1 tabular-nums text-[var(--text)]', valCls].join(' ')}>
@@ -111,17 +134,32 @@ function NodeCard({
             {fmtA(node.amps)} <span className="text-[var(--muted)]">A</span>
           </span>
         </div>
+        <div className="flex justify-between gap-4">
+          <span className="text-[var(--muted)]">V L-L:</span>
+          <span>
+            {fmtV(node.voltageV)} <span className="text-[var(--muted)]">V</span>
+          </span>
+        </div>
+        <div className="flex justify-between gap-4">
+          <span className="text-[var(--muted)]">Tot. kWh:</span>
+          <span>{fmtKwh(node.energyKwh)}</span>
+        </div>
       </div>
     </div>
   )
 }
 
+/* ── registry + SVG edge measurement ───────────────────────────────── */
+
 function useNodeRegistry() {
   const refs = useRef<Map<string, HTMLElement>>(new Map())
-  const register = useCallback((id: string) => (el: HTMLElement | null) => {
-    if (el) refs.current.set(id, el)
-    else refs.current.delete(id)
-  }, [])
+  const register = useCallback(
+    (id: string) => (el: HTMLElement | null) => {
+      if (el) refs.current.set(id, el)
+      else refs.current.delete(id)
+    },
+    [],
+  )
   return { register, refs }
 }
 
@@ -162,10 +200,15 @@ function useOrthogonalEdgePaths(
       const bx = cr.left + cr.width / 2 - r0.left
       const by = cr.top - r0.top
 
-      const siblings = (byParent.get(e.parentId) ?? []).slice().sort((a, b) => childCenterX(a) - childCenterX(b))
+      const siblings = (byParent.get(e.parentId) ?? [])
+        .slice()
+        .sort((a, b) => childCenterX(a) - childCenterX(b))
       const n = siblings.length
-      const idx = Math.max(0, siblings.findIndex((s) => s.id === e.id))
-      /** Fan horizontal anchors along the parent bottom so shared parents do not triple-stroke one vertical. */
+      const idx = Math.max(
+        0,
+        siblings.findIndex((s) => s.id === e.id),
+      )
+
       let ax = pxCenter
       if (n > 1) {
         const maxSpread = Math.min(14, pr.width * 0.42)
@@ -201,6 +244,8 @@ function useOrthogonalEdgePaths(
   return paths
 }
 
+/* ── grid card (utility grid root) ─────────────────────────────────── */
+
 function GridCard({
   node,
   register,
@@ -235,6 +280,8 @@ function GridCard({
   )
 }
 
+/* ── line card (clickable) ─────────────────────────────────────────── */
+
 function LineCardLink({
   lineId,
   node,
@@ -265,6 +312,8 @@ function LineCardLink({
   )
 }
 
+/* ── meter leaf card ───────────────────────────────────────────────── */
+
 function MeterLeaf({
   node,
   register,
@@ -292,6 +341,8 @@ function MeterLeaf({
   )
 }
 
+/* ── line subtree (recursive) ──────────────────────────────────────── */
+
 function LineSubtree({
   lineId,
   graph,
@@ -314,32 +365,23 @@ function LineSubtree({
   const lineChildIds = kids.filter((id) => graph.nodes.get(id)?.type !== 'meter')
 
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="flex flex-col items-center gap-2">
       <LineCardLink lineId={lineId} node={node} register={register} onHover={onHover} />
 
-      {meterIds.length > 0 ? (
-        <div className="flex w-full max-w-[min(100vw,720px)] flex-row flex-wrap justify-center gap-2">
+      {meterIds.length > 0 && (
+        <div className="flex w-full flex-row flex-wrap justify-center gap-1.5">
           {meterIds.map((mid) => {
             const m = graph.nodes.get(mid)
             if (!m) return null
-            return (
-              <MeterWithLineChildren
-                key={mid}
-                meterNode={m}
-                graph={graph}
-                childrenByParent={childrenByParent}
-                register={register}
-                onHover={onHover}
-              />
-            )
+            return <MeterLeaf key={mid} node={m} register={register} onHover={onHover} />
           })}
         </div>
-      ) : null}
+      )}
 
-      {lineChildIds.length > 0 ? (
-        <div className="flex w-full max-w-[min(100vw,1400px)] flex-row flex-wrap justify-center gap-x-4 gap-y-6">
+      {lineChildIds.length > 0 && (
+        <div className="flex w-full flex-row flex-wrap justify-center gap-x-2 gap-y-2">
           {lineChildIds.map((cid) => (
-            <div key={cid} className="flex min-w-[180px] max-w-[220px] flex-col items-center">
+            <div key={cid} className="flex w-[180px] flex-col items-center">
               <LineSubtree
                 lineId={cid}
                 graph={graph}
@@ -350,58 +392,161 @@ function LineSubtree({
             </div>
           ))}
         </div>
-      ) : null}
+      )}
     </div>
   )
 }
 
-/** Main Line power meter may have downstream line nodes (Wafer / XO). */
-function MeterWithLineChildren({
-  meterNode,
+/* ── Main Line section (card + inline meters, no production grid) ─── */
+
+function MainLineSection({
   graph,
   childrenByParent,
   register,
   onHover,
 }: {
-  meterNode: TopologyGraphNode
   graph: ElectricalTopologyGraph
   childrenByParent: Map<string, string[]>
   register: (id: string) => (el: HTMLElement | null) => void
   onHover: (id: string | null) => void
 }) {
-  const raw = childrenByParent.get(meterNode.id) ?? []
-  const sorted = sortTopologyChildren(
-    meterNode.id,
-    raw,
-    graph.nodes,
-    ROOT_ID,
-    PLC_MAIN_LINE_ID,
-  )
-  const lineDownstream = sorted.filter((id) => graph.nodes.get(id)?.type !== 'meter')
+  const lineId = PLC_MAIN_LINE_ID
+  const node = graph.nodes.get(lineId)
+  if (!node) return null
 
-  if (lineDownstream.length === 0) {
-    return <MeterLeaf node={meterNode} register={register} onHover={onHover} />
-  }
+  const rawKids = childrenByParent.get(lineId) ?? []
+  const kids = sortTopologyChildren(lineId, rawKids, graph.nodes, ROOT_ID, PLC_MAIN_LINE_ID)
+  const meterIds = kids.filter((id) => graph.nodes.get(id)?.type === 'meter')
 
   return (
-    <div className="flex flex-col items-center gap-3">
-      <MeterLeaf node={meterNode} register={register} onHover={onHover} />
-      <div className="flex w-full max-w-[min(100vw,1200px)] flex-row flex-wrap justify-center gap-x-4 gap-y-6">
-        {lineDownstream.map((cid) => (
-          <div key={cid} className="flex min-w-[180px] max-w-[220px] flex-col items-center">
-            <LineSubtree
-              lineId={cid}
-              graph={graph}
-              childrenByParent={childrenByParent}
-              register={register}
-              onHover={onHover}
-            />
-          </div>
-        ))}
-      </div>
+    <div className="flex flex-col items-center gap-2">
+      <LineCardLink lineId={lineId} node={node} register={register} onHover={onHover} />
+      {meterIds.length > 0 && (
+        <div className="flex flex-row flex-wrap justify-center gap-1.5">
+          {meterIds.map((mid) => {
+            const m = graph.nodes.get(mid)
+            if (!m) return null
+            return <MeterLeaf key={mid} node={m} register={register} onHover={onHover} />
+          })}
+        </div>
+      )}
     </div>
   )
 }
+
+/* ── production grid (full width) ──────────────────────────────────── */
+
+function ProductionLineGrid({
+  lineIds,
+  graph,
+  childrenByParent,
+  register,
+  onHover,
+}: {
+  lineIds: string[]
+  graph: ElectricalTopologyGraph
+  childrenByParent: Map<string, string[]>
+  register: (id: string) => (el: HTMLElement | null) => void
+  onHover: (id: string | null) => void
+}) {
+  if (lineIds.length === 0) return null
+  return (
+    <div className="flex w-full flex-row flex-wrap justify-start gap-x-2 gap-y-2 px-1">
+      {lineIds.map((cid) => (
+        <div key={cid} className="flex w-[180px] shrink-0 flex-col items-center">
+          <LineSubtree
+            lineId={cid}
+            graph={graph}
+            childrenByParent={childrenByParent}
+            register={register}
+            onHover={onHover}
+          />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/** Collect all production line IDs under Main Line, including lines fed from the power meter. */
+function useMainLineProductionIds(
+  graph: ElectricalTopologyGraph,
+  childrenByParent: Map<string, string[]>,
+): string[] {
+  return useMemo(() => {
+    const lineId = PLC_MAIN_LINE_ID
+    if (!graph.nodes.has(lineId)) return []
+    const rawKids = childrenByParent.get(lineId) ?? []
+    const kids = sortTopologyChildren(lineId, rawKids, graph.nodes, ROOT_ID, PLC_MAIN_LINE_ID)
+    let productionLineIds = kids.filter((id) => graph.nodes.get(id)?.type !== 'meter')
+
+    // Hoist lines downstream of the Main Line power meter (Wafer, XO, etc.)
+    const pwrId = mainLinePowerMeterNodeId()
+    const fromPowerMeter = (childrenByParent.get(pwrId) ?? []).filter(
+      (id) => graph.nodes.get(id)?.type !== 'meter',
+    )
+    if (fromPowerMeter.length > 0) {
+      productionLineIds = sortTopologyChildren(
+        lineId,
+        [...new Set([...productionLineIds, ...fromPowerMeter])],
+        graph.nodes,
+        ROOT_ID,
+        PLC_MAIN_LINE_ID,
+      )
+    }
+    return productionLineIds
+  }, [graph, childrenByParent])
+}
+
+/* ── feeder row: Main Line left | spacer | Utilities right ─────────── */
+
+function UtilityGridFeederRow({
+  feederLineIds,
+  graph,
+  childrenByParent,
+  register,
+  onHover,
+}: {
+  feederLineIds: string[]
+  graph: ElectricalTopologyGraph
+  childrenByParent: Map<string, string[]>
+  register: (id: string) => (el: HTMLElement | null) => void
+  onHover: (id: string | null) => void
+}) {
+  const mainLineId = PLC_MAIN_LINE_ID
+  const utilityIds = feederLineIds.filter((id) => id !== mainLineId)
+
+  return (
+    <div className="flex w-full flex-wrap items-start gap-x-4 gap-y-4 px-1 lg:gap-x-6">
+      {/* Main Line + direct meters */}
+      {feederLineIds.includes(mainLineId) && (
+        <div className="flex shrink-0 flex-col items-center">
+          <MainLineSection
+            graph={graph}
+            childrenByParent={childrenByParent}
+            register={register}
+            onHover={onHover}
+          />
+        </div>
+      )}
+      {/* Spacer → push utilities right */}
+      <div className="hidden flex-1 md:block" />
+      {/* Utilities */}
+      {utilityIds.map((cid) => (
+        <div key={cid} className="flex shrink-0 flex-col items-center">
+          <LineSubtree
+            lineId={cid}
+            graph={graph}
+            childrenByParent={childrenByParent}
+            register={register}
+            onHover={onHover}
+          />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/* ── main diagram ──────────────────────────────────────────────────── */
 
 export function ElectricalTopologyDiagram({ model }: { model: ElectricalTopologyModel }) {
   const graph = useMemo(() => buildTopologyGraph(model), [model])
@@ -429,6 +574,8 @@ export function ElectricalTopologyDiagram({ model }: { model: ElectricalTopology
     ROOT_ID,
     PLC_MAIN_LINE_ID,
   )
+  const feederLineIds = gridKids.filter((id) => graph.nodes.get(id)?.type !== 'meter')
+  const productionLineIds = useMainLineProductionIds(graph, childrenByParent)
 
   return (
     <div
@@ -436,7 +583,8 @@ export function ElectricalTopologyDiagram({ model }: { model: ElectricalTopology
       role="region"
       aria-label="Electrical network topology diagram"
     >
-      <div ref={containerRef} className="relative flex flex-col items-center gap-6">
+      <div ref={containerRef} className="relative flex flex-col items-center gap-4">
+        {/* SVG connector lines */}
         <svg
           className="pointer-events-none absolute inset-0 z-0 h-full min-h-full w-full overflow-visible"
           aria-hidden
@@ -465,26 +613,28 @@ export function ElectricalTopologyDiagram({ model }: { model: ElectricalTopology
           })}
         </svg>
 
-        <div className="relative z-10 flex w-full flex-col items-center gap-6">
+        {/* Content */}
+        <div className="relative z-10 flex w-full flex-col items-center gap-4">
+          {/* Row 1: Utility Grid */}
           <GridCard node={graph.nodes.get(ROOT_ID)!} register={register} onHover={setHoverId} />
 
-          <div className="flex w-full max-w-[100vw] flex-row flex-wrap items-start justify-center gap-x-6 gap-y-8 overflow-x-auto px-1 pb-2">
-            {gridKids.map((cid) => {
-              const cn = graph.nodes.get(cid)
-              if (!cn || cn.type === 'meter') return null
-              return (
-                <div key={cid} className="flex shrink-0 flex-col items-center">
-                  <LineSubtree
-                    lineId={cid}
-                    graph={graph}
-                    childrenByParent={childrenByParent}
-                    register={register}
-                    onHover={setHoverId}
-                  />
-                </div>
-              )
-            })}
-          </div>
+          {/* Row 2: Main Line + meters (left) | Utilities (right) */}
+          <UtilityGridFeederRow
+            feederLineIds={feederLineIds}
+            graph={graph}
+            childrenByParent={childrenByParent}
+            register={register}
+            onHover={setHoverId}
+          />
+
+          {/* Row 3: Production lines + their meters (full width) */}
+          <ProductionLineGrid
+            lineIds={productionLineIds}
+            graph={graph}
+            childrenByParent={childrenByParent}
+            register={register}
+            onHover={setHoverId}
+          />
         </div>
       </div>
     </div>

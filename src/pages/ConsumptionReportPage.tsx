@@ -41,7 +41,7 @@ const LINE_ORDER = [
   'Pretzel Line',
   'Wafer Line 1',
   'Wafer Line 2',
-  'Chocoy Choco Line',
+  'Choco Choco Line',
   'Dynamite Line',
   'XO Line',
   'Maxx Line',
