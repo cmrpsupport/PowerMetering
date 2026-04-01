@@ -510,7 +510,7 @@ export function ConsumptionReportPage() {
                                 granularity === 'hourly' ? 1 : granularity === 'daily' ? 24 : granularity === 'weekly' ? 24 * 7 : 24 * 30
                               // "Period" is kWh for the bucket. Treat <2 kW average over the bucket as not running.
                               const notRunning =
-                                cell && Number.isFinite(daily) && Math.abs(daily) < 2 * bucketHours
+                                granularity !== 'monthly' && cell && Number.isFinite(daily) && Math.abs(daily) < 2 * bucketHours
                               return (
                                 <Fragment key={`${b.key}:${m}`}>
                                   <td
