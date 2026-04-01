@@ -506,8 +506,11 @@ export function ConsumptionReportPage() {
                               const cell = b.byMeter[m]
                               const cum = cell?.cumulativeKwhEnd ?? null
                               const daily = cell?.energyKwh ?? 0
-                              // Hourly "Period" is kWh for the hour. Treat <2 kWh (~<2 kW avg) as not running.
-                              const notRunning = granularity === 'hourly' && cell && Number.isFinite(daily) && Math.abs(daily) < 2
+                              const bucketHours =
+                                granularity === 'hourly' ? 1 : granularity === 'daily' ? 24 : granularity === 'weekly' ? 24 * 7 : 24 * 30
+                              // "Period" is kWh for the bucket. Treat <2 kW average over the bucket as not running.
+                              const notRunning =
+                                cell && Number.isFinite(daily) && Math.abs(daily) < 2 * bucketHours
                               return (
                                 <Fragment key={`${b.key}:${m}`}>
                                   <td
@@ -523,7 +526,11 @@ export function ConsumptionReportPage() {
                                         ? 'bg-[color-mix(in_srgb,var(--danger)_14%,transparent)] text-[color-mix(in_srgb,var(--danger)_85%,var(--text))]'
                                         : 'text-[var(--muted)]',
                                     ].join(' ')}
-                                    title={notRunning ? 'Line not running (0 kWh this hour)' : undefined}
+                                    title={
+                                      notRunning
+                                        ? `Line not running (<2 kW avg over ${bucketHours}h bucket)`
+                                        : undefined
+                                    }
                                   >
                                     {cell ? fmtNum(daily, 0) : '—'}
                                   </td>
