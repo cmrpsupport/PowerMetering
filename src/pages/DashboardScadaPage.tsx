@@ -149,6 +149,18 @@ export function DashboardScadaPage() {
     return Date.parse(powerTrendVisible[powerTrendVisible.length - 1].ts) - Date.parse(powerTrendVisible[0].ts)
   }, [powerTrendVisible])
 
+  const pvcTick = useMemo(() => {
+    // Make ranges visually distinct: show date for multi-day windows.
+    if (pvcSpanMs >= 1000 * 60 * 60 * 24 * 14) {
+      return (v: unknown) => new Date(String(v)).toLocaleDateString([], { month: 'short', day: '2-digit' })
+    }
+    if (pvcSpanMs >= 1000 * 60 * 60 * 24) {
+      return (v: unknown) =>
+        new Date(String(v)).toLocaleString([], { month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+    }
+    return (v: unknown) => new Date(String(v)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  }, [pvcSpanMs])
+
   const pvcMainSeries = useMemo(() => {
     const pts = powerTrendVisible.map((p) => ({
       ts: p.ts,
@@ -366,7 +378,7 @@ export function DashboardScadaPage() {
                       tick={{ fill: 'var(--chart-axis)', fontSize: 10 }}
                       stroke="var(--chart-axis)"
                       minTickGap={22}
-                      tickFormatter={(v) => new Date(String(v)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      tickFormatter={pvcTick}
                     />
                     <YAxis yAxisId="left" tick={{ fill: 'var(--chart-axis)', fontSize: 10 }} stroke="var(--chart-axis)" width={56} />
                     <YAxis yAxisId="right" orientation="right" tick={{ fill: 'var(--chart-axis)', fontSize: 10 }} stroke="var(--chart-axis)" width={56} />
