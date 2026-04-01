@@ -186,7 +186,7 @@ export function AlertsPage() {
       <div className="card overflow-hidden">
         <div className="overflow-auto">
           <table className="min-w-full text-left text-sm">
-            <thead className="border-b border-slate-200 bg-slate-50 text-xs text-slate-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300">
+            <thead className="border-b border-[var(--border)] bg-[var(--bg)] text-xs text-[var(--muted)]">
               <tr>
                 <th className="px-4 py-3">Priority</th>
                 <th className="px-4 py-3">Severity</th>
@@ -198,11 +198,11 @@ export function AlertsPage() {
                 <th className="px-4 py-3">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+            <tbody className="divide-y divide-[var(--border)]">
               {filtered.map((a) => (
                 <tr
                   key={a.id}
-                  className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40"
+                  className="cursor-pointer hover:bg-[color-mix(in_srgb,var(--text)_4%,transparent)]"
                   onClick={() => setSelected(a)}
                 >
                   <td className="px-4 py-3">
