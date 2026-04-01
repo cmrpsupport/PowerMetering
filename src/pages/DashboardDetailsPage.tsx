@@ -16,6 +16,12 @@ const CARDS: HubCard[] = [
     cta: 'Open real time table',
   },
   {
+    title: 'PVC Trends',
+    desc: 'Power / Voltage / Current shaded trends with navigator and brush controls.',
+    to: '/dashboard/pvc',
+    cta: 'Open PVC trends',
+  },
+  {
     title: 'Electrical Topology',
     desc: 'SCADA-style hierarchy view of Main Line, utilities, and production feeders with drilldown.',
     to: '/topology',

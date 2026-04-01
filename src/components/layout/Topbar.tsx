@@ -10,6 +10,7 @@ import urcLogo from '../../assets/urc-logo.svg'
 function titleForPath(pathname: string) {
   if (pathname === '/') return 'Consumption'
   if (pathname === '/dashboard') return 'Plant Overview'
+  if (pathname === '/dashboard/pvc') return 'PVC Trends'
   if (pathname.startsWith('/dashboard/')) return 'Plant Overview'
   if (pathname === '/real-time-data') return 'Live Meters'
   if (pathname.startsWith('/meters/')) return 'Meter Detail'

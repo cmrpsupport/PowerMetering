@@ -12,6 +12,7 @@ import { TopologyPage } from './pages/TopologyPage'
 import { PowerQualityPage } from './pages/PowerQualityPage'
 import { PowerQualityTrendsPage } from './pages/PowerQualityTrendsPage'
 import { RealTimeDataPage } from './pages/RealTimeDataPage'
+import { PvcTrendsPage } from './pages/PvcTrendsPage'
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
       <Route element={<AppLayout />}>
         <Route index element={<ConsumptionReportPage />} />
         <Route path="dashboard" element={<DashboardScadaPage />} />
+        <Route path="dashboard/pvc" element={<PvcTrendsPage />} />
         <Route path="dashboard/details" element={<DashboardDetailsPage />} />
         <Route path="dashboard/legacy" element={<DashboardPage />} />
         <Route path="lines/:lineId" element={<LineDashboardPage />} />

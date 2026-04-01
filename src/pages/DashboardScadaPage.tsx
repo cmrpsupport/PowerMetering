@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useEnergyIntervals, useNodeRedHealth, usePlcFullSnapshot, usePowerTrend } from '../hooks/queries'
 import { Badge, type BadgeColor } from '../components/ui/Badge'
 import { DemandTracker } from '../components/ui/DemandTracker'
@@ -39,6 +40,7 @@ function pfStatus(pf: number): KpiStatus {
 }
 
 type TrendWindow = '1h' | '6h' | '12h' | '24h' | '7d' | '30d' | '6mo' | '1y'
+type EnergyWindow = TrendWindow | 'all'
 
 type FluctuationSeverity = 'warning' | 'critical'
 type FluctuationMetric = 'kw' | 'voltage' | 'current'
@@ -64,6 +66,7 @@ export function DashboardScadaPage() {
   const plcUp = healthQ.data?.plcLink?.up === true
 
   const [trendWindow, setTrendWindow] = useState<TrendWindow>('30d')
+  const [energyWindow, setEnergyWindow] = useState<EnergyWindow>('30d')
   const trendMinutes =
     trendWindow === '1h'
       ? 60
@@ -89,6 +92,27 @@ export function DashboardScadaPage() {
   const energy48hQ = useEnergyIntervals(48)
   // Pull enough buckets to cover current + previous month for MTD comparison.
   const energyMonthQ = useEnergyIntervals(24 * 75)
+
+  const energyHours =
+    energyWindow === '1h'
+      ? 1
+      : energyWindow === '6h'
+        ? 6
+        : energyWindow === '12h'
+          ? 12
+          : energyWindow === '24h'
+            ? 24
+            : energyWindow === '7d'
+              ? 7 * 24
+              : energyWindow === '30d'
+                ? 30 * 24
+                : energyWindow === '6mo'
+                  ? 183 * 24
+                  : energyWindow === '1y'
+                    ? 365 * 24
+                    : 366 * 24
+
+  const energyTrendQ = useEnergyIntervals(energyHours)
 
   const plantNow = useMemo(() => {
     const meters = snapQ.data?.meters
@@ -138,7 +162,7 @@ export function DashboardScadaPage() {
 
   const energyHourly = useMemo(() => {
     const ivs = energy48hQ.data ?? []
-    if (ivs.length === 0) return { series: [] as number[], lastHourDeltaPct: null as number | null }
+    if (ivs.length === 0) return { series: [] as number[] }
 
     // Aggregate across meters by hour bucket timestamp.
     const byTs = new Map<string, number>()
@@ -157,12 +181,65 @@ export function DashboardScadaPage() {
     const last24 = rows.slice(-24)
     const series = last24.map((r) => r.kwh)
 
-    const last = series.length >= 1 ? series[series.length - 1] : NaN
-    const prev = series.length >= 2 ? series[series.length - 2] : NaN
-    const lastHourDeltaKwh = Number.isFinite(last) && Number.isFinite(prev) ? last - prev : null
-
-    return { series, lastHourDeltaKwh }
+    return { series }
   }, [energy48hQ.data])
+
+  const energyTrend = useMemo(() => {
+    const ivs = energyTrendQ.data ?? []
+    if (ivs.length === 0) return { series: [] as { ts: string; kwh: number }[], spanMs: 0 }
+
+    const byTs = new Map<string, number>()
+    for (const iv of ivs) {
+      const ts = iv.ts
+      if (!ts) continue
+      const e = Number(iv.energyKwh)
+      if (!Number.isFinite(e)) continue
+      byTs.set(ts, (byTs.get(ts) ?? 0) + e)
+    }
+
+    const rows = Array.from(byTs.entries())
+      .map(([ts, kwh]) => ({ ts, kwh }))
+      .sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts))
+
+    const t0 = rows.length ? Date.parse(rows[0].ts) : 0
+    const t1 = rows.length ? Date.parse(rows[rows.length - 1].ts) : 0
+    const spanMs = Number.isFinite(t0) && Number.isFinite(t1) ? Math.max(0, t1 - t0) : 0
+
+    const maxPts = 2200
+    if (rows.length > maxPts) {
+      const step = Math.ceil(rows.length / maxPts)
+      return { series: rows.filter((_, i) => i % step === 0 || i === rows.length - 1), spanMs }
+    }
+
+    return { series: rows, spanMs }
+  }, [energyTrendQ.data])
+
+  const energyTick = useMemo(() => {
+    if (energyTrend.spanMs >= 1000 * 60 * 60 * 24 * 14) {
+      return (v: unknown) => new Date(String(v)).toLocaleDateString([], { month: 'short', day: '2-digit' })
+    }
+    if (energyTrend.spanMs >= 1000 * 60 * 60 * 24) {
+      return (v: unknown) =>
+        new Date(String(v)).toLocaleString([], { month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+    }
+    return (v: unknown) => new Date(String(v)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  }, [energyTrend.spanMs])
+
+  const energyNavSeries = useMemo(() => {
+    const rows = energyTrend.series
+    if (rows.length === 0) return [] as { ts: string; kwh: number }[]
+    const pts: TrendPoint[] = rows.map((r) => ({
+      ts: r.ts,
+      kw: r.kwh,
+      voltageV: 0,
+      currentA: 0,
+      pf: 0,
+      kvar: 0,
+    }))
+    const bucketMs = bucketMsForNavigatorFullSpan(energyTrend.spanMs, 1200)
+    const agg = aggregateTrendByBucket(pts, bucketMs)
+    return agg.map((p) => ({ ts: p.ts, kwh: p.kw }))
+  }, [energyTrend.series, energyTrend.spanMs])
 
   const powerTrendFull = useMemo(() => {
     const pts = trendQ.data ?? []
@@ -381,22 +458,10 @@ export function DashboardScadaPage() {
             Number.isFinite(monthKwh.prevMtd) ? (
               <span>
                 Prev MTD: <span className="font-mono">{fmt(monthKwh.prevMtd, 0)}</span> kWh
-                {typeof monthKwh.deltaKwh === 'number' ? (
-                  <span className="ml-2">
-                    Δ <span className="font-mono">{fmt(monthKwh.deltaKwh, 0)}</span> kWh
-                  </span>
-                ) : null}
               </span>
             ) : (
               'Prev month data unavailable'
             )
-          }
-          footerRight={
-            typeof energyHourly.lastHourDeltaKwh === 'number' ? (
-              <span className="text-[11px] font-medium text-[var(--muted)]">
-                <span className="tabular-nums">{`${energyHourly.lastHourDeltaKwh >= 0 ? '+' : ''}${fmt(energyHourly.lastHourDeltaKwh, 1)} kWh`}</span>
-              </span>
-            ) : null
           }
         />
         <KpiCard
@@ -451,43 +516,39 @@ export function DashboardScadaPage() {
           <div className="card card-hover flex min-h-0 flex-col overflow-hidden p-4">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
               <div className="min-w-0">
-                <div className="text-sm font-semibold text-[var(--text)]">Power / Voltage / Current</div>
-                <div className="text-xs text-[var(--muted)]">
-                  Shaded trends with navigator. Drag brush to pan/zoom.
-                </div>
+                <div className="text-sm font-semibold text-[var(--text)]">Energy consumption</div>
+                <div className="text-xs text-[var(--muted)]">Hourly kWh totals with navigator.</div>
               </div>
-              <SegmentedControl
-                value={trendWindow}
-                onChange={(id) => setTrendWindow(id as TrendWindow)}
-                options={[
-                  { id: '1h', label: '1h' },
-                  { id: '6h', label: '6h' },
-                  { id: '12h', label: '12h' },
-                  { id: '24h', label: '24h' },
-                  { id: '7d', label: '7d' },
-                  { id: '30d', label: '30d' },
-                  { id: '6mo', label: '6mo' },
-                  { id: '1y', label: '1y' },
-                ]}
-              />
+              <div className="flex items-center gap-2">
+                <SegmentedControl
+                  value={energyWindow}
+                  onChange={(id) => setEnergyWindow(id as EnergyWindow)}
+                  options={[
+                    { id: '1h', label: '1h' },
+                    { id: '6h', label: '6h' },
+                    { id: '12h', label: '12h' },
+                    { id: '24h', label: '24h' },
+                    { id: '7d', label: '7d' },
+                    { id: '30d', label: '30d' },
+                    { id: '6mo', label: '6mo' },
+                    { id: '1y', label: '1y' },
+                    { id: 'all', label: 'All' },
+                  ]}
+                />
+                <Link to="/dashboard/pvc" className="text-xs text-[var(--primary)] hover:underline">
+                  View PVC
+                </Link>
+              </div>
             </div>
 
-            <div className="min-h-0 flex-1">
-              <div className="h-[360px] min-h-[220px] w-full min-w-0">
+            <div className="min-h-0 flex-1 flex flex-col">
+              <div className="min-h-0 flex-1 w-full min-w-0">
                 <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart data={pvcMainSeries} margin={{ left: 6, right: 10, top: 8, bottom: 0 }}>
+                  <AreaChart data={energyTrend.series} margin={{ left: 6, right: 10, top: 8, bottom: 0 }}>
                     <defs>
-                      <linearGradient id="pvc-kw-scada" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.42} />
-                        <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0.02} />
-                      </linearGradient>
-                      <linearGradient id="pvc-v-scada" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="var(--chart-2)" stopOpacity={0.32} />
-                        <stop offset="100%" stopColor="var(--chart-2)" stopOpacity={0.02} />
-                      </linearGradient>
-                      <linearGradient id="pvc-i-scada" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="var(--chart-3)" stopOpacity={0.32} />
-                        <stop offset="100%" stopColor="var(--chart-3)" stopOpacity={0.02} />
+                      <linearGradient id="energy-kwh-scada" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="var(--chart-4)" stopOpacity={0.35} />
+                        <stop offset="100%" stopColor="var(--chart-4)" stopOpacity={0.02} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
@@ -496,10 +557,9 @@ export function DashboardScadaPage() {
                       tick={{ fill: 'var(--chart-axis)', fontSize: 10 }}
                       stroke="var(--chart-axis)"
                       minTickGap={22}
-                      tickFormatter={pvcTick}
+                      tickFormatter={energyTick}
                     />
-                    <YAxis yAxisId="left" tick={{ fill: 'var(--chart-axis)', fontSize: 10 }} stroke="var(--chart-axis)" width={56} />
-                    <YAxis yAxisId="right" orientation="right" tick={{ fill: 'var(--chart-axis)', fontSize: 10 }} stroke="var(--chart-axis)" width={56} />
+                    <YAxis tick={{ fill: 'var(--chart-axis)', fontSize: 10 }} stroke="var(--chart-axis)" width={56} />
                     <Tooltip
                       contentStyle={{
                         backgroundColor: 'var(--chart-tooltip-bg)',
@@ -508,34 +568,28 @@ export function DashboardScadaPage() {
                         color: 'var(--chart-tooltip-text)',
                         fontSize: 12,
                       }}
+                      formatter={(v) => [`${fmt(Number(v), 1)} kWh`, 'Energy']}
                     />
                     <Legend wrapperStyle={{ color: 'var(--muted)', fontSize: 12 }} />
-                    <Area yAxisId="left" type="monotone" dataKey="kw" name="kW" stroke="var(--chart-1)" strokeWidth={2} fill="url(#pvc-kw-scada)" dot={false} connectNulls />
-                    <Area yAxisId="right" type="monotone" dataKey="voltageV" name="Voltage (V)" stroke="var(--chart-2)" strokeWidth={2} fill="url(#pvc-v-scada)" dot={false} connectNulls />
-                    <Area yAxisId="right" type="monotone" dataKey="currentA" name="Current (A)" stroke="var(--chart-3)" strokeWidth={2} fill="url(#pvc-i-scada)" dot={false} connectNulls />
-                    {fluctuationAlertsVisible
-                      .filter((a) => a.metric === 'kw')
-                      .map((a) => (
-                        <ReferenceDot key={a.id} x={a.ts} y={a.value} yAxisId="left" r={4} fill="var(--primary)" stroke="none" />
-                      ))}
-                  </ComposedChart>
+                    <Area type="monotone" dataKey="kwh" name="kWh" stroke="var(--chart-4)" strokeWidth={2} fill="url(#energy-kwh-scada)" dot={false} connectNulls />
+                  </AreaChart>
                 </ResponsiveContainer>
               </div>
 
-              {pvcNavSeries.length > 0 ? (
-                <div className="mt-2 h-16 w-full rounded-lg border border-[var(--border)] bg-[color-mix(in_srgb,var(--muted)_8%,var(--card))] p-1">
+              {energyNavSeries.length > 0 ? (
+                <div className="mt-2 h-16 w-full shrink-0 rounded-lg border border-[var(--border)] bg-[color-mix(in_srgb,var(--muted)_8%,var(--card))] p-1">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={pvcNavSeries} margin={{ left: 6, right: 10, top: 2, bottom: 2 }}>
+                    <AreaChart data={energyNavSeries} margin={{ left: 6, right: 10, top: 2, bottom: 2 }}>
                       <defs>
-                        <linearGradient id="pvc-nav-scada" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.22} />
-                          <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0.02} />
+                        <linearGradient id="energy-nav-scada" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="var(--chart-4)" stopOpacity={0.22} />
+                          <stop offset="100%" stopColor="var(--chart-4)" stopOpacity={0.02} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
                       <XAxis dataKey="ts" hide />
                       <YAxis hide domain={['auto', 'auto']} />
-                      <Area type="monotone" dataKey="kw" stroke="var(--chart-1)" fill="url(#pvc-nav-scada)" dot={false} isAnimationActive={false} />
+                      <Area type="monotone" dataKey="kwh" stroke="var(--chart-4)" fill="url(#energy-nav-scada)" dot={false} isAnimationActive={false} />
                       <Brush dataKey="ts" height={18} stroke="var(--primary)" travellerWidth={10} />
                     </AreaChart>
                   </ResponsiveContainer>
