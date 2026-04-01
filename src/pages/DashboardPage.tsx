@@ -1036,12 +1036,12 @@ export function DashboardPage() {
           </div>
         </div>
 
-        <div className="card card-hover p-5">
+        <div className="card card-hover flex min-h-0 flex-col p-5">
           <div className="mb-2 flex items-center justify-between">
             <div className="text-sm font-semibold text-[var(--text)]">Fluctuation Alerts</div>
             <div className="text-xs text-[var(--muted)]">{fluctuation.alerts.length} recent</div>
           </div>
-          <div className="max-h-[22rem] overflow-auto">
+          <div className="min-h-0 flex-1 overflow-auto pr-1 [scrollbar-gutter:stable]">
             {fluctuation.alerts.length === 0 ? (
               <div className="rounded-lg border border-dashed border-[var(--border)] p-3 text-sm text-[var(--muted)]">
                 No fluctuations detected in the selected window.
