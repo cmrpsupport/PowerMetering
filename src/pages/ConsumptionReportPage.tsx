@@ -506,6 +506,7 @@ export function ConsumptionReportPage() {
                               const cell = b.byMeter[m]
                               const cum = cell?.cumulativeKwhEnd ?? null
                               const daily = cell?.energyKwh ?? 0
+                              const notRunning = granularity === 'hourly' && cell && Number.isFinite(daily) && Math.abs(daily) <= 0.0001
                               return (
                                 <Fragment key={`${b.key}:${m}`}>
                                   <td
@@ -514,7 +515,15 @@ export function ConsumptionReportPage() {
                                   >
                                     {cum !== null ? fmtNum(cum, 0) : '—'}
                                   </td>
-                                  <td className="px-2 py-2.5 text-right font-mono text-sm tabular-nums text-[var(--muted)]">
+                                  <td
+                                    className={[
+                                      'px-2 py-2.5 text-right font-mono text-sm tabular-nums',
+                                      notRunning
+                                        ? 'bg-[color-mix(in_srgb,var(--danger)_14%,transparent)] text-[color-mix(in_srgb,var(--danger)_85%,var(--text))]'
+                                        : 'text-[var(--muted)]',
+                                    ].join(' ')}
+                                    title={notRunning ? 'Line not running (0 kWh this hour)' : undefined}
+                                  >
                                     {cell ? fmtNum(daily, 0) : '—'}
                                   </td>
                                 </Fragment>
