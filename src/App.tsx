@@ -6,6 +6,7 @@ import { AlertsPage } from './pages/AlertsPage'
 import { ConsumptionReportPage } from './pages/ConsumptionReportPage'
 import { LineDashboardPage } from './pages/LineDashboardPage'
 import { NotFoundPage } from './pages/NotFoundPage'
+import { TopologyPage } from './pages/TopologyPage'
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="lines/:lineId" element={<LineDashboardPage />} />
         <Route path="meters/:meterId" element={<MeterDetailPage />} />
         <Route path="alerts" element={<AlertsPage />} />
+        <Route path="topology" element={<TopologyPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

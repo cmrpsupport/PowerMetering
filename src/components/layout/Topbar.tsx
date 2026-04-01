@@ -12,6 +12,7 @@ function titleForPath(pathname: string) {
   if (pathname === '/dashboard') return 'Monitoring'
   if (pathname.startsWith('/meters/')) return 'Meter Detail'
   if (pathname === '/alerts') return 'Alerts'
+  if (pathname === '/topology') return 'Electrical Topology'
   if (pathname === '/reports/consumption') return 'Consumption'
   return 'Power Monitoring'
 }

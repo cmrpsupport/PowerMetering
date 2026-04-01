@@ -96,6 +96,28 @@ export const PLC_PRODUCTION_METERS: PlcProductionMeterDef[] = [
   },
 ]
 
+/** Production line id for “Main Line” — used by electrical topology hierarchy. */
+export const PLC_MAIN_LINE_ID = 'plc-line-10'
+
+/** Main Line power analyzer / incomer meter (UMG508) — branch lines tap here in the diagram. */
+export const PLC_MAIN_LINE_POWER_METER_ID = 'RIO2_UMG508_52'
+
+/**
+ * Production lines fed from the Main Line power meter (not the Main Line summary card).
+ * Must match `PLC_PRODUCTION_METERS` ids.
+ */
+export const PLC_MAIN_LINE_POWER_METER_FEED_LINE_IDS: readonly string[] = [
+  'plc-line-04', // Wafer Line 1
+  'plc-line-05', // Wafer Line 2
+  'plc-line-08', // XO Line
+]
+
+/**
+ * Optional incomer line id: when set and present in PLC lines, topology is
+ * Utility Grid → Incomer → Main Line; production lines named with "Line" stay under Main Line.
+ */
+export const PLC_TOPOLOGY_INCOMER_LINE_ID: string | null = null
+
 /** Legacy aggregate meter id (full plant snapshot: Power_kW, Energy_kWh, …). */
 export const PLC_AGGREGATE_METER_ID = 'plc-1'
 

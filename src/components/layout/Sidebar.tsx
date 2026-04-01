@@ -1,9 +1,9 @@
 import { NavLink } from 'react-router-dom'
 import {
   BellRing,
-  FileBarChart,
   LayoutDashboard,
   Activity,
+  Network,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -12,6 +12,7 @@ type NavItem = { to: string; label: string; icon: LucideIcon; end?: boolean }
 const navItems: NavItem[] = [
   { to: '/', label: 'Consumption', icon: LayoutDashboard, end: true },
   { to: '/dashboard', label: 'Monitoring (legacy)', icon: Activity },
+  { to: '/topology', label: 'Electrical Topology', icon: Network },
   { to: '/alerts', label: 'Alerts', icon: BellRing },
 ]
 

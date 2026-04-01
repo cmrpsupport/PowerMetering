@@ -115,6 +115,16 @@
     animation: kpiStatusSoft 2.5s ease-in-out infinite;
   }
 
+  /** Electrical topology diagram background (subtle grid, theme-aware). */
+  .topology-grid-bg {
+    background-color: var(--card);
+    background-image:
+      linear-gradient(color-mix(in srgb, var(--muted) 12%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in srgb, var(--muted) 12%, transparent) 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-position: center top;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .kpi-status-soft {
       animation: none;
