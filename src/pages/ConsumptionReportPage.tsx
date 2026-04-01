@@ -286,7 +286,7 @@ export function ConsumptionReportPage() {
               onChange={setLayoutMode}
               options={[
                 { id: 'cards', label: 'Cards' },
-                { id: 'table', label: 'Table' },
+                { id: 'table', label: 'Detail' },
               ]}
             />
 
@@ -436,104 +436,111 @@ export function ConsumptionReportPage() {
               })}
             </div>
           ) : (
-            <div className="overflow-auto">
-              {/* existing table card already styled; keep it contained here */}
-              <div className="card overflow-hidden">
-                <div className="border-b border-[var(--border)] px-4 py-3 text-sm font-semibold text-[var(--text)]">
-                  Consumption detail (Excel-style)
-                </div>
-                <div className="overflow-auto">
-                  <table className="min-w-[960px] text-left text-sm">
-                    <thead className="sticky top-0 z-10 bg-[var(--card)] text-[11px] text-[var(--muted)]">
-                      <tr className="border-b border-[var(--border)]">
-                        <th className="px-3 py-2" rowSpan={2}>
-                          MONTH
+            <div className="space-y-3">
+              <div>
+                <div className="text-sm font-semibold text-[var(--text)]">Consumption by interval</div>
+                <p className="mt-1 max-w-3xl text-xs leading-relaxed text-[var(--muted)]">
+                  Cumulative column is the meter total at the end of the interval; period column is energy attributed to
+                  that bucket ({granularity}). Scroll horizontally if you have many lines.
+                </p>
+              </div>
+              <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
+                <div className="max-h-[min(70vh,560px)] overflow-auto">
+                  <table className="w-full min-w-[720px] border-collapse text-left text-sm">
+                    <thead className="sticky top-0 z-10 border-b border-[var(--border)] bg-[var(--card)] shadow-[0_1px_0_0_var(--border)]">
+                      <tr className="text-[11px] text-[var(--muted)]">
+                        <th className="whitespace-nowrap px-4 py-3 text-left font-medium" rowSpan={2}>
+                          Period
                         </th>
-                        <th className="px-3 py-2" rowSpan={2}>
-                          DAY
-                        </th>
-                        <th className="px-3 py-2" rowSpan={2}>
-                          TIME
-                        </th>
-                        {meterNames.map((m) => (
-                          <th key={m} className="px-3 py-2 text-center font-semibold text-[var(--text)]" colSpan={2}>
-                            {m}
+                        {meterNames.map((m, i) => (
+                          <th
+                            key={m}
+                            colSpan={2}
+                            className="border-l border-[var(--border)] px-3 py-2 text-center align-bottom text-[var(--text)]"
+                            style={{ borderLeftColor: LINE_COLORS[i % LINE_COLORS.length] }}
+                          >
+                            <span className="line-clamp-2 font-semibold leading-snug" title={m}>
+                              {m}
+                            </span>
                           </th>
                         ))}
-                        <th className="px-3 py-2 text-center font-semibold text-[var(--text)]" colSpan={1}>
-                          TOTAL KWH
+                        <th
+                          className="border-l border-[var(--border)] px-3 py-2 text-center font-semibold text-[var(--text)]"
+                          rowSpan={2}
+                        >
+                          Total
+                          <span className="mt-0.5 block text-[10px] font-normal text-[var(--muted)]">kWh</span>
                         </th>
                       </tr>
-                      <tr className="border-b border-[var(--border)]">
-                        {meterNames.map((m) => (
+                      <tr className="border-b border-[var(--border)] text-[10px] font-medium uppercase tracking-wide text-[var(--muted)]">
+                        {meterNames.map((m, i) => (
                           <Fragment key={`${m}-sub`}>
-                            <th className="px-3 py-2 text-right" />
-                            <th className="px-3 py-2 text-right">KWH</th>
+                            <th className="border-l border-[var(--border)] px-2 py-2 text-right" style={{ borderLeftColor: LINE_COLORS[i % LINE_COLORS.length] }}>
+                              Cum.
+                            </th>
+                            <th className="px-2 py-2 text-right">Period</th>
                           </Fragment>
                         ))}
-                        <th className="px-3 py-2 text-right">KWH</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[var(--border)]">
+                    <tbody>
                       {buckets.map((b, idx) => {
-                        const d = new Date(b.lastTs)
-                        const month = d.toLocaleString([], { month: 'long' })
-                        const prevMonth =
-                          idx > 0 ? new Date(buckets[idx - 1].lastTs).toLocaleString([], { month: 'long' }) : null
-                        const showMonth = month !== prevMonth
-                        const day =
-                          granularity === 'weekly' || granularity === 'monthly'
-                            ? d.toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' })
-                            : String(d.getDate())
-                        const time =
-                          granularity === 'hourly'
-                            ? `${String(d.getHours()).padStart(2, '0')}${String(d.getMinutes()).padStart(2, '0')}`
-                            : ''
-
                         let sumDailyAll = 0
                         for (const m of meterNames) sumDailyAll += b.byMeter[m]?.energyKwh ?? 0
 
                         return (
-                          <tr key={b.key} className="hover:bg-[color-mix(in_srgb,var(--text)_3%,transparent)]">
-                            <td className="px-3 py-2 font-medium text-[var(--text)]">{showMonth ? month : ''}</td>
-                            <td className="px-3 py-2 text-[var(--text)]">{day}</td>
-                            <td className="px-3 py-2 font-mono text-[var(--muted)]">{time}</td>
-                            {meterNames.map((m) => {
+                          <tr
+                            key={b.key}
+                            className={[
+                              'border-b border-[var(--border)] transition-colors',
+                              idx % 2 === 0
+                                ? 'bg-[var(--card)]'
+                                : 'bg-[color-mix(in_srgb,var(--text)_2.5%,var(--card))]',
+                              'hover:bg-[color-mix(in_srgb,var(--primary)_6%,var(--card))]',
+                            ].join(' ')}
+                          >
+                            <td className="max-w-[14rem] whitespace-nowrap px-4 py-2.5 align-top">
+                              <div className="font-medium leading-snug text-[var(--text)]">{b.label}</div>
+                            </td>
+                            {meterNames.map((m, i) => {
                               const cell = b.byMeter[m]
                               const cum = cell?.cumulativeKwhEnd ?? null
                               const daily = cell?.energyKwh ?? 0
                               return (
                                 <Fragment key={`${b.key}:${m}`}>
-                                  <td className="px-3 py-2 text-right font-mono text-[var(--text)]">
-                                    {cum !== null ? String(Math.round(cum)) : ''}
+                                  <td
+                                    className="border-l border-[var(--border)] px-2 py-2.5 text-right font-mono text-sm tabular-nums text-[var(--text)]"
+                                    style={{ borderLeftColor: LINE_COLORS[i % LINE_COLORS.length] }}
+                                  >
+                                    {cum !== null ? fmtNum(cum, 0) : '—'}
                                   </td>
-                                  <td className="px-3 py-2 text-right font-mono text-[var(--muted)]">
-                                    {cell ? daily.toFixed(0) : ''}
+                                  <td className="px-2 py-2.5 text-right font-mono text-sm tabular-nums text-[var(--muted)]">
+                                    {cell ? fmtNum(daily, 0) : '—'}
                                   </td>
                                 </Fragment>
                               )
                             })}
-                            <td className="px-3 py-2 text-right font-mono text-[var(--text)]">{sumDailyAll.toFixed(0)}</td>
+                            <td className="border-l border-[var(--border)] px-3 py-2.5 text-right font-mono text-sm font-semibold tabular-nums text-[var(--text)]">
+                              {fmtNum(sumDailyAll, 0)}
+                            </td>
                           </tr>
                         )
                       })}
                     </tbody>
                     {buckets.length > 0 && (
-                      <tfoot className="border-t border-[var(--border)] bg-[color-mix(in_srgb,var(--text)_3%,transparent)] font-semibold">
+                      <tfoot className="border-t-2 border-[var(--border)] bg-[color-mix(in_srgb,var(--text)_5%,var(--card))] font-semibold">
                         <tr>
-                          <td className="px-3 py-2">TOTAL</td>
-                          <td className="px-3 py-2" />
-                          <td className="px-3 py-2" />
+                          <td className="px-4 py-3 text-[var(--text)]">Period total (kWh)</td>
                           {meterNames.map((m) => {
-                            const sumDaily = buckets.reduce((s, b) => s + (b.byMeter[m]?.energyKwh ?? 0), 0)
+                            const sumDaily = buckets.reduce((s, row) => s + (row.byMeter[m]?.energyKwh ?? 0), 0)
                             return (
                               <Fragment key={`tot:${m}`}>
-                                <td className="px-3 py-2" />
-                                <td className="px-3 py-2 text-right font-mono text-[var(--text)]">{sumDaily.toFixed(0)}</td>
+                                <td className="px-2 py-3" />
+                                <td className="px-2 py-3 text-right font-mono text-[var(--text)]">{fmtNum(sumDaily, 0)}</td>
                               </Fragment>
                             )
                           })}
-                          <td className="px-3 py-2 text-right font-mono text-[var(--text)]">{totals.totalEnergyKwh.toFixed(0)}</td>
+                          <td className="px-3 py-3 text-right font-mono text-[var(--text)]">{fmtNum(totals.totalEnergyKwh, 0)}</td>
                         </tr>
                       </tfoot>
                     )}
