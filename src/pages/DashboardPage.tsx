@@ -16,11 +16,10 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  ComposedChart,
   Legend,
   ResponsiveContainer,
   Tooltip,
-  Line,
-  LineChart,
   ReferenceDot,
   XAxis,
   YAxis,
@@ -92,6 +91,7 @@ export function DashboardPage() {
   const [trendWindow, setTrendWindow] = useState<'1h' | '6h' | '12h' | '24h' | '7d' | '30d' | '1y'>('30d')
   const [expandedLine, setExpandedLine] = useState<string | null>(null)
   const loadProfileGradId = useId().replace(/:/g, '')
+  const pvcTrendGradId = useId().replace(/:/g, '')
   const trendMinutes =
     trendWindow === '1h'
       ? 60
@@ -436,7 +436,9 @@ export function DashboardPage() {
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
             <div className="min-w-0">
               <div className="text-sm font-semibold text-[var(--text)]">Power / Voltage / Current</div>
-              <div className="text-xs text-[var(--muted)]">Cumulative view — last {trendWindow}</div>
+              <div className="text-xs text-[var(--muted)]">
+                Shaded trends (plant cumulative) — last {trendWindow}
+              </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <SegmentedControl
@@ -465,7 +467,21 @@ export function DashboardPage() {
 
           <div className="h-[480px] min-h-[320px] w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={fluctuation.points} margin={{ left: 6, right: 10, top: 8, bottom: 0 }}>
+              <ComposedChart data={fluctuation.points} margin={{ left: 6, right: 10, top: 8, bottom: 0 }}>
+                <defs>
+                  <linearGradient id={`pvc-kw-${pvcTrendGradId}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.45} />
+                    <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0.02} />
+                  </linearGradient>
+                  <linearGradient id={`pvc-v-${pvcTrendGradId}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--chart-2)" stopOpacity={0.4} />
+                    <stop offset="100%" stopColor="var(--chart-2)" stopOpacity={0.02} />
+                  </linearGradient>
+                  <linearGradient id={`pvc-i-${pvcTrendGradId}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--chart-3)" stopOpacity={0.4} />
+                    <stop offset="100%" stopColor="var(--chart-3)" stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-slate-200 dark:stroke-slate-700" />
                 <XAxis
                   dataKey="ts"
@@ -503,30 +519,36 @@ export function DashboardPage() {
                 />
                 <Legend />
 
-                <Line
+                <Area
                   yAxisId="left"
                   type="monotone"
                   dataKey={trendView === 'raw' ? 'kw' : 'kwSmooth'}
                   name="kW"
                   stroke="var(--chart-1)"
+                  strokeWidth={2}
+                  fill={`url(#pvc-kw-${pvcTrendGradId})`}
                   dot={false}
                   isAnimationActive={false}
                 />
-                <Line
+                <Area
                   yAxisId="right"
                   type="monotone"
                   dataKey={trendView === 'raw' ? 'voltageV' : 'voltageSmooth'}
                   name="Voltage (V)"
                   stroke="var(--chart-2)"
+                  strokeWidth={2}
+                  fill={`url(#pvc-v-${pvcTrendGradId})`}
                   dot={false}
                   isAnimationActive={false}
                 />
-                <Line
+                <Area
                   yAxisId="right"
                   type="monotone"
                   dataKey={trendView === 'raw' ? 'currentA' : 'currentSmooth'}
                   name="Current (A)"
                   stroke="var(--chart-3)"
+                  strokeWidth={2}
+                  fill={`url(#pvc-i-${pvcTrendGradId})`}
                   dot={false}
                   isAnimationActive={false}
                 />
@@ -570,7 +592,7 @@ export function DashboardPage() {
                       stroke="none"
                     />
                   ))}
-              </LineChart>
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
 
