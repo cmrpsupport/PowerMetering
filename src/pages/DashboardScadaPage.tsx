@@ -126,11 +126,13 @@ export function DashboardScadaPage() {
       else if (t >= startPrev.getTime() && t < endPrevMtd.getTime()) prevMtd += e
     }
 
-    const deltaPct = prevMtd > 0 ? (thisMtd - prevMtd) / prevMtd : null
+    const thisOk = thisMtd > 0
+    const prevOk = prevMtd > 0
+    const deltaKwh = thisOk && prevOk ? thisMtd - prevMtd : null
     return {
       thisMtd: thisMtd > 0 ? thisMtd : NaN,
       prevMtd: prevMtd > 0 ? prevMtd : NaN,
-      deltaPct,
+      deltaKwh,
     }
   }, [energyMonthQ.data])
 
@@ -157,10 +159,9 @@ export function DashboardScadaPage() {
 
     const last = series.length >= 1 ? series[series.length - 1] : NaN
     const prev = series.length >= 2 ? series[series.length - 2] : NaN
-    const lastHourDeltaPct =
-      Number.isFinite(last) && Number.isFinite(prev) && Math.abs(prev) > 1e-9 ? (last - prev) / Math.abs(prev) : null
+    const lastHourDeltaKwh = Number.isFinite(last) && Number.isFinite(prev) ? last - prev : null
 
-    return { series, lastHourDeltaPct }
+    return { series, lastHourDeltaKwh }
   }, [energy48hQ.data])
 
   const powerTrendFull = useMemo(() => {
@@ -375,22 +376,25 @@ export function DashboardScadaPage() {
           unit="kWh"
           status="normal"
           icon={<Layers size={18} />}
-          deltaPct={monthKwh.deltaPct}
-          deltaLabel="vs previous"
           sparkline={energyHourly.series}
           subtext={
             Number.isFinite(monthKwh.prevMtd) ? (
               <span>
                 Prev MTD: <span className="font-mono">{fmt(monthKwh.prevMtd, 0)}</span> kWh
+                {typeof monthKwh.deltaKwh === 'number' ? (
+                  <span className="ml-2">
+                    Δ <span className="font-mono">{fmt(monthKwh.deltaKwh, 0)}</span> kWh
+                  </span>
+                ) : null}
               </span>
             ) : (
               'Prev month data unavailable'
             )
           }
           footerRight={
-            typeof energyHourly.lastHourDeltaPct === 'number' ? (
+            typeof energyHourly.lastHourDeltaKwh === 'number' ? (
               <span className="text-[11px] font-medium text-[var(--muted)]">
-                <span className="tabular-nums">{`${energyHourly.lastHourDeltaPct >= 0 ? '+' : ''}${fmt(energyHourly.lastHourDeltaPct * 100, 0)}%`}</span>
+                <span className="tabular-nums">{`${energyHourly.lastHourDeltaKwh >= 0 ? '+' : ''}${fmt(energyHourly.lastHourDeltaKwh, 1)} kWh`}</span>
               </span>
             ) : null
           }
