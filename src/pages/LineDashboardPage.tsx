@@ -184,9 +184,14 @@ export function LineDashboardPage() {
             </div>
           </div>
           <div className="p-4">
-            {histQ.isPending ? (
+            {histQ.isLoading ? (
               <div className="flex min-h-[320px] items-center justify-center text-sm text-[var(--muted)]">
                 Loading trend…
+              </div>
+            ) : histQ.isPaused ? (
+              <div className="flex min-h-[320px] flex-col items-center justify-center gap-1 px-2 text-center text-sm text-[var(--muted)]">
+                <div>Can’t load trend right now (offline or waiting for network).</div>
+                <div className="text-xs">Reconnect and the chart will load automatically.</div>
               </div>
             ) : histQ.isError ? (
               <div className="flex min-h-[320px] items-center justify-center text-sm text-[var(--danger)]">
