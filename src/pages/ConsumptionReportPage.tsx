@@ -577,25 +577,7 @@ export function ConsumptionReportPage() {
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {GRANULARITY_OPTIONS.map((opt) => (
-          <button
-            key={opt.id}
-            type="button"
-            onClick={() => setGranularity(opt.id)}
-            title={opt.hint}
-            className={[
-              'rounded-lg border px-3 py-2 text-left text-sm transition',
-              granularity === opt.id
-                ? 'border-indigo-500 bg-indigo-50 font-medium text-indigo-900 dark:border-indigo-500 dark:bg-indigo-500/15 dark:text-indigo-100'
-                : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800',
-            ].join(' ')}
-          >
-            <div>{opt.label}</div>
-            <div className="text-[11px] font-normal text-slate-500 dark:text-slate-400">{opt.hint}</div>
-          </button>
-        ))}
-      </div>
+      {/* Granularity buttons removed */}
 
       {q.isError ? (
         <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-100">
@@ -603,109 +585,7 @@ export function ConsumptionReportPage() {
         </div>
       ) : null}
 
-      <div className="card p-4">
-        <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-sm font-semibold text-slate-900 dark:text-slate-50">
-            Production Line Energy Totals
-          </div>
-          <div className="inline-flex overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
-            <button
-              type="button"
-              onClick={() => setViewMode('byLine')}
-              className={[
-                'px-3 py-2 text-sm font-medium',
-                viewMode === 'byLine'
-                  ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-50'
-                  : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/60',
-              ].join(' ')}
-            >
-              View by Line
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('byTime')}
-              className={[
-                'px-3 py-2 text-sm font-medium',
-                viewMode === 'byTime'
-                  ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-50'
-                  : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/60',
-              ].join(' ')}
-            >
-              View by Time
-            </button>
-          </div>
-        </div>
-        <div className="h-80 min-h-[240px] w-full min-w-0">
-          {q.isLoading ? (
-            <div className="flex h-full items-center justify-center text-sm text-slate-500">Loading…</div>
-          ) : chartData.length === 0 ? (
-            <div className="flex h-full items-center justify-center text-sm text-slate-500">No data.</div>
-          ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              {viewMode === 'byLine' ? (
-                <BarChart data={chartData} margin={{ left: 4, right: 12, top: 8, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-slate-200 dark:stroke-slate-700" />
-                  <XAxis dataKey="name" tick={{ fontSize: 11 }} interval={0} angle={-25} textAnchor="end" height={70} />
-                  <YAxis tick={{ fontSize: 11 }} width={64} tickFormatter={(v) => `${v}`} />
-                  <Tooltip
-                    formatter={(value, name, item) => {
-                      const p = (item?.payload as { pct?: number } | undefined)?.pct
-                      if (name === 'energy') return [`${fmtNum(Number(value))} kWh (${fmtNum(Number(p ?? 0), 1)}%)`, 'Energy']
-                      return [`${value}`, String(name)]
-                    }}
-                  />
-                  <ReferenceLine
-                    y={chartData.length > 0 ? totals.totalEnergyKwh / Math.max(1, chartData.length) : 0}
-                    stroke="#94a3b8"
-                    strokeDasharray="4 4"
-                    ifOverflow="extendDomain"
-                    label={{ value: 'Avg/line', position: 'insideTopRight', fill: '#94a3b8', fontSize: 11 }}
-                  />
-                  <Bar dataKey="energy" name="Energy" isAnimationActive={false} radius={[6, 6, 0, 0]}>
-                    <LabelList
-                      dataKey="pct"
-                      position="top"
-                      formatter={(v: unknown) => `${fmtNum(Number(v), 1)}%`}
-                      className="fill-slate-600 dark:fill-slate-300"
-                      fontSize={11}
-                    />
-                    {chartData.map((entry, idx) => {
-                      const rank = Number((entry as { rank?: number }).rank ?? idx + 1)
-                      const isTop3 = rank <= 3
-                      return <Cell key={`bar-${String((entry as { name?: string }).name ?? idx)}`} fill={isTop3 ? '#2563eb' : '#94a3b8'} />
-                    })}
-                  </Bar>
-                </BarChart>
-              ) : (
-                <BarChart data={chartData} margin={{ left: 4, right: 12, top: 8, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-slate-200 dark:stroke-slate-700" />
-                  <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} angle={-35} textAnchor="end" height={70} />
-                  <YAxis tick={{ fontSize: 11 }} width={56} tickFormatter={(v) => `${v}`} />
-                  <Tooltip
-                    formatter={(value, name) => [`${fmtNum(Number(value))} kWh`, String(name)]}
-                    labelFormatter={(label, payload) => {
-                      const pl = payload?.[0]?.payload as { fullLabel?: string } | undefined
-                      return pl?.fullLabel ?? String(label ?? '')
-                    }}
-                  />
-                  <Legend />
-                  {meterNames.map((m, idx) => (
-                    <Bar
-                      key={m}
-                      dataKey={m}
-                      name={m}
-                      stackId="kwh"
-                      fill={LINE_COLORS[idx % LINE_COLORS.length]}
-                      radius={idx === meterNames.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]}
-                      isAnimationActive={false}
-                    />
-                  ))}
-                </BarChart>
-              )}
-            </ResponsiveContainer>
-          )}
-        </div>
-      </div>
+      {/* Production Line Energy Totals removed */}
 
       {/* legacy: table view is now contained in hero */}
     </div>

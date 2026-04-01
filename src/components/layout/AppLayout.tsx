@@ -21,18 +21,16 @@ export function AppLayout() {
   }, [themeMode])
 
   return (
-    <div className="min-h-screen w-full bg-[var(--bg)]">
-      <div className="flex min-h-screen w-full flex-col">
-        <Topbar />
+    <div className="flex h-screen w-full flex-col overflow-hidden bg-[var(--bg)]">
+      <Topbar />
 
-        <div className="flex min-h-0 w-full flex-1">
-          <Sidebar />
-          <main className="min-w-0 flex-1 px-3 py-3 md:px-4 md:py-4">
-            <div className="w-full min-w-0">
-              <Outlet />
-            </div>
-          </main>
-        </div>
+      <div className="flex min-h-0 w-full flex-1">
+        <Sidebar />
+        <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-auto px-3 py-2 md:px-4 md:py-3 [overscroll-behavior:contain]">
+          <div className="min-h-0 w-full flex-1">
+            <Outlet />
+          </div>
+        </main>
       </div>
 
       {/* Toast notifications */}

@@ -4,16 +4,24 @@ import {
   LayoutDashboard,
   Activity,
   Network,
+  LineChart,
+  ListChecks,
+  LayoutGrid,
+  Database,
   type LucideIcon,
 } from 'lucide-react'
 
 type NavItem = { to: string; label: string; icon: LucideIcon; end?: boolean }
 
 const navItems: NavItem[] = [
-  { to: '/', label: 'Consumption', icon: LayoutDashboard, end: true },
-  { to: '/dashboard', label: 'Monitoring (legacy)', icon: Activity },
-  { to: '/topology', label: 'Electrical Topology', icon: Network },
-  { to: '/alerts', label: 'Alerts', icon: BellRing },
+  // Ops-first ordering: SCADA screens first (no-scroll), then detail/drilldown pages.
+  { to: '/dashboard', label: 'Plant Overview', icon: LayoutGrid, end: true },
+  { to: '/real-time-data', label: 'Live Meters', icon: Database },
+  { to: '/topology', label: 'Single Line', icon: Network },
+  { to: '/power-quality', label: 'PQ Trends', icon: LineChart },
+  { to: '/power-quality/events', label: 'PQ Events', icon: ListChecks },
+  { to: '/alerts', label: 'Alarms', icon: BellRing },
+  { to: '/', label: 'Consumption', icon: LayoutDashboard },
 ]
 
 export function Sidebar() {
