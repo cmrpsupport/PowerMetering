@@ -9,7 +9,7 @@ import { SegmentedControl } from '../components/ui/SegmentedControl'
 import { DemandTracker } from '../components/ui/DemandTracker'
 import type { PlcMeterData } from '../types'
 import MultiAxisTrendChart from '../components/charts/MultiAxisTrendChart'
-import { Activity, Bolt, Gauge, Zap } from 'lucide-react'
+import { Activity, Bolt, Gauge, Layers, Percent, Plug, Radio, Waves, Zap } from 'lucide-react'
 import {
   Area,
   AreaChart,
@@ -36,6 +36,12 @@ import {
 
 function fmt(n: number, decimals = 1): string {
   if (!Number.isFinite(n) || n === 0) return '\u2014'
+  return n.toFixed(decimals)
+}
+
+/** Format numeric values where zero is meaningful (e.g. kVAR). */
+function fmtQty(n: number, decimals = 1): string {
+  if (!Number.isFinite(n)) return '\u2014'
   return n.toFixed(decimals)
 }
 
@@ -256,6 +262,67 @@ export function DashboardPage() {
     const freqValues = online.map((d) => d.Frequency).filter((v) => v > 0)
     const avgFreq = freqValues.length > 0 ? freqValues.reduce((s, v) => s + v, 0) / freqValues.length : NaN
     return { totalPower, totalEnergy, metersOnline: online.length, avgPf, avgFreq }
+  }, [snap])
+
+  /** Plant-level power quality aggregates (PF, frequency, reactive/apparent, voltage spread). */
+  const plantPowerQuality = useMemo(() => {
+    if (!snap?.meters) {
+      return {
+        avgPf: NaN,
+        minPf: NaN,
+        totalKvar: NaN,
+        totalKva: NaN,
+        avgFreq: NaN,
+        freqMin: NaN,
+        freqMax: NaN,
+        avgVll: NaN,
+        vllSpread: NaN,
+      }
+    }
+    const entries = Object.values(snap.meters).filter((d) => meterHasData(d))
+    if (entries.length === 0) {
+      return {
+        avgPf: NaN,
+        minPf: NaN,
+        totalKvar: NaN,
+        totalKva: NaN,
+        avgFreq: NaN,
+        freqMin: NaN,
+        freqMax: NaN,
+        avgVll: NaN,
+        vllSpread: NaN,
+      }
+    }
+    let totalKvar = 0
+    let totalKva = 0
+    const pfs: number[] = []
+    const freqs: number[] = []
+    const vLls: number[] = []
+    for (const d of entries) {
+      totalKvar += d.Reactive_power
+      totalKva += d.Apparent_power
+      if (d.Power_factor > 0) pfs.push(d.Power_factor)
+      if (d.Frequency > 0) freqs.push(d.Frequency)
+      if (d.Voltage_Lave > 0) vLls.push(d.Voltage_Lave)
+    }
+    const avgPf = pfs.length > 0 ? pfs.reduce((a, b) => a + b, 0) / pfs.length : NaN
+    const minPf = pfs.length > 0 ? Math.min(...pfs) : NaN
+    const avgFreq = freqs.length > 0 ? freqs.reduce((a, b) => a + b, 0) / freqs.length : NaN
+    const freqMin = freqs.length > 0 ? Math.min(...freqs) : NaN
+    const freqMax = freqs.length > 0 ? Math.max(...freqs) : NaN
+    const avgVll = vLls.length > 0 ? vLls.reduce((a, b) => a + b, 0) / vLls.length : NaN
+    const vllSpread = vLls.length >= 2 ? Math.max(...vLls) - Math.min(...vLls) : 0
+    return {
+      avgPf,
+      minPf,
+      totalKvar,
+      totalKva,
+      avgFreq,
+      freqMin,
+      freqMax,
+      avgVll,
+      vllSpread,
+    }
   }, [snap])
 
   const totalEnergyLines = useMemo(() => {
@@ -552,14 +619,111 @@ export function DashboardPage() {
               {plantStats.metersOnline} <span className="text-sm font-normal text-[var(--muted)]">/ {PLC_METERS.length}</span>
             </>
           }
-          subtitle={
-            <>
-              PF {fmt(plantStats.avgPf, 3)} • {fmt(plantStats.avgFreq, 2)} Hz
-            </>
-          }
+          subtitle="Live PLC snapshot"
           icon={<Activity size={18} />}
           tone={plantStats.metersOnline > 0 ? 'success' : 'danger'}
         />
+      </div>
+
+      {/* Power quality — PF, frequency, reactive/apparent, voltage spread */}
+      <div>
+        <div className="mb-2 text-xs font-medium uppercase tracking-wide text-[var(--muted)]">Power quality</div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          <MiniKpiCard
+            title="Power factor"
+            value={
+              <>
+                {fmt(plantPowerQuality.avgPf, 3)}{' '}
+                <span className="text-sm font-normal text-[var(--muted)]">avg</span>
+              </>
+            }
+            subtitle={
+              <>
+                Worst meter {fmt(plantPowerQuality.minPf, 3)} · aim ≥ 0.95 lagging
+              </>
+            }
+            icon={<Percent size={18} />}
+            tone={
+              !Number.isFinite(plantPowerQuality.minPf)
+                ? 'neutral'
+                : plantPowerQuality.minPf >= 0.95
+                  ? 'success'
+                  : plantPowerQuality.minPf >= 0.85
+                    ? 'warning'
+                    : 'danger'
+            }
+          />
+          <MiniKpiCard
+            title="Frequency"
+            value={
+              <>
+                {fmt(plantPowerQuality.avgFreq, 2)} <span className="text-sm font-normal text-[var(--muted)]">Hz</span>
+              </>
+            }
+            subtitle={
+              Number.isFinite(plantPowerQuality.freqMin) && Number.isFinite(plantPowerQuality.freqMax) ? (
+                <>
+                  Across meters {fmt(plantPowerQuality.freqMin, 2)}–{fmt(plantPowerQuality.freqMax, 2)} Hz
+                </>
+              ) : (
+                '—'
+              )
+            }
+            icon={<Radio size={18} />}
+            tone={
+              Number.isFinite(plantPowerQuality.freqMin) &&
+              Number.isFinite(plantPowerQuality.freqMax) &&
+              plantPowerQuality.freqMax - plantPowerQuality.freqMin > 0.15
+                ? 'warning'
+                : 'neutral'
+            }
+          />
+          <MiniKpiCard
+            title="Reactive power"
+            value={
+              <>
+                {fmtQty(plantPowerQuality.totalKvar, 1)}{' '}
+                <span className="text-sm font-normal text-[var(--muted)]">kVAR</span>
+              </>
+            }
+            subtitle="Σ meters (inductive + / capacitive − per device)"
+            icon={<Waves size={18} />}
+            tone="neutral"
+          />
+          <MiniKpiCard
+            title="Apparent power"
+            value={
+              <>
+                {fmtQty(plantPowerQuality.totalKva, 1)}{' '}
+                <span className="text-sm font-normal text-[var(--muted)]">kVA</span>
+              </>
+            }
+            subtitle="Σ |S| (plant-wide indicator)"
+            icon={<Layers size={18} />}
+            tone="neutral"
+          />
+          <MiniKpiCard
+            title="Line voltage (L-L)"
+            value={
+              <>
+                {fmt(plantPowerQuality.avgVll, 0)} <span className="text-sm font-normal text-[var(--muted)]">V avg</span>
+              </>
+            }
+            subtitle={
+              <>
+                Spread {fmtQty(plantPowerQuality.vllSpread, 1)} V (max − min across meters)
+              </>
+            }
+            icon={<Plug size={18} />}
+            tone={
+              Number.isFinite(plantPowerQuality.avgVll) &&
+              plantPowerQuality.avgVll > 0 &&
+              plantPowerQuality.vllSpread / plantPowerQuality.avgVll > 0.03
+                ? 'warning'
+                : 'neutral'
+            }
+          />
+        </div>
       </div>
 
       {/* Fluctuation detection */}

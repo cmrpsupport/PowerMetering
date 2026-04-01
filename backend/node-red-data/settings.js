@@ -2,6 +2,8 @@
  * Node-RED userDir settings.
  * @see https://nodered.org/docs/user-guide/runtime/settings-file
  */
+const path = require('path')
+
 module.exports = {
   /** Use a stable flows file in this repo (default is flows_<hostname>.json) */
   flowFile: 'flows.json',
@@ -18,6 +20,10 @@ module.exports = {
   /** Expose selected env vars to Function nodes as env.get('PLC_IP') */
   functionGlobalContext: {
     env: process.env,
+    /** Git-tracked alert archive (see enhanced_alerts_archive.json); Function nodes use global.get('alertsArchivePath') */
+    alertsArchivePath: path.join(__dirname, 'enhanced_alerts_archive.json'),
+    /** Used by alert hydrate / archive write Function nodes (avoids sandbox require restrictions) */
+    fs: require('fs'),
   },
 
   /** Reduce log noise in production */

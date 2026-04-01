@@ -4846,7 +4846,7 @@
     "type": "function",
     "z": "a1000001.0001tab",
     "name": "Acknowledge alarm",
-    "func": "const id = msg.req?.params?.id;\nconst who = msg.req?.query?.by ?? 'user';\nconst arr = global.get('enhancedAlerts') || [];\nconst a = arr.find((x) => x.id === id);\nif (a) {\n  a.status = 'acknowledged';\n  a.acknowledgedAt = new Date().toISOString();\n  a.acknowledgedBy = String(who);\n}\nmsg.payload = a || null;\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
+    "func": "const id = msg.req?.params?.id;\nconst who = msg.req?.query?.by ?? 'user';\nconst arr = global.get('enhancedAlerts') || [];\nconst a = arr.find((x) => x.id === id);\nif (a) {\n  a.status = 'acknowledged';\n  a.acknowledgedAt = new Date().toISOString();\n  a.acknowledgedBy = String(who);\n}\ntry {\n  const fs = global.get('fs');\n  const p = global.get('alertsArchivePath');\n  if (fs && p) fs.writeFileSync(p, JSON.stringify(global.get('enhancedAlerts') || [], null, 2), 'utf8');\n} catch (e) {}\nmsg.payload = a || null;\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -4883,7 +4883,7 @@
     "type": "function",
     "z": "a1000001.0001tab",
     "name": "Resolve alarm",
-    "func": "const id = msg.req?.params?.id;\nconst arr = global.get('enhancedAlerts') || [];\nconst a = arr.find((x) => x.id === id);\nif (a) {\n  a.status = 'resolved';\n  a.resolvedAt = new Date().toISOString();\n}\nmsg.payload = a || null;\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
+    "func": "const id = msg.req?.params?.id;\nconst arr = global.get('enhancedAlerts') || [];\nconst a = arr.find((x) => x.id === id);\nif (a) {\n  a.status = 'resolved';\n  a.resolvedAt = new Date().toISOString();\n}\ntry {\n  const fs = global.get('fs');\n  const p = global.get('alertsArchivePath');\n  if (fs && p) fs.writeFileSync(p, JSON.stringify(global.get('enhancedAlerts') || [], null, 2), 'utf8');\n} catch (e) {}\nmsg.payload = a || null;\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -4920,7 +4920,7 @@
     "type": "function",
     "z": "a1000001.0001tab",
     "name": "Add alarm note",
-    "func": "const id = msg.req?.params?.id;\nconst note = msg.req?.query?.note ?? '';\nconst arr = global.get('enhancedAlerts') || [];\nconst a = arr.find((x) => x.id === id);\nif (a) {\n  if (!Array.isArray(a.notes)) a.notes = [];\n  if (note) a.notes.unshift(String(note));\n}\nmsg.payload = a || null;\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
+    "func": "const id = msg.req?.params?.id;\nconst note = msg.req?.query?.note ?? '';\nconst arr = global.get('enhancedAlerts') || [];\nconst a = arr.find((x) => x.id === id);\nif (a) {\n  if (!Array.isArray(a.notes)) a.notes = [];\n  if (note) a.notes.unshift(String(note));\n}\ntry {\n  const fs = global.get('fs');\n  const p = global.get('alertsArchivePath');\n  if (fs && p) fs.writeFileSync(p, JSON.stringify(global.get('enhancedAlerts') || [], null, 2), 'utf8');\n} catch (e) {}\nmsg.payload = a || null;\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -5637,7 +5637,7 @@
     "type": "function",
     "z": "a1000001.0001tab",
     "name": "Hydrate global enhancedAlerts",
-    "func": "const rows = Array.isArray(msg.payload) ? msg.payload : [];\nconst fromDb = [];\nfor (const r of rows) {\n  try {\n    fromDb.push(JSON.parse(r.payload));\n  } catch (e) {}\n}\nconst mem = global.get('enhancedAlerts') || [];\nif (fromDb.length === 0) return null;\nconst byId = new Map();\nfor (const a of fromDb) byId.set(a.id, a);\nfor (const a of mem) {\n  if (!byId.has(a.id)) byId.set(a.id, a);\n}\nconst merged = Array.from(byId.values()).sort((a, b) => Date.parse(b.ts) - Date.parse(a.ts));\nwhile (merged.length > 2000) merged.pop();\nglobal.set('enhancedAlerts', merged);\nreturn null;",
+    "func": "const fs = global.get('fs');\nconst archivePath = global.get('alertsArchivePath');\nlet fromFile = [];\nif (archivePath && fs) {\n  try {\n    const raw = fs.readFileSync(archivePath, 'utf8');\n    const parsed = JSON.parse(raw);\n    if (Array.isArray(parsed)) fromFile = parsed.filter((a) => a && a.id);\n  } catch (e) {}\n}\nconst rows = Array.isArray(msg.payload) ? msg.payload : [];\nconst fromDb = [];\nfor (const r of rows) {\n  try {\n    const o = JSON.parse(r.payload);\n    if (o && o.id) fromDb.push(o);\n  } catch (e) {}\n}\nconst mem = global.get('enhancedAlerts') || [];\nconst byId = new Map();\nconst tsOf = (a) => Date.parse(a.ts || '') || 0;\nfor (const a of fromDb) byId.set(a.id, a);\nfor (const a of fromFile) {\n  const ex = byId.get(a.id);\n  if (!ex || tsOf(a) >= tsOf(ex)) byId.set(a.id, a);\n}\nfor (const a of mem) {\n  if (!byId.has(a.id)) byId.set(a.id, a);\n}\nconst merged = Array.from(byId.values()).sort((a, b) => tsOf(b) - tsOf(a));\nwhile (merged.length > 2000) merged.pop();\nglobal.set('enhancedAlerts', merged);\nreturn null;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -5673,7 +5673,8 @@
     "y": 680,
     "wires": [
       [
-        "a1000105.alerts_sync_batch"
+        "a1000105.alerts_sync_batch",
+        "a1000107.alerts_json_write"
       ]
     ]
   },
@@ -5707,6 +5708,24 @@
     "name": "SQLite write (alerts)",
     "x": 620,
     "y": 680,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "a1000107.alerts_json_write",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "Write enhanced_alerts_archive.json (git)",
+    "func": "const fs = global.get('fs');\nconst archivePath = global.get('alertsArchivePath');\nif (!fs || !archivePath) return null;\nconst arr = global.get('enhancedAlerts') || [];\ntry {\n  fs.writeFileSync(archivePath, JSON.stringify(arr, null, 2), 'utf8');\n} catch (e) {\n  node.warn('enhanced_alerts_archive.json write failed: ' + (e && e.message));\n}\nreturn null;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 380,
+    "y": 740,
     "wires": [
       []
     ]
