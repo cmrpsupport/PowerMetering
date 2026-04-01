@@ -86,6 +86,7 @@ export function DashboardScadaPage() {
   const fetchMinutes = Math.max(trendMinutes, 24 * 60)
   const trendQ = usePowerTrend(fetchMinutes, { bucket: trendBucket })
   const energy24hQ = useEnergyIntervals(24)
+  const energy48hQ = useEnergyIntervals(48)
   // Pull enough buckets to cover current + previous month for MTD comparison.
   const energyMonthQ = useEnergyIntervals(24 * 75)
 
@@ -132,6 +133,35 @@ export function DashboardScadaPage() {
       deltaPct,
     }
   }, [energyMonthQ.data])
+
+  const energyHourly = useMemo(() => {
+    const ivs = energy48hQ.data ?? []
+    if (ivs.length === 0) return { series: [] as number[], lastHourDeltaPct: null as number | null }
+
+    // Aggregate across meters by hour bucket timestamp.
+    const byTs = new Map<string, number>()
+    for (const iv of ivs) {
+      const ts = iv.ts
+      if (!ts) continue
+      const e = Number(iv.energyKwh)
+      if (!Number.isFinite(e)) continue
+      byTs.set(ts, (byTs.get(ts) ?? 0) + e)
+    }
+
+    const rows = Array.from(byTs.entries())
+      .map(([ts, kwh]) => ({ ts, kwh }))
+      .sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts))
+
+    const last24 = rows.slice(-24)
+    const series = last24.map((r) => r.kwh)
+
+    const last = series.length >= 1 ? series[series.length - 1] : NaN
+    const prev = series.length >= 2 ? series[series.length - 2] : NaN
+    const lastHourDeltaPct =
+      Number.isFinite(last) && Number.isFinite(prev) && Math.abs(prev) > 1e-9 ? (last - prev) / Math.abs(prev) : null
+
+    return { series, lastHourDeltaPct }
+  }, [energy48hQ.data])
 
   const powerTrendFull = useMemo(() => {
     const pts = trendQ.data ?? []
@@ -347,6 +377,8 @@ export function DashboardScadaPage() {
           icon={<Layers size={18} />}
           deltaPct={monthKwh.deltaPct}
           deltaLabel="vs prev month (MTD)"
+          projectionText="Hrly change (last 24h)"
+          sparkline={energyHourly.series}
           subtext={
             Number.isFinite(monthKwh.prevMtd) ? (
               <span>
@@ -355,6 +387,13 @@ export function DashboardScadaPage() {
             ) : (
               'Prev month data unavailable'
             )
+          }
+          footerRight={
+            typeof energyHourly.lastHourDeltaPct === 'number' ? (
+              <span className="text-[11px] font-medium text-[var(--muted)]">
+                Hrly: <span className="tabular-nums">{`${energyHourly.lastHourDeltaPct >= 0 ? '+' : ''}${fmt(energyHourly.lastHourDeltaPct * 100, 0)}%`}</span>
+              </span>
+            ) : null
           }
         />
         <KpiCard
