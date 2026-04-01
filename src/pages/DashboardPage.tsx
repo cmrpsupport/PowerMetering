@@ -287,18 +287,16 @@ export function DashboardPage() {
     return Array.from(map.values()).sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts))
   }, [energy24hQ.data])
 
+  /** Rolling ~24h of 15‑min buckets in chronological order (oldest → newest). X-axis is wall‑clock time, not a 00:00–24:00 dial (so the right edge is “now”, not 23:30). */
   const loadProfile24h = useMemo(() => {
-    // 96 points (15-min), x-axis by time-of-day
-    const buckets = new Map<string, { tod: string; demandKw: number }>()
-    for (const r of totalDemandSeries24h) {
-      const d = new Date(r.ts)
-      const hh = String(d.getHours()).padStart(2, '0')
-      const mm = String(d.getMinutes()).padStart(2, '0')
-      const tod = `${hh}:${mm}`
-      buckets.set(tod, { tod, demandKw: r.demandKw })
-    }
-    return Array.from(buckets.values()).sort((a, b) => a.tod.localeCompare(b.tod))
+    return totalDemandSeries24h.map((r) => ({ ts: r.ts, demandKw: r.demandKw }))
   }, [totalDemandSeries24h])
+
+  const loadProfileTick = (iso: string) => {
+    const d = new Date(iso)
+    if (Number.isNaN(d.getTime())) return iso
+    return d.toLocaleString([], { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+  }
 
   const peakDemandByDay30d = useMemo(() => {
     const ivs = energy30dQ.data ?? []
@@ -673,7 +671,9 @@ export function DashboardPage() {
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
             <div>
               <div className="text-sm font-semibold text-[var(--text)]">24-hour load profile</div>
-              <div className="text-[11px] text-[var(--muted)]">Demand by time-of-day (last ~24h of intervals)</div>
+              <div className="text-[11px] text-[var(--muted)]">
+                15‑min demand over the last ~24 hours, oldest on the left and latest on the right.
+              </div>
             </div>
             <button
               type="button"
@@ -695,10 +695,11 @@ export function DashboardPage() {
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
                   <XAxis
-                    dataKey="tod"
+                    dataKey="ts"
                     tick={{ fill: 'var(--chart-axis)', fontSize: 10 }}
                     stroke="var(--chart-axis)"
-                    interval={7}
+                    tickFormatter={loadProfileTick}
+                    minTickGap={28}
                   />
                   <YAxis
                     tick={{ fill: 'var(--chart-axis)', fontSize: 11 }}
@@ -712,6 +713,11 @@ export function DashboardPage() {
                       borderRadius: 8,
                       color: 'var(--chart-tooltip-text)',
                     }}
+                    labelFormatter={(label) =>
+                      typeof label === 'string' || typeof label === 'number'
+                        ? new Date(String(label)).toLocaleString()
+                        : ''
+                    }
                     formatter={(v) => [`${fmt(Number(v), 1)} kW`, 'Demand']}
                   />
                   <Area
