@@ -253,13 +253,7 @@ export function DashboardScadaPage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
           <div className="truncate text-lg font-semibold text-[var(--text)]">Dashboard (SCADA)</div>
-          <div className="mt-0.5 truncate text-xs text-[var(--muted)]">
-            Single-screen overview. Use “Dashboard Details” for deeper drill-down.
-          </div>
-        </div>
-        <div className="shrink-0 text-xs text-[var(--muted)]">
-          PLC:{' '}
-          <span className={plcUp ? 'text-emerald-400' : 'text-red-400'}>{plcUp ? 'Connected' : 'Disconnected'}</span>
+          <div className="mt-0.5 truncate text-xs text-[var(--muted)]">Single-screen overview.</div>
         </div>
       </div>
 

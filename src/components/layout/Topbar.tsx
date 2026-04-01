@@ -51,11 +51,28 @@ export function Topbar() {
           {/* CENTER: Status (optional) */}
           <div className="hidden flex-1 items-center justify-center gap-3 md:flex">
             <div className="truncate text-sm font-medium text-[var(--muted)]">{title}</div>
-            <Badge color={plcUp ? 'green' : 'red'}>{plcUp ? 'PLC Connected' : 'PLC Disconnected'}</Badge>
           </div>
 
           {/* RIGHT: Actions + User profile */}
           <div className="flex shrink-0 items-center justify-end gap-3">
+            <div className="hidden items-center gap-2 text-xs text-[var(--muted)] lg:flex">
+              <span>Communication</span>
+              <span className="relative inline-flex h-2.5 w-2.5">
+                <span
+                  className={[
+                    'absolute inline-flex h-full w-full rounded-full opacity-60 motion-safe:animate-ping',
+                    plcUp ? 'bg-emerald-400' : 'bg-red-400',
+                  ].join(' ')}
+                  aria-hidden="true"
+                />
+                <span
+                  className={['relative inline-flex h-2.5 w-2.5 rounded-full', plcUp ? 'bg-emerald-400' : 'bg-red-400'].join(' ')}
+                  title={plcUp ? 'Communication heartbeat: connected' : 'Communication heartbeat: disconnected'}
+                  aria-label={plcUp ? 'Communication heartbeat: connected' : 'Communication heartbeat: disconnected'}
+                />
+              </span>
+              <span className={plcUp ? 'text-emerald-400' : 'text-red-400'}>{plcUp ? 'Connected' : 'Disconnected'}</span>
+            </div>
             <button
               type="button"
               className="grid h-10 w-10 place-items-center rounded-xl border border-[var(--border)] bg-[var(--card)] text-[var(--muted)] shadow-sm transition hover:bg-[color-mix(in_srgb,var(--text)_4%,transparent)] hover:text-[var(--text)]"
@@ -96,7 +113,24 @@ export function Topbar() {
               >
                 {GIT_SHA}
               </span>
-              <Badge color={plcUp ? 'green' : 'red'}>{plcUp ? 'PLC Connected' : 'PLC Disconnected'}</Badge>
+              <span className="text-[11px] text-[var(--muted)]">Comm:</span>
+              <span className="relative inline-flex h-2.5 w-2.5">
+                <span
+                  className={[
+                    'absolute inline-flex h-full w-full rounded-full opacity-60 motion-safe:animate-ping',
+                    plcUp ? 'bg-emerald-400' : 'bg-red-400',
+                  ].join(' ')}
+                  aria-hidden="true"
+                />
+                <span
+                  className={['relative inline-flex h-2.5 w-2.5 rounded-full', plcUp ? 'bg-emerald-400' : 'bg-red-400'].join(' ')}
+                  title={plcUp ? 'Communication heartbeat: connected' : 'Communication heartbeat: disconnected'}
+                  aria-label={plcUp ? 'Communication heartbeat: connected' : 'Communication heartbeat: disconnected'}
+                />
+              </span>
+              <span className={['text-[11px] font-medium', plcUp ? 'text-emerald-400' : 'text-red-400'].join(' ')}>
+                {plcUp ? 'Connected' : 'Disconnected'}
+              </span>
             </div>
           </div>
           <div className="mt-1 text-xs text-[var(--muted)]">
