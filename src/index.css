@@ -98,6 +98,28 @@
   .text-slate-600 { color: var(--muted) !important; }
   .text-slate-500 { color: var(--muted) !important; }
   .text-slate-400 { color: var(--muted) !important; }
+
+  @keyframes kpiStatusSoft {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.88;
+      transform: scale(1.06);
+    }
+  }
+
+  .kpi-status-soft {
+    animation: kpiStatusSoft 2.5s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kpi-status-soft {
+      animation: none;
+    }
+  }
 }
 
 @layer components {

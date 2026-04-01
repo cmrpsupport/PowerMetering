@@ -5,6 +5,7 @@ import { findPlcMeter, PLC_METERS } from '../constants/plcMeters'
 import { PLC_PRODUCTION_METERS } from '../constants/plcProductionMeters'
 import { Badge, type BadgeColor } from '../components/ui/Badge'
 import { MiniKpiCard } from '../components/ui/MiniKpiCard'
+import { KpiStatusIndicator } from '../components/ui/KpiStatusIndicator'
 import { SegmentedControl } from '../components/ui/SegmentedControl'
 import { DemandTracker } from '../components/ui/DemandTracker'
 import type { PlcMeterData } from '../types'
@@ -33,6 +34,21 @@ import {
   capFluctuationSeries,
   type FluctuationBucketPoint,
 } from '../lib/trendSeries'
+import type { KpiStatusLevel } from '../lib/kpiStatus'
+import {
+  statusFrequency,
+  statusMetersOnlinePct,
+  statusPowerFactor,
+  statusReactiveKvar,
+  statusVoltageLavg,
+} from '../lib/kpiStatus'
+
+function kpiToneFromLevel(level: KpiStatusLevel): 'neutral' | 'danger' | 'success' | 'warning' {
+  if (level === 'ok') return 'success'
+  if (level === 'warning') return 'warning'
+  if (level === 'critical') return 'danger'
+  return 'neutral'
+}
 
 function fmt(n: number, decimals = 1): string {
   if (!Number.isFinite(n) || n === 0) return '\u2014'
@@ -324,6 +340,18 @@ export function DashboardPage() {
       vllSpread,
     }
   }, [snap])
+
+  /** Threshold evaluation for KPI status glyphs (🟢 ⚠️ 🔻). */
+  const kpiThresholds = useMemo(() => {
+    const pf = statusPowerFactor(plantPowerQuality.minPf)
+    const v = statusVoltageLavg(plantPowerQuality.avgVll)
+    const f = statusFrequency(plantPowerQuality.avgFreq)
+    const r = statusReactiveKvar(plantPowerQuality.totalKvar)
+    const pct =
+      PLC_METERS.length > 0 ? (plantStats.metersOnline / PLC_METERS.length) * 100 : NaN
+    const meters = statusMetersOnlinePct(pct)
+    return { pf, v, f, r, meters }
+  }, [plantPowerQuality, plantStats.metersOnline])
 
   const totalEnergyLines = useMemo(() => {
     if (!snap?.totalEnergy) return []
@@ -621,7 +649,14 @@ export function DashboardPage() {
           }
           subtitle="Live PLC snapshot"
           icon={<Activity size={18} />}
-          tone={plantStats.metersOnline > 0 ? 'success' : 'danger'}
+          tone={kpiToneFromLevel(kpiThresholds.meters.level)}
+          status={
+            <KpiStatusIndicator
+              key={kpiThresholds.meters.level}
+              level={kpiThresholds.meters.level}
+              detail={kpiThresholds.meters.detail}
+            />
+          }
         />
       </div>
 
@@ -643,14 +678,13 @@ export function DashboardPage() {
               </>
             }
             icon={<Percent size={18} />}
-            tone={
-              !Number.isFinite(plantPowerQuality.minPf)
-                ? 'neutral'
-                : plantPowerQuality.minPf >= 0.95
-                  ? 'success'
-                  : plantPowerQuality.minPf >= 0.85
-                    ? 'warning'
-                    : 'danger'
+            tone={kpiToneFromLevel(kpiThresholds.pf.level)}
+            status={
+              <KpiStatusIndicator
+                key={kpiThresholds.pf.level}
+                level={kpiThresholds.pf.level}
+                detail={kpiThresholds.pf.detail}
+              />
             }
           />
           <MiniKpiCard
@@ -670,12 +704,13 @@ export function DashboardPage() {
               )
             }
             icon={<Radio size={18} />}
-            tone={
-              Number.isFinite(plantPowerQuality.freqMin) &&
-              Number.isFinite(plantPowerQuality.freqMax) &&
-              plantPowerQuality.freqMax - plantPowerQuality.freqMin > 0.15
-                ? 'warning'
-                : 'neutral'
+            tone={kpiToneFromLevel(kpiThresholds.f.level)}
+            status={
+              <KpiStatusIndicator
+                key={kpiThresholds.f.level}
+                level={kpiThresholds.f.level}
+                detail={kpiThresholds.f.detail}
+              />
             }
           />
           <MiniKpiCard
@@ -688,7 +723,14 @@ export function DashboardPage() {
             }
             subtitle="Σ meters (inductive + / capacitive − per device)"
             icon={<Waves size={18} />}
-            tone="neutral"
+            tone={kpiToneFromLevel(kpiThresholds.r.level)}
+            status={
+              <KpiStatusIndicator
+                key={kpiThresholds.r.level}
+                level={kpiThresholds.r.level}
+                detail={kpiThresholds.r.detail}
+              />
+            }
           />
           <MiniKpiCard
             title="Apparent power"
@@ -715,12 +757,13 @@ export function DashboardPage() {
               </>
             }
             icon={<Plug size={18} />}
-            tone={
-              Number.isFinite(plantPowerQuality.avgVll) &&
-              plantPowerQuality.avgVll > 0 &&
-              plantPowerQuality.vllSpread / plantPowerQuality.avgVll > 0.03
-                ? 'warning'
-                : 'neutral'
+            tone={kpiToneFromLevel(kpiThresholds.v.level)}
+            status={
+              <KpiStatusIndicator
+                key={kpiThresholds.v.level}
+                level={kpiThresholds.v.level}
+                detail={kpiThresholds.v.detail}
+              />
             }
           />
         </div>
