@@ -186,12 +186,14 @@ export function DashboardScadaPage() {
     return { series }
   }, [energy48hQ.data])
 
-  const lineDefs = useMemo(() => PLC_PRODUCTION_METERS.filter((l) => Array.isArray(l.meterIds) && l.meterIds.length > 0), [])
+  const lineDefs = useMemo(() => PLC_PRODUCTION_METERS, [])
 
-  const meterToLineKey = useMemo(() => {
-    const map = new Map<string, string>()
+  const lineKeyForIntervals = useMemo(() => {
+    const map = new Map<string, { key: string; name: string }>()
     for (const l of lineDefs) {
-      for (const id of l.meterIds ?? []) map.set(id, l.id)
+      // Backend /api/energy/intervals uses ids like "line-01" (not "plc-line-01").
+      const key = l.id.replace(/^plc-/, '')
+      map.set(key, { key, name: l.name })
     }
     return map
   }, [lineDefs])
@@ -211,10 +213,11 @@ export function DashboardScadaPage() {
 
       byTsTotal.set(ts, (byTsTotal.get(ts) ?? 0) + e)
 
-      const lineKey = meterToLineKey.get(iv.meterId)
-      if (lineKey) {
+      // Intervals are already grouped per "line-XX" meterId in the backend.
+      const key = String(iv.meterId ?? '')
+      if (lineKeyForIntervals.has(key)) {
         const row = byTsLine.get(ts) ?? {}
-        row[lineKey] = (row[lineKey] ?? 0) + e
+        row[key] = (row[key] ?? 0) + e
         byTsLine.set(ts, row)
       }
     }
@@ -237,7 +240,7 @@ export function DashboardScadaPage() {
     }
 
     return { series: rows, spanMs }
-  }, [energyTrendQ.data, meterToLineKey])
+  }, [energyTrendQ.data, lineKeyForIntervals])
 
   const energyTick = useMemo(() => {
     if (energyTrend.spanMs >= 1000 * 60 * 60 * 24 * 14) {
@@ -614,11 +617,12 @@ export function DashboardScadaPage() {
                       ? lineDefs.map((l, idx) => {
                           const colors = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)']
                           const stroke = colors[idx % colors.length]
+                          const key = l.id.replace(/^plc-/, '')
                           return (
                             <Area
                               key={l.id}
                               type="monotone"
-                              dataKey={l.id}
+                              dataKey={key}
                               name={l.name}
                               stroke={stroke}
                               strokeWidth={1.5}
