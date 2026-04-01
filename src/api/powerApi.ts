@@ -261,7 +261,7 @@ export async function getPowerTrend(
 ): Promise<PowerTrendPoint[]> {
   const maxInMemoryMinutes = 60 * 24 * 7
   const qs =
-    minutes > maxInMemoryMinutes
+    minutes >= maxInMemoryMinutes
       ? (() => {
           const p = new URLSearchParams({ minutes: String(minutes) })
           if (opts?.bucket) p.set('bucket', opts.bucket)

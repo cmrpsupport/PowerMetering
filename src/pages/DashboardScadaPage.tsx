@@ -82,7 +82,9 @@ export function DashboardScadaPage() {
                   : 365 * 24 * 60
   // Long windows are server-aggregated via /api/trends/power/history.
   const trendBucket = trendWindow === '30d' ? '15m' : trendWindow === '6mo' ? '1h' : trendWindow === '1y' ? '1h' : undefined
-  const trendQ = usePowerTrend(trendMinutes, { bucket: trendBucket })
+  // Always keep enough history for fluctuation detection, even when viewing 1h/6h/etc.
+  const fetchMinutes = Math.max(trendMinutes, 24 * 60)
+  const trendQ = usePowerTrend(fetchMinutes, { bucket: trendBucket })
   const energy24hQ = useEnergyIntervals(24)
 
   const plantNow = useMemo(() => {
@@ -176,6 +178,22 @@ export function DashboardScadaPage() {
     return aggregateTrendByBucket(down, bucketMs)
   }, [powerTrendVisible, pvcSpanMs])
 
+  const fluctuationSourceSeries = useMemo(() => {
+    // Always compute alerts from a stable 24h window so the list doesn't vanish when switching ranges.
+    if (powerTrendFull.length === 0) return [] as TrendPoint[]
+    const endMs = Date.now()
+    const startMs = endMs - 24 * 60 * 60_000
+    const raw = powerTrendFull.filter((p) => {
+      const t = Date.parse(p.ts)
+      return t >= startMs && t <= endMs
+    })
+    if (raw.length < 2) return [] as TrendPoint[]
+    const spanMs = Date.parse(raw[raw.length - 1].ts) - Date.parse(raw[0].ts)
+    const down = downsampleTrendForChart(raw, spanMs)
+    const bucketMs = bucketMsForVisibleSpan(spanMs)
+    return aggregateTrendByBucket(down, bucketMs)
+  }, [powerTrendFull])
+
   const pvcSpark = useMemo(() => {
     const last = pvcMainSeries.slice(-28)
     return {
@@ -204,7 +222,7 @@ export function DashboardScadaPage() {
   }, [pvcMainSeries])
 
   const fluctuationAlerts = useMemo<FluctuationAlert[]>(() => {
-    const pts = pvcMainSeries
+    const pts = fluctuationSourceSeries
     if (pts.length < 3) return []
 
     const alerts: FluctuationAlert[] = []
@@ -240,7 +258,17 @@ export function DashboardScadaPage() {
     return alerts
       .sort((a, b) => (a.ts < b.ts ? 1 : -1))
       .slice(0, 5)
-  }, [pvcMainSeries])
+  }, [fluctuationSourceSeries])
+
+  const fluctuationAlertsVisible = useMemo(() => {
+    if (fluctuationAlerts.length === 0 || powerTrendVisible.length === 0) return []
+    const startMs = Date.parse(powerTrendVisible[0].ts)
+    const endMs = Date.parse(powerTrendVisible[powerTrendVisible.length - 1].ts)
+    return fluctuationAlerts.filter((a) => {
+      const t = Date.parse(a.ts)
+      return t >= startMs && t <= endMs
+    })
+  }, [fluctuationAlerts, powerTrendVisible])
 
   const totalDemandSeries24h = useMemo(() => {
     const ivs = energy24hQ.data ?? []
@@ -395,7 +423,7 @@ export function DashboardScadaPage() {
                     <Area yAxisId="left" type="monotone" dataKey="kw" name="kW" stroke="var(--chart-1)" strokeWidth={2} fill="url(#pvc-kw-scada)" dot={false} connectNulls />
                     <Area yAxisId="right" type="monotone" dataKey="voltageV" name="Voltage (V)" stroke="var(--chart-2)" strokeWidth={2} fill="url(#pvc-v-scada)" dot={false} connectNulls />
                     <Area yAxisId="right" type="monotone" dataKey="currentA" name="Current (A)" stroke="var(--chart-3)" strokeWidth={2} fill="url(#pvc-i-scada)" dot={false} connectNulls />
-                    {fluctuationAlerts
+                    {fluctuationAlertsVisible
                       .filter((a) => a.metric === 'kw')
                       .map((a) => (
                         <ReferenceDot key={a.id} x={a.ts} y={a.value} yAxisId="left" r={4} fill="var(--primary)" stroke="none" />
