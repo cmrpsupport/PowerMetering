@@ -72,6 +72,16 @@ export type LoadProfilePoint = {
   demandKw: number
 }
 
+/** Manual production log (SQLite via Node-RED). */
+export type ProductionEntry = {
+  id: number
+  lineId: string
+  ts: string
+  tsEpoch: number
+  quantity: number
+  shift: string | null
+}
+
 export type ConsumptionGranularity = 'hourly' | 'daily' | 'weekly' | 'monthly'
 
 /** Real-time demand status from /api/demand/status. */

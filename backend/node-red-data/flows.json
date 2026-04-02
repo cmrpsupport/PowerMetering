@@ -4728,7 +4728,7 @@
     "type": "function",
     "z": "a1000001.0001tab",
     "name": "SQLite: create schema (v3 — meter_samples)",
-    "func": "msg.topic = `CREATE TABLE IF NOT EXISTS plc_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  Power_kW REAL,\n  Energy_kWh REAL,\n  Voltage_V REAL,\n  Current_A REAL,\n  PowerFactor REAL,\n  Total_CrackerLine1_kWh REAL,\n  Total_CrackerLine2_kWh REAL,\n  Total_PretzelLine_kWh REAL,\n  Total_WaferLine1_kWh REAL,\n  Total_WaferLine2_kWh REAL,\n  Total_ChocoyChocoLine_kWh REAL,\n  Total_DynamiteLine_kWh REAL,\n  Total_XOLine_kWh REAL,\n  Total_MaxxLine_kWh REAL,\n  Total_MainLine_kWh REAL,\n  Total_UtilitiesJaguar_kWh REAL,\n  Total_UtilitiesLighting_kWh REAL\n);\nCREATE INDEX IF NOT EXISTS idx_plc_samples_ts ON plc_samples(ts);\nCREATE INDEX IF NOT EXISTS idx_plc_samples_epoch ON plc_samples(ts_epoch);\n\nCREATE TABLE IF NOT EXISTS meter_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  meter_id TEXT NOT NULL,\n  real_power_kw REAL,\n  reactive_power_kvar REAL,\n  apparent_power_kva REAL,\n  real_energy_kwh REAL,\n  reactive_energy_kvarh REAL,\n  apparent_energy_kvah REAL,\n  voltage_ab REAL,\n  voltage_bc REAL,\n  voltage_ca REAL,\n  voltage_ll_avg REAL,\n  voltage_an REAL,\n  voltage_bn REAL,\n  voltage_cn REAL,\n  voltage_ln_avg REAL,\n  current_a REAL,\n  current_b REAL,\n  current_c REAL,\n  current_avg REAL,\n  power_factor REAL,\n  frequency REAL\n);\nCREATE INDEX IF NOT EXISTS idx_meter_epoch_id ON meter_samples(ts_epoch, meter_id);\nCREATE INDEX IF NOT EXISTS idx_meter_id_epoch ON meter_samples(meter_id, ts_epoch);\n\nCREATE TABLE IF NOT EXISTS demand_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  current_demand_kw REAL NOT NULL,\n  instant_kw REAL NOT NULL\n);\nCREATE INDEX IF NOT EXISTS idx_demand_samples_epoch ON demand_samples(ts_epoch);\n\nCREATE TABLE IF NOT EXISTS enhanced_alerts (\n  id TEXT PRIMARY KEY NOT NULL,\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  payload TEXT NOT NULL\n);\nCREATE INDEX IF NOT EXISTS idx_enhanced_alerts_ts_epoch ON enhanced_alerts(ts_epoch DESC);`;\nreturn msg;",
+    "func": "msg.topic = `CREATE TABLE IF NOT EXISTS plc_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  Power_kW REAL,\n  Energy_kWh REAL,\n  Voltage_V REAL,\n  Current_A REAL,\n  PowerFactor REAL,\n  Total_CrackerLine1_kWh REAL,\n  Total_CrackerLine2_kWh REAL,\n  Total_PretzelLine_kWh REAL,\n  Total_WaferLine1_kWh REAL,\n  Total_WaferLine2_kWh REAL,\n  Total_ChocoyChocoLine_kWh REAL,\n  Total_DynamiteLine_kWh REAL,\n  Total_XOLine_kWh REAL,\n  Total_MaxxLine_kWh REAL,\n  Total_MainLine_kWh REAL,\n  Total_UtilitiesJaguar_kWh REAL,\n  Total_UtilitiesLighting_kWh REAL\n);\nCREATE INDEX IF NOT EXISTS idx_plc_samples_ts ON plc_samples(ts);\nCREATE INDEX IF NOT EXISTS idx_plc_samples_epoch ON plc_samples(ts_epoch);\n\nCREATE TABLE IF NOT EXISTS meter_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  meter_id TEXT NOT NULL,\n  real_power_kw REAL,\n  reactive_power_kvar REAL,\n  apparent_power_kva REAL,\n  real_energy_kwh REAL,\n  reactive_energy_kvarh REAL,\n  apparent_energy_kvah REAL,\n  voltage_ab REAL,\n  voltage_bc REAL,\n  voltage_ca REAL,\n  voltage_ll_avg REAL,\n  voltage_an REAL,\n  voltage_bn REAL,\n  voltage_cn REAL,\n  voltage_ln_avg REAL,\n  current_a REAL,\n  current_b REAL,\n  current_c REAL,\n  current_avg REAL,\n  power_factor REAL,\n  frequency REAL\n);\nCREATE INDEX IF NOT EXISTS idx_meter_epoch_id ON meter_samples(ts_epoch, meter_id);\nCREATE INDEX IF NOT EXISTS idx_meter_id_epoch ON meter_samples(meter_id, ts_epoch);\n\nCREATE TABLE IF NOT EXISTS demand_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  current_demand_kw REAL NOT NULL,\n  instant_kw REAL NOT NULL\n);\nCREATE INDEX IF NOT EXISTS idx_demand_samples_epoch ON demand_samples(ts_epoch);\n\nCREATE TABLE IF NOT EXISTS enhanced_alerts (\n  id TEXT PRIMARY KEY NOT NULL,\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  payload TEXT NOT NULL\n);\nCREATE INDEX IF NOT EXISTS idx_enhanced_alerts_ts_epoch ON enhanced_alerts(ts_epoch DESC);\n\nCREATE TABLE IF NOT EXISTS production_entries (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  line_id TEXT NOT NULL,\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  quantity REAL NOT NULL,\n  shift TEXT\n);\nCREATE INDEX IF NOT EXISTS idx_production_line_epoch ON production_entries(line_id, ts_epoch DESC);`;\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -5802,6 +5802,257 @@
         "a1000112.http_loadprofile_res"
       ]
     ]
+  },
+  {
+    "id": "a1000113.prod_http_get",
+    "type": "http in",
+    "z": "a1000001.0001tab",
+    "name": "GET /api/production/entries",
+    "url": "/api/production/entries",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": "",
+    "x": 200,
+    "y": 800,
+    "wires": [
+      [
+        "a1000114.prod_get_sql"
+      ]
+    ]
+  },
+  {
+    "id": "a1000114.prod_get_sql",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "production: SELECT",
+    "func": "const q = msg.req.query || {};\nconst last = q.last === '1' || q.last === 'true';\nconst hours = last\n  ? Math.min(24 * 366, Math.max(1, Number(q.hours) || 8760))\n  : Math.min(24 * 90, Math.max(1, Number(q.hours) || 168));\nconst lineId = String(q.lineId || '').trim().replace(/'/g, \"''\");\nconst since = last ? 0 : Math.floor(Date.now() / 1000) - hours * 3600;\nlet sql;\nif (last) {\n  sql = `SELECT id, line_id AS lineId, ts, ts_epoch AS tsEpoch, quantity, shift FROM production_entries WHERE ts_epoch >= ${since}`;\n  if (lineId) sql += ` AND line_id = '${lineId}'`;\n  sql += ' ORDER BY ts_epoch DESC LIMIT 1';\n} else {\n  sql = `SELECT id, line_id AS lineId, ts, ts_epoch AS tsEpoch, quantity, shift FROM production_entries WHERE ts_epoch >= ${since} ORDER BY ts_epoch DESC`;\n}\nmsg.topic = sql;\ndelete msg.payload;\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 420,
+    "y": 800,
+    "wires": [
+      [
+        "a1000115.prod_sqlite_read"
+      ]
+    ]
+  },
+  {
+    "id": "a1000115.prod_sqlite_read",
+    "type": "sqlite",
+    "z": "a1000001.0001tab",
+    "mydb": "a1000012.sqlitedb",
+    "sqlquery": "msg.topic",
+    "sql": "",
+    "name": "SQLite read (production)",
+    "x": 640,
+    "y": 800,
+    "wires": [
+      [
+        "a1000116.prod_get_json"
+      ]
+    ]
+  },
+  {
+    "id": "a1000116.prod_get_json",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "production: wrap GET JSON",
+    "func": "const rows = Array.isArray(msg.payload) ? msg.payload : [];\nmsg.statusCode = 200;\nmsg.payload = { ok: true, entries: rows };\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 860,
+    "y": 800,
+    "wires": [
+      [
+        "a1000117.prod_http_res"
+      ]
+    ]
+  },
+  {
+    "id": "a1000117.prod_http_res",
+    "type": "http response",
+    "z": "a1000001.0001tab",
+    "name": "",
+    "statusCode": "",
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8"
+    },
+    "x": 1080,
+    "y": 800,
+    "wires": []
+  },
+  {
+    "id": "a1000118.prod_http_post",
+    "type": "http in",
+    "z": "a1000001.0001tab",
+    "name": "POST /api/production/entries",
+    "url": "/api/production/entries",
+    "method": "post",
+    "upload": false,
+    "swaggerDoc": "",
+    "x": 200,
+    "y": 860,
+    "wires": [
+      [
+        "a1000119.prod_post_fn"
+      ]
+    ]
+  },
+  {
+    "id": "a1000119.prod_post_fn",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "production: INSERT",
+    "func": "function parseBody(m) {\n  let p = m.payload;\n  if (Buffer.isBuffer(p)) {\n    try { p = JSON.parse(p.toString()); } catch (e) { p = {}; }\n  } else if (typeof p === 'string') {\n    try { p = JSON.parse(p); } catch (e) { p = {}; }\n  }\n  if (!p || typeof p !== 'object') p = m.req && m.req.body;\n  if (!p || typeof p !== 'object') p = {};\n  return p;\n}\nconst p = parseBody(msg);\nconst lineId = String(p.lineId || '').trim();\nconst quantity = Number(p.quantity);\nlet shift = p.shift;\nif (shift !== undefined && shift !== null && shift !== '') shift = String(shift).replace(/'/g, \"''\");\nelse shift = null;\nlet ts = p.ts ? new Date(p.ts) : new Date();\nif (Number.isNaN(ts.getTime())) ts = new Date();\nconst tsIso = ts.toISOString();\nconst tsEpoch = Math.floor(ts.getTime() / 1000);\nif (!lineId || !Number.isFinite(quantity) || quantity <= 0) {\n  msg.statusCode = 400;\n  msg.payload = { ok: false, error: 'lineId and positive quantity required' };\n  return [null, msg];\n}\nconst esc = (s) => String(s).replace(/'/g, \"''\");\nconst shiftSql = shift === null ? 'NULL' : `'${shift}'`;\nmsg.topic = `INSERT INTO production_entries (line_id, ts, ts_epoch, quantity, shift) VALUES ('${esc(lineId)}', '${tsIso}', ${tsEpoch}, ${quantity}, ${shiftSql}) RETURNING id, line_id AS lineId, ts, ts_epoch AS tsEpoch, quantity, shift`;\ndelete msg.payload;\nreturn [msg, null];",
+    "outputs": 2,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 420,
+    "y": 860,
+    "wires": [
+      [
+        "a1000120.prod_post_sqlite"
+      ],
+      [
+        "a1000122.prod_http_res_mut"
+      ]
+    ]
+  },
+  {
+    "id": "a1000120.prod_post_sqlite",
+    "type": "sqlite",
+    "z": "a1000001.0001tab",
+    "mydb": "a1000012.sqlitedb",
+    "sqlquery": "msg.topic",
+    "sql": "",
+    "name": "SQLite write (production insert)",
+    "x": 640,
+    "y": 860,
+    "wires": [
+      [
+        "a1000121.prod_post_wrap"
+      ]
+    ]
+  },
+  {
+    "id": "a1000121.prod_post_wrap",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "production: POST response",
+    "func": "const rows = Array.isArray(msg.payload) ? msg.payload : [];\nif (rows.length === 0) {\n  msg.statusCode = 500;\n  msg.payload = { ok: false, error: 'insert failed' };\n  return msg;\n}\nmsg.statusCode = 200;\nmsg.payload = { ok: true, entry: rows[0] };\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 860,
+    "y": 860,
+    "wires": [
+      [
+        "a1000122.prod_http_res_mut"
+      ]
+    ]
+  },
+  {
+    "id": "a1000123.prod_http_put",
+    "type": "http in",
+    "z": "a1000001.0001tab",
+    "name": "PUT /api/production/entries",
+    "url": "/api/production/entries",
+    "method": "put",
+    "upload": false,
+    "swaggerDoc": "",
+    "x": 200,
+    "y": 920,
+    "wires": [
+      [
+        "a1000124.prod_put_fn"
+      ]
+    ]
+  },
+  {
+    "id": "a1000124.prod_put_fn",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "production: UPDATE",
+    "func": "function parseBody(m) {\n  let p = m.payload;\n  if (Buffer.isBuffer(p)) {\n    try { p = JSON.parse(p.toString()); } catch (e) { p = {}; }\n  } else if (typeof p === 'string') {\n    try { p = JSON.parse(p); } catch (e) { p = {}; }\n  }\n  if (!p || typeof p !== 'object') p = m.req && m.req.body;\n  if (!p || typeof p !== 'object') p = {};\n  return p;\n}\nconst p = parseBody(msg);\nconst id = Number(p.id);\nif (!Number.isFinite(id) || id <= 0) {\n  msg.statusCode = 400;\n  msg.payload = { ok: false, error: 'id required' };\n  return [null, msg];\n}\nconst esc = (s) => String(s).replace(/'/g, \"''\");\nconst parts = [];\nif (p.lineId !== undefined) parts.push(`line_id = '${esc(String(p.lineId).trim())}'`);\nif (p.quantity !== undefined) {\n  const q = Number(p.quantity);\n  if (!Number.isFinite(q) || q <= 0) {\n    msg.statusCode = 400;\n    msg.payload = { ok: false, error: 'quantity must be positive' };\n    return [null, msg];\n  }\n  parts.push(`quantity = ${q}`);\n}\nif (p.shift !== undefined) {\n  const sh = p.shift;\n  parts.push(sh === null || sh === '' ? 'shift = NULL' : `shift = '${String(sh).replace(/'/g, \"''\")}'`);\n}\nif (p.ts) {\n  const ts = new Date(p.ts);\n  if (!Number.isNaN(ts.getTime())) {\n    parts.push(`ts = '${ts.toISOString()}'`);\n    parts.push(`ts_epoch = ${Math.floor(ts.getTime() / 1000)}`);\n  }\n}\nif (parts.length === 0) {\n  msg.statusCode = 400;\n  msg.payload = { ok: false, error: 'nothing to update' };\n  return [null, msg];\n}\nmsg.topic = `UPDATE production_entries SET ${parts.join(', ')} WHERE id = ${id} RETURNING id, line_id AS lineId, ts, ts_epoch AS tsEpoch, quantity, shift`;\ndelete msg.payload;\nreturn [msg, null];",
+    "outputs": 2,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 420,
+    "y": 920,
+    "wires": [
+      [
+        "a1000125.prod_put_sqlite"
+      ],
+      [
+        "a1000122.prod_http_res_mut"
+      ]
+    ]
+  },
+  {
+    "id": "a1000125.prod_put_sqlite",
+    "type": "sqlite",
+    "z": "a1000001.0001tab",
+    "mydb": "a1000012.sqlitedb",
+    "sqlquery": "msg.topic",
+    "sql": "",
+    "name": "SQLite write (production update)",
+    "x": 640,
+    "y": 920,
+    "wires": [
+      [
+        "a1000126.prod_put_wrap"
+      ]
+    ]
+  },
+  {
+    "id": "a1000126.prod_put_wrap",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "production: PUT response",
+    "func": "const rows = Array.isArray(msg.payload) ? msg.payload : [];\nif (rows.length === 0) {\n  msg.statusCode = 404;\n  msg.payload = { ok: false, error: 'not found or no change' };\n  return msg;\n}\nmsg.statusCode = 200;\nmsg.payload = { ok: true, entry: rows[0] };\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 860,
+    "y": 920,
+    "wires": [
+      [
+        "a1000122.prod_http_res_mut"
+      ]
+    ]
+  },
+  {
+    "id": "a1000122.prod_http_res_mut",
+    "type": "http response",
+    "z": "a1000001.0001tab",
+    "name": "",
+    "statusCode": "",
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8"
+    },
+    "x": 1080,
+    "y": 890,
+    "wires": []
   },
   {
     "id": "a1000112.http_loadprofile_res",

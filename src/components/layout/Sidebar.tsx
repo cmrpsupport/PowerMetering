@@ -2,12 +2,12 @@ import { NavLink } from 'react-router-dom'
 import {
   BellRing,
   LayoutDashboard,
-  Activity,
   Network,
   LineChart,
   ListChecks,
   LayoutGrid,
   Database,
+  Factory,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -16,6 +16,7 @@ type NavItem = { to: string; label: string; icon: LucideIcon; end?: boolean }
 const navItems: NavItem[] = [
   // Ops-first ordering: SCADA screens first (no-scroll), then detail/drilldown pages.
   { to: '/dashboard', label: 'Plant Overview', icon: LayoutGrid, end: true },
+  { to: '/production-efficiency', label: 'Production & Efficiency', icon: Factory },
   { to: '/real-time-data', label: 'Live Meters', icon: Database },
   { to: '/topology', label: 'Single Line', icon: Network },
   { to: '/power-quality', label: 'PQ Trends', icon: LineChart },

@@ -13,6 +13,7 @@ import { PowerQualityPage } from './pages/PowerQualityPage'
 import { PowerQualityTrendsPage } from './pages/PowerQualityTrendsPage'
 import { RealTimeDataPage } from './pages/RealTimeDataPage'
 import { PvcTrendsPage } from './pages/PvcTrendsPage'
+import { ProductionEfficiencyPage } from './pages/ProductionEfficiencyPage'
 
 export default function App() {
   return (
@@ -31,6 +32,7 @@ export default function App() {
         <Route path="power-quality/trends" element={<PowerQualityTrendsPage />} />
         <Route path="power-quality/events" element={<PowerQualityPage />} />
         <Route path="real-time-data" element={<RealTimeDataPage />} />
+        <Route path="production-efficiency" element={<ProductionEfficiencyPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

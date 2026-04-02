@@ -129,3 +129,8 @@ export const PLC_TOTAL_ENERGY_LINES = PLC_PRODUCTION_METERS.map((m) => ({
 export function findPlcProductionMeter(meterId: string): PlcProductionMeterDef | undefined {
   return PLC_PRODUCTION_METERS.find((m) => m.id === meterId)
 }
+
+/** Maps `plc-line-01` → `line-01` to match `/api/energy/intervals` meterId. */
+export function plcLineIdToEnergyMeterId(plcLineId: string): string {
+  return plcLineId.replace(/^plc-line-/, 'line-')
+}

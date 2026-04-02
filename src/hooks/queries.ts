@@ -13,6 +13,7 @@ import {
   getDemandStatus,
   type DemandTrendRange,
 } from '../api/powerApi'
+import { getProductionEntries } from '../api/productionApi'
 import { PLC_SITE_NAME } from '../constants/plcProductionMeters'
 import { PLC_METERS } from '../constants/plcMeters'
 
@@ -66,6 +67,14 @@ export function useEnergyIntervals(hours = 24) {
     queryKey: ['energyIntervals', hours],
     queryFn: () => getEnergyIntervals(hours),
     refetchInterval: 60_000,
+  })
+}
+
+export function useProductionEntries(hours = 168) {
+  return useQuery({
+    queryKey: ['productionEntries', hours],
+    queryFn: () => getProductionEntries(hours),
+    refetchInterval: 15_000,
   })
 }
 
