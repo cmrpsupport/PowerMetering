@@ -165,21 +165,6 @@ export function DemandTracker({ variant = 'card' }: DemandTrackerProps) {
         <span>Threshold: {demand.thresholdKw > 0 ? `${fmt(demand.thresholdKw, 0)} kW` : 'auto'}</span>
       </div>
 
-      <div className="mt-3 rounded-xl border border-[var(--border)] bg-[color-mix(in_srgb,var(--muted)_6%,var(--card))] px-3 py-2">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <span className="text-xs font-semibold text-[var(--text)]">Billing Demand (15-min fixed)</span>
-            <span className="ml-2 rounded-md bg-[color-mix(in_srgb,var(--muted)_12%,transparent)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--muted)]">
-              utility-aligned
-            </span>
-          </div>
-          <span className="font-mono text-sm font-semibold tabular-nums text-[var(--text)]">{fmt(fixedKw, 1)} kW</span>
-        </div>
-        <p className="mt-1 text-[10px] text-[var(--muted)]">
-          Maximum rolling demand observed during the current clock 15-minute block (00 / 15 / 30 / 45).
-        </p>
-      </div>
-
       <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="text-center">
           <div className="text-[10px] font-medium uppercase text-[var(--muted)]">Instant</div>
