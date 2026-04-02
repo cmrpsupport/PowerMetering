@@ -12,6 +12,7 @@ import {
   getMeterHistory,
   getDemandStatus,
   type DemandTrendRange,
+  type EnergyIntervalBucket,
 } from '../api/powerApi'
 import { getProductionEntries } from '../api/productionApi'
 import { PLC_SITE_NAME } from '../constants/plcProductionMeters'
@@ -62,10 +63,13 @@ export function useEnhancedAlerts() {
   })
 }
 
-export function useEnergyIntervals(hours = 24) {
+export function useEnergyIntervals(
+  hours = 24,
+  opts?: { bucket?: EnergyIntervalBucket; bucketSec?: number },
+) {
   return useQuery({
-    queryKey: ['energyIntervals', hours],
-    queryFn: () => getEnergyIntervals(hours),
+    queryKey: ['energyIntervals', hours, opts?.bucket ?? null, opts?.bucketSec ?? null],
+    queryFn: () => getEnergyIntervals(hours, opts),
     refetchInterval: 60_000,
   })
 }

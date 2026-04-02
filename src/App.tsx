@@ -32,7 +32,14 @@ export default function App() {
         <Route path="power-quality/trends" element={<PowerQualityTrendsPage />} />
         <Route path="power-quality/events" element={<PowerQualityPage />} />
         <Route path="real-time-data" element={<RealTimeDataPage />} />
-        <Route path="production-efficiency" element={<ProductionEfficiencyPage />} />
+        <Route
+          path="production-efficiency"
+          element={
+            <div className="flex h-full min-h-0 flex-col overflow-hidden">
+              <ProductionEfficiencyPage />
+            </div>
+          }
+        />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

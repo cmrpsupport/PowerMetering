@@ -8,15 +8,25 @@ export function SegmentedControl<T extends string>({
   onChange,
   options,
   size = 'sm',
+  className,
 }: {
   value: T
   onChange: (v: T) => void
   options: SegmentedOption<T>[]
-  size?: 'sm' | 'md'
+  size?: 'sm' | 'md' | 'xs'
+  className?: string
 }) {
-  const pad = size === 'md' ? 'px-3 py-2 text-sm' : 'px-2.5 py-1.5 text-xs'
+  const pad =
+    size === 'md' ? 'px-3 py-2 text-sm' : size === 'xs' ? 'px-1.5 py-0.5 text-[10px]' : 'px-2.5 py-1.5 text-xs'
   return (
-    <div className="inline-flex overflow-hidden rounded-xl border border-[var(--border)] bg-white shadow-sm dark:bg-[var(--card)]">
+    <div
+      className={[
+        'inline-flex overflow-hidden rounded-lg border border-[var(--border)] bg-white shadow-sm dark:bg-[var(--card)]',
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
       {options.map((o) => (
         <button
           key={o.id}

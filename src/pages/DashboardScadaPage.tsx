@@ -24,10 +24,12 @@ import {
   YAxis,
 } from 'recharts'
 import {
+  aggregateEnergyIntervalsByTimestamp,
   aggregateEnergyIntervalsToHourly,
   aggregateKwhSumByTimeBucket,
   downsampleEnergyRowsSum,
 } from '../lib/energyHourly'
+import type { EnergyIntervalBucket } from '../api/powerApi'
 import {
   aggregateTrendByBucket,
   bucketMsForNavigatorFullSpan,
@@ -119,6 +121,7 @@ export function DashboardScadaPage() {
   const [lineEnergyHover, setLineEnergyHover] = useState<{ line: string; kwh: number } | null>(null)
   const [lineEnergyViewMode, setLineEnergyViewMode] = useState<LineEnergyViewMode>('abs')
   const [loadProfileBucket, setLoadProfileBucket] = useState<'1m' | '5m' | '15m' | '1h'>('5m')
+  const [energyResolution, setEnergyResolution] = useState<EnergyIntervalBucket>('15m')
   const trendMinutes =
     trendWindow === '1h'
       ? 60
@@ -167,7 +170,7 @@ export function DashboardScadaPage() {
                     ? 365 * 24
                     : 366 * 24
 
-  const energyTrendQ = useEnergyIntervals(energyHours)
+  const energyTrendQ = useEnergyIntervals(energyHours, { bucket: energyResolution })
 
   const plantNow = useMemo(() => {
     const meters = snapQ.data?.meters
@@ -372,18 +375,21 @@ export function DashboardScadaPage() {
 
     const lineIdSet = new Set(lineKeyForIntervals.keys())
     const lineKeyList = Array.from(lineIdSet)
-    const hourly = aggregateEnergyIntervalsToHourly(ivs, lineIdSet)
+    const merged =
+      energyResolution === '1h'
+        ? aggregateEnergyIntervalsToHourly(ivs, lineIdSet)
+        : aggregateEnergyIntervalsByTimestamp(ivs, lineIdSet)
 
-    const t0 = hourly.length ? Date.parse(String(hourly[0].ts)) : 0
-    const t1 = hourly.length ? Date.parse(String(hourly[hourly.length - 1].ts)) : 0
+    const t0 = merged.length ? Date.parse(String(merged[0].ts)) : 0
+    const t1 = merged.length ? Date.parse(String(merged[merged.length - 1].ts)) : 0
     const spanMs = Number.isFinite(t0) && Number.isFinite(t1) ? Math.max(0, t1 - t0) : 0
 
     const maxPts = 2200
     const rows =
-      hourly.length > maxPts ? downsampleEnergyRowsSum(hourly, maxPts, lineKeyList) : hourly
+      merged.length > maxPts ? downsampleEnergyRowsSum(merged, maxPts, lineKeyList) : merged
 
     return { series: rows, spanMs }
-  }, [energyTrendQ.data, lineKeyForIntervals])
+  }, [energyTrendQ.data, lineKeyForIntervals, energyResolution])
 
   const energyTick = useMemo(() => {
     if (energyTrend.spanMs >= 1000 * 60 * 60 * 24 * 14) {
@@ -395,6 +401,8 @@ export function DashboardScadaPage() {
     }
     return (v: unknown) => new Date(String(v)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   }, [energyTrend.spanMs])
+
+  const energyAreaType = energyResolution === '1h' ? 'stepAfter' : 'monotone'
 
   const energyNavSeries = useMemo(() => {
     const rows = energyTrend.series as Array<{ ts: string; kwh: number }>
@@ -669,7 +677,7 @@ export function DashboardScadaPage() {
               <div className="min-w-0">
                 <div className="text-sm font-semibold text-[var(--text)]">Energy consumption</div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setShowLineEnergy((v) => !v)}
@@ -683,6 +691,15 @@ export function DashboardScadaPage() {
                 >
                   Lines
                 </button>
+                <SegmentedControl
+                  value={energyResolution}
+                  onChange={(id) => setEnergyResolution(id as EnergyIntervalBucket)}
+                  options={[
+                    { id: '5m', label: '5m' },
+                    { id: '15m', label: '15m' },
+                    { id: '1h', label: 'Hourly' },
+                  ]}
+                />
                 <SegmentedControl
                   value={energyWindow}
                   onChange={(id) => setEnergyWindow(id as EnergyWindow)}
@@ -719,7 +736,7 @@ export function DashboardScadaPage() {
                       dataKey="ts"
                       tick={{ fill: 'var(--chart-axis)', fontSize: 10 }}
                       stroke="var(--chart-axis)"
-                      minTickGap={22}
+                      minTickGap={energyResolution === '5m' ? 10 : 22}
                       tickFormatter={energyTick}
                     />
                     <YAxis tick={{ fill: 'var(--chart-axis)', fontSize: 10 }} stroke="var(--chart-axis)" width={56} />
@@ -735,7 +752,7 @@ export function DashboardScadaPage() {
                     />
                     <Legend wrapperStyle={{ color: 'var(--muted)', fontSize: 12 }} />
                     <Area
-                      type="stepAfter"
+                      type={energyAreaType}
                       dataKey="kwh"
                       name="kWh"
                       stroke="var(--chart-4)"
@@ -743,6 +760,7 @@ export function DashboardScadaPage() {
                       fill="url(#energy-kwh-scada)"
                       dot={false}
                       connectNulls
+                      isAnimationActive={false}
                     />
                     {showLineEnergy
                       ? lineDefs.map((l, idx) => {
@@ -752,7 +770,7 @@ export function DashboardScadaPage() {
                           return (
                             <Area
                               key={l.id}
-                              type="stepAfter"
+                              type={energyAreaType}
                               dataKey={key}
                               name={l.name}
                               stroke={stroke}
@@ -783,7 +801,14 @@ export function DashboardScadaPage() {
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
                       <XAxis dataKey="ts" hide />
                       <YAxis hide domain={['auto', 'auto']} />
-                      <Area type="stepAfter" dataKey="kwh" stroke="var(--chart-4)" fill="url(#energy-nav-scada)" dot={false} isAnimationActive={false} />
+                      <Area
+                        type={energyAreaType}
+                        dataKey="kwh"
+                        stroke="var(--chart-4)"
+                        fill="url(#energy-nav-scada)"
+                        dot={false}
+                        isAnimationActive={false}
+                      />
                       <Brush dataKey="ts" height={18} stroke="var(--primary)" travellerWidth={10} />
                     </AreaChart>
                   </ResponsiveContainer>

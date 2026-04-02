@@ -13,6 +13,41 @@ export function hourBucketStartIso(ts: string): string {
 export type HourlyEnergyRow = { ts: string; kwh: number; [lineKey: string]: number | string }
 
 /**
+ * One row per API timestamp: sums energy across all meters/lines for total `kwh` and per-line keys.
+ * Use when intervals are already at the desired bucket size (e.g. 5m or 15m from the server).
+ */
+export function aggregateEnergyIntervalsByTimestamp(
+  ivs: EnergyInterval[],
+  lineKeys: ReadonlySet<string>,
+): HourlyEnergyRow[] {
+  const buckets = new Map<string, { kwh: number; lines: Record<string, number> }>()
+
+  for (const iv of ivs) {
+    const e = Number(iv.energyKwh)
+    if (!Number.isFinite(e) || e < 0) continue
+    const ts = iv.ts
+    if (!ts) continue
+    const cur = buckets.get(ts) ?? { kwh: 0, lines: {} }
+    cur.kwh += e
+    const mid = String(iv.meterId ?? '')
+    if (lineKeys.has(mid)) {
+      cur.lines[mid] = (cur.lines[mid] ?? 0) + e
+    }
+    buckets.set(ts, cur)
+  }
+
+  return Array.from(buckets.entries())
+    .map(([ts, v]) => {
+      const row: HourlyEnergyRow = { ts, kwh: v.kwh }
+      for (const [k, val] of Object.entries(v.lines)) {
+        row[k] = val
+      }
+      return row
+    })
+    .sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts))
+}
+
+/**
  * Sums per-interval energy (kWh from cumulative meter diffs) into one row per local hour.
  * Preserves per-line columns when `lineKeys` is provided.
  */

@@ -299,8 +299,18 @@ export async function addAlertNote(alertId: string, _note: string): Promise<Enha
 
 // ── Energy Intervals (for consumption report) ────────────
 
-export async function getEnergyIntervals(hours = 24): Promise<EnergyInterval[]> {
-  return await http<EnergyInterval[]>(`/api/energy/intervals?hours=${hours}`).catch(() => [])
+export type EnergyIntervalBucket = '5m' | '15m' | '1h'
+
+export async function getEnergyIntervals(
+  hours = 24,
+  opts?: { bucket?: EnergyIntervalBucket; bucketSec?: number },
+): Promise<EnergyInterval[]> {
+  const p = new URLSearchParams({ hours: String(hours) })
+  if (opts?.bucket) p.set('bucket', opts.bucket)
+  if (typeof opts?.bucketSec === 'number' && Number.isFinite(opts.bucketSec) && opts.bucketSec > 0) {
+    p.set('bucketSec', String(Math.floor(opts.bucketSec)))
+  }
+  return await http<EnergyInterval[]>(`/api/energy/intervals?${p.toString()}`).catch(() => [])
 }
 
 /** Last N hours of plant kW as time-weighted averages over fixed clock-aligned buckets (plc_samples Power_kW). */
