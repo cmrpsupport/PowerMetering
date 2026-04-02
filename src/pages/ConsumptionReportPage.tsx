@@ -121,7 +121,8 @@ function Gauge({ pct, color }: { pct: number; color: 'green' | 'yellow' | 'red' 
 export function ConsumptionReportPage() {
   const [granularity, setGranularity] = useState<ConsumptionGranularity>('daily')
   const [viewMode, setViewMode] = useState<'byTime' | 'byLine'>('byLine')
-  const [layoutMode, setLayoutMode] = useState<'cards' | 'table'>('cards')
+  // Default to "Detail" view for operator workflows.
+  const [layoutMode, setLayoutMode] = useState<'cards' | 'table'>('table')
   const [expandedLine, setExpandedLine] = useState<string | null>(null)
   const q = useConsumptionReportIntervals(granularity)
   const snapQ = usePlcFullSnapshot()
