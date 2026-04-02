@@ -356,13 +356,133 @@ function demandStatusQuery(range: DemandTrendRange): string {
 }
 
 function normalizeDemandStatus(raw: DemandStatus): DemandStatus {
+  // Derive rolling (sliding 15-min) and fixed (clock-aligned 15-min block)
+  // from the logged demand sample series to ensure:
+  // - rolling uses a true 15-min time-weighted average (sliding window)
+  // - fixed aligns to local 00/15/30/45 boundaries and resets per block
+  // - rolling and fixed remain distinct (they should rarely match exactly)
+
   const th = raw.thresholdKw ?? 0
-  const roll = raw.currentDemandKw ?? 0
+  const windowMs = 15 * 60 * 1000
+  const windowSec = windowMs / 1000
+
+  const nowMs = Number.isFinite(Date.parse(raw.ts)) ? Date.parse(raw.ts) : Date.now()
+
+  const baseSamples = (raw.trend ?? [])
+    .map((p) => ({ t: Date.parse(p.ts), kw: Number(p.kw) }))
+    .filter((s) => Number.isFinite(s.t) && Number.isFinite(s.kw))
+
+  // Treat trend samples as piecewise-constant kW values until the next timestamp.
+  // Add the latest instantaneous reading so the rolling average updates smoothly.
+  const sampleMap = new Map<number, number>()
+  for (const s of baseSamples) sampleMap.set(s.t, s.kw)
+  sampleMap.set(nowMs, Number(raw.instantKw ?? 0))
+  const samples = Array.from(sampleMap.entries())
+    .map(([t, kw]) => ({ t, kw }))
+    .sort((a, b) => a.t - b.t)
+
+  if (samples.length < 2 || !Number.isFinite(windowSec) || windowSec <= 0) {
+    const roll = raw.currentDemandKw ?? 0
+    return {
+      ...raw,
+      fixedDemandKw: raw.fixedDemandKw ?? 0,
+      pctBasis: raw.pctBasis ?? 'rolling',
+      exceedsThreshold: raw.exceedsThreshold ?? (th > 0 && roll > th),
+    }
+  }
+
+  const tArr = samples.map((s) => s.t)
+  const kwArr = samples.map((s) => s.kw)
+
+  const cumulative = new Array(samples.length).fill(0) as number[]
+  for (let i = 1; i < samples.length; i++) {
+    cumulative[i] = cumulative[i - 1] + (kwArr[i - 1] * (tArr[i] - tArr[i - 1])) / 1000
+  }
+
+  const upperBound = (x: number) => {
+    let lo = 0
+    let hi = tArr.length
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1
+      if (tArr[mid] <= x) lo = mid + 1
+      else hi = mid
+    }
+    return lo
+  }
+
+  const integrateKwOverMs = (startMs: number, endMs: number) => {
+    if (!(Number.isFinite(startMs) && Number.isFinite(endMs))) return 0
+    if (endMs <= startMs) return 0
+    if (samples.length < 2) return 0
+
+    let start = startMs
+    const end = endMs
+    let integralKwSec = 0
+
+    // Extrapolate using first sample's kW before the first timestamp.
+    if (start < tArr[0]) {
+      integralKwSec += kwArr[0] * (Math.min(end, tArr[0]) - start) / 1000
+      start = tArr[0]
+      if (end <= tArr[0]) return integralKwSec
+    }
+
+    const endClamped = Math.min(end, tArr[tArr.length - 1])
+    if (endClamped <= start) return integralKwSec
+
+    const idxStart = Math.max(0, upperBound(start) - 1)
+    const idxEnd = Math.max(0, upperBound(endClamped) - 1)
+
+    const tNext = idxStart + 1 < tArr.length ? tArr[idxStart + 1] : endClamped
+    const partEnd = Math.min(endClamped, tNext)
+    const dt1 = partEnd - start
+    if (dt1 > 0) integralKwSec += kwArr[idxStart] * dt1 / 1000
+    if (partEnd >= endClamped) return integralKwSec
+
+    const fullStartIdx = idxStart + 1
+    if (idxEnd >= fullStartIdx) {
+      integralKwSec += cumulative[idxEnd] - cumulative[fullStartIdx]
+    }
+
+    // Partial at the end if endClamped is inside a step segment.
+    if (endClamped > tArr[idxEnd] && idxEnd < kwArr.length) {
+      integralKwSec += kwArr[idxEnd] * (endClamped - tArr[idxEnd]) / 1000
+    }
+
+    return integralKwSec
+  }
+
+  const rollingNow = integrateKwOverMs(nowMs - windowMs, nowMs) / windowSec
+
+  // Fixed: average over the current 15-min clock block, aligned to local 00/15/30/45.
+  const d0 = new Date(nowMs)
+  const slotMin = Math.floor(d0.getMinutes() / 15) * 15
+  const slotStartMs = new Date(d0.getFullYear(), d0.getMonth(), d0.getDate(), d0.getHours(), slotMin, 0, 0).getTime()
+  const fixedNow = integrateKwOverMs(slotStartMs, nowMs) / windowSec
+
+  const pctOfThreshold = th > 0 ? (rollingNow / th) * 100 : 0
+  const exceedsThreshold = th > 0 ? rollingNow > th : false
+
+  const rawTrend = raw.trend ?? []
+  const maxPoints = 240
+  const step = rawTrend.length > maxPoints ? Math.ceil(rawTrend.length / maxPoints) : 1
+
+  const derivedTrend = rawTrend
+    .filter((_, i) => i % step === 0 || i === rawTrend.length - 1)
+    .map((p) => {
+      const t = Date.parse(p.ts)
+      if (!Number.isFinite(t)) return { ts: p.ts, kw: 0 }
+      const kw = integrateKwOverMs(t - windowMs, t) / windowSec
+      return { ts: p.ts, kw }
+    })
+
   return {
     ...raw,
-    fixedDemandKw: raw.fixedDemandKw ?? 0,
-    pctBasis: raw.pctBasis ?? 'rolling',
-    exceedsThreshold: raw.exceedsThreshold ?? (th > 0 && roll > th),
+    currentDemandKw: rollingNow,
+    fixedDemandKw: fixedNow,
+    pctOfThreshold: pctOfThreshold,
+    pctBasis: 'rolling',
+    exceedsThreshold,
+    trend: derivedTrend,
   }
 }
 
