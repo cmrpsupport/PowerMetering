@@ -1,5 +1,5 @@
 // Reference implementation (embedded in flows.json as escaped string).
-// Time-weighted rolling demand over sliding 15-min window; fixed clock 15-min billing max.
+// Time-weighted rolling demand over sliding 15-min window; fixed clock 15-min billing (energy/900s).
 
 const v = msg.payload || {}
 if (!msg.payload || typeof msg.payload !== 'object') return null
@@ -116,25 +116,33 @@ const d = new Date(now)
 const slotMin = Math.floor(d.getMinutes() / 15) * 15
 const slotStart = new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), slotMin, 0, 0).getTime()
 
-// Fixed demand (billing-style): integrate kW over the fixed 15-min clock interval
-// and divide by 900 seconds. This resets at each 15-min boundary.
-const bill = global.get('demandBilling') || { slotStart: slotStart }
-let completedSlotFixedKw = null
-let completedSlotFixedTs = null
-if (bill.slotStart !== slotStart) {
-  // Slot boundary reached: finalize previous slot using full interval [prevSlotStart, slotStart]
-  const prevSlotStart = bill.slotStart
-  const prevSlotEnd = slotStart
-  const prevFixedKw = integrateKwOverMs(buf, prevSlotStart, prevSlotEnd) / WINDOW_SEC
-  completedSlotFixedKw = prevFixedKw
-  completedSlotFixedTs = new Date(prevSlotEnd).toISOString()
+// Fixed demand validation (utility billing): demand = total_energy_in_interval / 900 seconds.
+// This is clock-aligned to 00/15/30/45 and resets each boundary. During the interval it will read low.
+const slotEnd = slotStart + WINDOW_MS
+const fixedBlockEnd = Math.min(now, slotEnd)
+const fixedBlockSecondsElapsed = Math.max(0, Math.min(900, Math.floor((fixedBlockEnd - slotStart) / 1000)))
+const fixedBlockIsPartial = fixedBlockSecondsElapsed < 900
+const fixedBlockKwSec = integrateKwOverMs(buf, slotStart, fixedBlockEnd)
+const fixedBlockEnergyKwh = fixedBlockKwSec / 3600
+const fixedDemandKw = fixedBlockKwSec / 900
 
-  bill.slotStart = slotStart
-  bill.lastCompletedFixedKw = prevFixedKw
-  global.set('demandBilling', bill)
+// Debug check (throttled): total_energy, interval duration, computed demand.
+const lastDbg = global.get('demandFixedDbgLastMs') || 0
+if (now - lastDbg >= 60000) {
+  global.set('demandFixedDbgLastMs', now)
+  // eslint-disable-next-line no-undef
+  node.warn(
+    '[demand] fixed block debug: ' +
+      'kWh=' +
+      fixedBlockEnergyKwh.toFixed(4) +
+      ', elapsed=' +
+      fixedBlockSecondsElapsed +
+      's, demand=' +
+      fixedDemandKw.toFixed(2) +
+      'kW, ' +
+      (fixedBlockIsPartial ? 'partial' : 'complete'),
+  )
 }
-
-const fixedDemandKw = integrateKwOverMs(buf, slotStart, now) / WINDOW_SEC
 
 const currentMonth = new Date().toISOString().slice(0, 7)
 let state = global.get('demandState') || {}
@@ -142,10 +150,10 @@ if (state.month !== currentMonth) {
   state = { month: currentMonth, peakKw: 0, peakTs: null, thresholdKw: state.thresholdKw || 0 }
 }
 
-// Monthly peak should follow billing fixed interval demand, not rolling.
-if (completedSlotFixedKw !== null && Number.isFinite(completedSlotFixedKw) && completedSlotFixedKw > state.peakKw) {
-  state.peakKw = completedSlotFixedKw
-  state.peakTs = completedSlotFixedTs
+// Monthly peak: track peak using rolling demand (not instantaneous).
+if (Number.isFinite(rollingKw) && rollingKw > state.peakKw) {
+  state.peakKw = rollingKw
+  state.peakTs = new Date().toISOString()
 }
 
 if (state.thresholdKw <= 0 && state.peakKw > 0) {
@@ -212,6 +220,10 @@ global.set('demandLastMeta', {
   instantKw: Math.round(instantKwNum * 10) / 10,
   currentDemandKw: Math.round(rollingKw * 10) / 10,
   fixedDemandKw: Math.round(fixedDemandKw * 10) / 10,
+  fixedBlockStartTs: new Date(slotStart).toISOString(),
+  fixedBlockSecondsElapsed,
+  fixedBlockIsPartial,
+  fixedBlockEnergyKwh: Math.round(fixedBlockEnergyKwh * 10000) / 10000,
   monthlyPeakKw: Math.round((state.peakKw || 0) * 10) / 10,
   monthlyPeakTs: state.peakTs || null,
   thresholdKw: threshold,

@@ -91,8 +91,16 @@ export type DemandStatus = {
   instantKw: number
   /** Time-weighted rolling demand over last 15 minutes (kW). */
   currentDemandKw: number
-  /** Max time-weighted rolling demand seen in the current clock 15-min interval (utility-style). */
+  /** Fixed demand for the current clock-aligned 15-min block (kW). */
   fixedDemandKw?: number
+  /** Fixed block start (ISO, local clock-aligned 00/15/30/45). */
+  fixedBlockStartTs?: string | null
+  /** Seconds elapsed in the current 15-min block (0..900). */
+  fixedBlockSecondsElapsed?: number
+  /** Fixed demand uses a full 900-second denominator; partial blocks are expected to read low. */
+  fixedBlockIsPartial?: boolean
+  /** Energy accumulated within the current fixed block so far (kWh). */
+  fixedBlockEnergyKwh?: number
   monthlyPeakKw: number
   monthlyPeakTs: string | null
   thresholdKw: number

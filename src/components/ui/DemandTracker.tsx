@@ -295,6 +295,9 @@ export function DemandTracker({ variant = 'card' }: DemandTrackerProps) {
         <div className="text-center">
           <div className="text-[10px] font-medium uppercase text-[var(--muted)]">Fixed (block)</div>
           <div className="text-sm font-semibold tabular-nums text-[var(--text)]">{fmt(fixedKw, 1)} kW</div>
+          {demand.fixedBlockIsPartial ? (
+            <div className="mt-0.5 text-[10px] text-[var(--muted)]">Calculating… (partial interval)</div>
+          ) : null}
         </div>
         <div className="text-center">
           <div className="text-[10px] font-medium uppercase text-[var(--muted)]">% threshold</div>

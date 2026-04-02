@@ -52,12 +52,20 @@ let monthlyPeakTs = meta0.monthlyPeakTs
 let pctOfThreshold = meta0.pctOfThreshold
 let samplesInWindow = meta0.samplesInWindow
 let tsIso = meta0.ts
+let fixedBlockStartTs = meta0.fixedBlockStartTs
+let fixedBlockSecondsElapsed = meta0.fixedBlockSecondsElapsed
+let fixedBlockIsPartial = meta0.fixedBlockIsPartial
+let fixedBlockEnergyKwh = meta0.fixedBlockEnergyKwh
 
 if (!hasMeta) {
   const tw = timeWeightedKw(buf, now, WINDOW_MS)
   currentDemandKw = Math.round(tw * 10) / 10
   instantKw = buf.length > 0 ? Math.round(buf[buf.length - 1].kw * 10) / 10 : 0
   fixedDemandKw = 0
+  fixedBlockStartTs = null
+  fixedBlockSecondsElapsed = 0
+  fixedBlockIsPartial = true
+  fixedBlockEnergyKwh = 0
   const th0 = state.thresholdKw || 0
   pctOfThreshold = th0 > 0 ? Math.round((tw / th0) * 1000) / 10 : 0
   samplesInWindow = buf.length
@@ -72,6 +80,10 @@ if (!Number.isFinite(monthlyPeakKw)) monthlyPeakKw = Math.round((state.peakKw ||
 if (monthlyPeakTs === undefined) monthlyPeakTs = state.peakTs || null
 if (!tsIso) tsIso = new Date().toISOString()
 if (!Number.isFinite(samplesInWindow)) samplesInWindow = buf.length
+if (fixedBlockStartTs === undefined) fixedBlockStartTs = null
+if (!Number.isFinite(fixedBlockSecondsElapsed)) fixedBlockSecondsElapsed = 0
+if (fixedBlockIsPartial === undefined) fixedBlockIsPartial = true
+if (!Number.isFinite(fixedBlockEnergyKwh)) fixedBlockEnergyKwh = 0
 
 const threshold = state.thresholdKw || 0
 if (!hasMeta || !Number.isFinite(pctOfThreshold)) {
@@ -94,6 +106,10 @@ msg._demandMeta = {
   instantKw,
   currentDemandKw,
   fixedDemandKw: Math.round(fixedDemandKw * 10) / 10,
+  fixedBlockStartTs,
+  fixedBlockSecondsElapsed,
+  fixedBlockIsPartial,
+  fixedBlockEnergyKwh,
   monthlyPeakKw: Math.round((monthlyPeakKw || 0) * 10) / 10,
   monthlyPeakTs,
   thresholdKw: threshold,
