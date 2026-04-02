@@ -2,7 +2,7 @@ import { useId, useMemo, useState } from 'react'
 import { useDemandStatus } from '../../hooks/queries'
 import { setDemandThreshold, type DemandTrendRange } from '../../api/powerApi'
 import { useQueryClient } from '@tanstack/react-query'
-import { AlertTriangle, TrendingUp } from 'lucide-react'
+import { AlertTriangle, HelpCircle, TrendingUp } from 'lucide-react'
 import {
   Area,
   AreaChart,
@@ -38,6 +38,9 @@ type DemandTrackerProps = {
   variant?: 'card' | 'embedded'
 }
 
+const ROLLING_TOOLTIP =
+  'Rolling demand uses time-weighted average power over the last 15 minutes (irregular PLC samples weighted by duration). Chart points are logged rolling values from the database.'
+
 export function DemandTracker({ variant = 'card' }: DemandTrackerProps) {
   const [range, setRange] = useState<DemandTrendRange>('all')
   const { data: demand } = useDemandStatus(range)
@@ -48,6 +51,8 @@ export function DemandTracker({ variant = 'card' }: DemandTrackerProps) {
 
   const pct = demand?.pctOfThreshold ?? 0
   const color = barColor(pct)
+  const fixedKw = demand?.fixedDemandKw ?? 0
+  const exceeds = demand?.exceedsThreshold === true
 
   const chartData = useMemo(() => {
     const t = demand?.trend ?? []
@@ -81,20 +86,30 @@ export function DemandTracker({ variant = 'card' }: DemandTrackerProps) {
   }
 
   return (
-    <div className={shell}>
+    <div
+      className={[
+        shell,
+        exceeds ? 'ring-2 ring-[color-mix(in_srgb,var(--danger)_55%,transparent)]' : '',
+      ].join(' ')}
+    >
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <TrendingUp size={16} className="text-[var(--muted)]" />
           <div>
-            <div className="text-sm font-semibold text-[var(--text)]">
-              {variant === 'embedded' ? 'Rolling demand (15-min, logged)' : '15-min rolling demand'}
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-sm font-semibold text-[var(--text)]">Rolling Demand (15-min)</span>
+              <span className="rounded-md bg-[color-mix(in_srgb,var(--primary)_10%,transparent)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--primary)]">
+                real-time control
+              </span>
+              <span className="inline-flex items-center" title={ROLLING_TOOLTIP}>
+                <HelpCircle size={14} className="text-[var(--muted)]" aria-hidden />
+                <span className="sr-only">{ROLLING_TOOLTIP}</span>
+              </span>
             </div>
             <div className="text-[11px] text-[var(--muted)]">
               Logged continuously from Node-RED; chart range below.
               {demand.trendStartTs ? (
-                <span className="ml-1 tabular-nums">
-                  Since {new Date(demand.trendStartTs).toLocaleString()}
-                </span>
+                <span className="ml-1 tabular-nums">Since {new Date(demand.trendStartTs).toLocaleString()}</span>
               ) : null}
             </div>
           </div>
@@ -113,7 +128,7 @@ export function DemandTracker({ variant = 'card' }: DemandTrackerProps) {
           {pct >= 80 && (
             <div className="flex items-center gap-1 text-xs font-medium" style={{ color }}>
               <AlertTriangle size={14} />
-              {pct >= 95 ? 'SHED LOAD' : 'Approaching limit'}
+              {pct >= 95 ? 'SHED LOAD' : exceeds ? 'Over threshold' : 'Approaching limit'}
             </div>
           )}
         </div>
@@ -123,7 +138,12 @@ export function DemandTracker({ variant = 'card' }: DemandTrackerProps) {
         <span className="text-2xl font-bold text-[var(--text)]">
           {fmt(demand.currentDemandKw, 1)} <span className="text-sm font-normal text-[var(--muted)]">kW</span>
         </span>
-        <span className="text-xs text-[var(--muted)]">{fmt(pct, 1)}% of threshold</span>
+        <span className="text-xs text-[var(--muted)]">
+          {fmt(pct, 1)}% of threshold
+          {demand.pctBasis === 'rolling' || !demand.pctBasis ? (
+            <span className="ml-1 text-[10px] opacity-80">(rolling)</span>
+          ) : null}
+        </span>
       </div>
 
       <div className="relative h-4 w-full overflow-hidden rounded-full bg-[var(--border)]">
@@ -145,11 +165,41 @@ export function DemandTracker({ variant = 'card' }: DemandTrackerProps) {
         <span>Threshold: {demand.thresholdKw > 0 ? `${fmt(demand.thresholdKw, 0)} kW` : 'auto'}</span>
       </div>
 
-      <div className="mt-3 grid grid-cols-3 gap-3 text-center">
-        <div>
-          <div className="text-[10px] font-medium uppercase text-[var(--muted)]">Instant</div>
-          <div className="text-sm font-semibold text-[var(--text)]">{fmt(demand.instantKw, 1)} kW</div>
+      <div className="mt-3 rounded-xl border border-[var(--border)] bg-[color-mix(in_srgb,var(--muted)_6%,var(--card))] px-3 py-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <span className="text-xs font-semibold text-[var(--text)]">Billing Demand (15-min fixed)</span>
+            <span className="ml-2 rounded-md bg-[color-mix(in_srgb,var(--muted)_12%,transparent)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--muted)]">
+              utility-aligned
+            </span>
+          </div>
+          <span className="font-mono text-sm font-semibold tabular-nums text-[var(--text)]">{fmt(fixedKw, 1)} kW</span>
         </div>
+        <p className="mt-1 text-[10px] text-[var(--muted)]">
+          Maximum rolling demand observed during the current clock 15-minute block (00 / 15 / 30 / 45).
+        </p>
+      </div>
+
+      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="text-center">
+          <div className="text-[10px] font-medium uppercase text-[var(--muted)]">Instant</div>
+          <div className="text-sm font-semibold tabular-nums text-[var(--text)]">{fmt(demand.instantKw, 1)} kW</div>
+        </div>
+        <div className="text-center">
+          <div className="text-[10px] font-medium uppercase text-[var(--muted)]">Rolling</div>
+          <div className="text-sm font-semibold tabular-nums text-[var(--text)]">{fmt(demand.currentDemandKw, 1)} kW</div>
+        </div>
+        <div className="text-center">
+          <div className="text-[10px] font-medium uppercase text-[var(--muted)]">Fixed (block)</div>
+          <div className="text-sm font-semibold tabular-nums text-[var(--text)]">{fmt(fixedKw, 1)} kW</div>
+        </div>
+        <div className="text-center">
+          <div className="text-[10px] font-medium uppercase text-[var(--muted)]">% threshold</div>
+          <div className="text-sm font-semibold tabular-nums text-[var(--text)]">{fmt(pct, 1)}%</div>
+        </div>
+      </div>
+
+      <div className="mt-3 grid grid-cols-2 gap-3 text-center sm:grid-cols-2">
         <div>
           <div className="text-[10px] font-medium uppercase text-[var(--muted)]">Monthly peak</div>
           <div className="text-sm font-semibold text-[var(--text)]">{fmt(demand.monthlyPeakKw, 1)} kW</div>
@@ -197,7 +247,7 @@ export function DemandTracker({ variant = 'card' }: DemandTrackerProps) {
                   fontSize: 12,
                 }}
                 labelFormatter={(l) => (typeof l === 'string' ? formatTick(l) : String(l))}
-                formatter={(v: number) => [`${fmt(v, 1)} kW`, 'Demand']}
+                formatter={(v: number) => [`${fmt(v, 1)} kW`, 'Logged rolling demand']}
               />
               {demand.thresholdKw > 0 ? (
                 <ReferenceLine

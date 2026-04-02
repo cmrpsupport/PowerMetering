@@ -2,6 +2,7 @@ import type {
   DemandStatus,
   EnhancedAlert,
   EnergyInterval,
+  LoadProfilePoint,
   MeterSamplePoint,
   PlcFullSnapshot,
   PlcMeterData,
@@ -302,6 +303,19 @@ export async function getEnergyIntervals(hours = 24): Promise<EnergyInterval[]> 
   return await http<EnergyInterval[]>(`/api/energy/intervals?hours=${hours}`).catch(() => [])
 }
 
+/** Last N hours of plant kW as time-weighted averages over fixed clock-aligned buckets (plc_samples Power_kW). */
+export async function getPlantLoadProfile(
+  hours = 24,
+  opts?: { bucket?: '1m' | '5m' | '15m' | '1h'; bucketSec?: number },
+): Promise<LoadProfilePoint[]> {
+  const p = new URLSearchParams({ hours: String(hours) })
+  if (opts?.bucket) p.set('bucket', opts.bucket)
+  if (typeof opts?.bucketSec === 'number' && Number.isFinite(opts.bucketSec) && opts.bucketSec > 0) {
+    p.set('bucketSec', String(Math.floor(opts.bucketSec)))
+  }
+  return await http<LoadProfilePoint[]>(`/api/trends/load-profile?${p.toString()}`).catch(() => [])
+}
+
 export async function getPowerTrend(
   minutes = 24 * 60,
   opts?: { bucket?: '1m' | '5m' | '15m' | '1h' | '1d'; bucketSec?: number },
@@ -331,9 +345,22 @@ function demandStatusQuery(range: DemandTrendRange): string {
   return `minutes=${minutes}`
 }
 
+function normalizeDemandStatus(raw: DemandStatus): DemandStatus {
+  const th = raw.thresholdKw ?? 0
+  const roll = raw.currentDemandKw ?? 0
+  return {
+    ...raw,
+    fixedDemandKw: raw.fixedDemandKw ?? 0,
+    pctBasis: raw.pctBasis ?? 'rolling',
+    exceedsThreshold: raw.exceedsThreshold ?? (th > 0 && roll > th),
+  }
+}
+
 export async function getDemandStatus(range: DemandTrendRange = 'all'): Promise<DemandStatus | null> {
   const q = demandStatusQuery(range)
-  return await http<DemandStatus>(`/api/demand/status?${q}`).catch(() => null)
+  const raw = await http<DemandStatus>(`/api/demand/status?${q}`).catch(() => null)
+  if (!raw) return null
+  return normalizeDemandStatus(raw)
 }
 
 export async function setDemandThreshold(
@@ -341,7 +368,9 @@ export async function setDemandThreshold(
   range: DemandTrendRange = 'all',
 ): Promise<DemandStatus | null> {
   const q = demandStatusQuery(range)
-  return await http<DemandStatus>(`/api/demand/status?setThreshold=${encodeURIComponent(kw)}&${q}`).catch(() => null)
+  const raw = await http<DemandStatus>(`/api/demand/status?setThreshold=${encodeURIComponent(kw)}&${q}`).catch(() => null)
+  if (!raw) return null
+  return normalizeDemandStatus(raw)
 }
 
 // ── Per-Meter Per-Phase History ─────────────────────────

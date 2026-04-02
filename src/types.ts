@@ -66,6 +66,12 @@ export type EnergyInterval = {
   cumulativeKwh?: number
 }
 
+/** Plant power: time-weighted average kW per fixed clock-aligned bucket (see /api/trends/load-profile). */
+export type LoadProfilePoint = {
+  ts: string
+  demandKw: number
+}
+
 export type ConsumptionGranularity = 'hourly' | 'daily' | 'weekly' | 'monthly'
 
 /** Real-time demand status from /api/demand/status. */
@@ -73,17 +79,24 @@ export type DemandStatus = {
   ts: string
   month: string
   instantKw: number
+  /** Time-weighted rolling demand over last 15 minutes (kW). */
   currentDemandKw: number
+  /** Max time-weighted rolling demand seen in the current clock 15-min interval (utility-style). */
+  fixedDemandKw?: number
   monthlyPeakKw: number
   monthlyPeakTs: string | null
   thresholdKw: number
-  /** Percentage of threshold (0-100+). */
+  /** Percentage of threshold (0-100+); based on rolling demand unless noted. */
   pctOfThreshold: number
+  /** Which value pctOfThreshold uses (API uses rolling for control). */
+  pctBasis?: 'rolling'
   windowSeconds: number
   samplesInWindow: number
   trend: { ts: string; kw: number }[]
   /** First timestamp in stored demand history (if any). */
   trendStartTs?: string | null
+  /** Rolling demand strictly above configured threshold. */
+  exceedsThreshold?: boolean
 }
 
 /** Per-meter, per-phase historical sample from /api/trends/meter/history. */

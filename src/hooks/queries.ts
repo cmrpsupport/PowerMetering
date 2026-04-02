@@ -6,6 +6,7 @@ import {
   getNodeRedHealth,
   listEnhancedAlerts,
   getEnergyIntervals,
+  getPlantLoadProfile,
   getPowerTrend,
   getVoltageEvents,
   getMeterHistory,
@@ -64,6 +65,17 @@ export function useEnergyIntervals(hours = 24) {
   return useQuery({
     queryKey: ['energyIntervals', hours],
     queryFn: () => getEnergyIntervals(hours),
+    refetchInterval: 60_000,
+  })
+}
+
+export function usePlantLoadProfile(
+  hours = 24,
+  opts?: { bucket?: '1m' | '5m' | '15m' | '1h'; bucketSec?: number },
+) {
+  return useQuery({
+    queryKey: ['plantLoadProfile', hours, opts?.bucket ?? null, opts?.bucketSec ?? null],
+    queryFn: () => getPlantLoadProfile(hours, opts),
     refetchInterval: 60_000,
   })
 }

@@ -1,6 +1,13 @@
 import { Fragment, useEffect, useId, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { usePlcFullSnapshot, useNodeRedHealth, useEnhancedAlerts, useEnergyIntervals, usePowerTrend } from '../hooks/queries'
+import {
+  usePlcFullSnapshot,
+  useNodeRedHealth,
+  useEnhancedAlerts,
+  useEnergyIntervals,
+  usePlantLoadProfile,
+  usePowerTrend,
+} from '../hooks/queries'
 import { findPlcMeter, PLC_METERS } from '../constants/plcMeters'
 import { PLC_PRODUCTION_METERS } from '../constants/plcProductionMeters'
 import { Badge, type BadgeColor } from '../components/ui/Badge'
@@ -147,6 +154,7 @@ export function DashboardPage() {
   const alertsQ = useEnhancedAlerts()
   const [energyView, setEnergyView] = useState<'hourly' | 'daily' | 'monthly'>('daily')
   const [showLoadProfile, setShowLoadProfile] = useState(true)
+  const [loadProfileBucket, setLoadProfileBucket] = useState<'1m' | '5m' | '15m' | '1h'>('5m')
   const [trendView, setTrendView] = useState<'raw' | 'smooth'>('raw')
   const [trendWindow, setTrendWindow] = useState<'1h' | '6h' | '12h' | '24h' | '7d' | '30d' | '1y'>('24h')
   const [expandedLine, setExpandedLine] = useState<string | null>(null)
@@ -173,7 +181,7 @@ export function DashboardPage() {
 
   const powerTrendBucket = trendWindow === '30d' ? '15m' : trendWindow === '1y' ? '1h' : undefined
   const powerTrendQ = usePowerTrend(powerTrendFetchMinutes, { bucket: powerTrendBucket })
-  const energy24hQ = useEnergyIntervals(24)
+  const loadProfileQ = usePlantLoadProfile(24, { bucket: loadProfileBucket })
   const energy30dQ = useEnergyIntervals(24 * 30)
 
   /** Full fetched series (7d buffer or 30d/1y history). Visible window is chosen with the brush below. */
@@ -504,21 +512,8 @@ export function DashboardPage() {
     return `${a.toLocaleString([], opts)} – ${b.toLocaleString([], opts)}`
   }, [powerTrendVisible, pvcMainXAxisSpanMs])
 
-  const totalDemandSeries24h = useMemo(() => {
-    const ivs = energy24hQ.data ?? []
-    const map = new Map<string, { ts: string; demandKw: number }>()
-    for (const iv of ivs) {
-      const prev = map.get(iv.ts)
-      if (!prev) map.set(iv.ts, { ts: iv.ts, demandKw: iv.demandKw })
-      else prev.demandKw += iv.demandKw
-    }
-    return Array.from(map.values()).sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts))
-  }, [energy24hQ.data])
-
-  /** Rolling ~24h of 15‑min buckets in chronological order (oldest → newest). X-axis is wall‑clock time, not a 00:00–24:00 dial (so the right edge is “now”, not 23:30). */
-  const loadProfile24h = useMemo(() => {
-    return totalDemandSeries24h.map((r) => ({ ts: r.ts, demandKw: r.demandKw }))
-  }, [totalDemandSeries24h])
+  /** Time-weighted average plant kW per clock-aligned bucket (SQLite plc_samples), last 24h. */
+  const loadProfile24h = loadProfileQ.data ?? []
 
   const loadProfileTick = (iso: string) => {
     const d = new Date(iso)
@@ -1116,7 +1111,7 @@ export function DashboardPage() {
           <div className="mb-4">
             <div className="text-sm font-semibold text-[var(--text)]">Load profile & demand</div>
             <div className="mt-0.5 text-[11px] text-[var(--muted)]">
-              Rolling 15-min demand (Node-RED log) and a typical 24-hour curve from recent energy intervals.
+              Rolling 15-min demand (Node-RED log) and a 24-hour average-kW profile from sampled plant power.
             </div>
           </div>
 
@@ -1128,16 +1123,28 @@ export function DashboardPage() {
             <div>
               <div className="text-sm font-semibold text-[var(--text)]">24-hour load profile</div>
               <div className="text-[11px] text-[var(--muted)]">
-                15‑min demand over the last ~24 hours, oldest on the left and latest on the right.
+                Time-weighted average kW per bucket; oldest on the left, latest on the right.
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowLoadProfile((s) => !s)}
-              className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-2.5 py-1.5 text-xs font-medium text-[var(--muted)] shadow-sm transition hover:text-[var(--text)]"
-            >
-              {showLoadProfile ? 'Hide curve' : 'Show curve'}
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <SegmentedControl
+                value={loadProfileBucket}
+                onChange={(id) => setLoadProfileBucket(id as typeof loadProfileBucket)}
+                options={[
+                  { id: '1m', label: '1m' },
+                  { id: '5m', label: '5m' },
+                  { id: '15m', label: '15m' },
+                  { id: '1h', label: '1h' },
+                ]}
+              />
+              <button
+                type="button"
+                onClick={() => setShowLoadProfile((s) => !s)}
+                className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-2.5 py-1.5 text-xs font-medium text-[var(--muted)] shadow-sm transition hover:text-[var(--text)]"
+              >
+                {showLoadProfile ? 'Hide curve' : 'Show curve'}
+              </button>
+            </div>
           </div>
           {showLoadProfile ? (
             <div className="h-72 min-h-[220px] w-full min-w-0">

@@ -2,7 +2,7 @@
   {
     "id": "a1000001.0001tab",
     "type": "tab",
-    "label": "S7-1500 \u2192 HTTP API",
+    "label": "S7-1500 → HTTP API",
     "disabled": false,
     "info": "Reads PLC variables via node-red-contrib-s7 and exposes JSON for the React app.\nEdit the **S7 Endpoint** node with your CPU IP, rack, slot, and DB addresses (match TIA Portal)."
   },
@@ -11,7 +11,7 @@
     "type": "tab",
     "label": "S7-1500 Dashboard (DB1)",
     "disabled": false,
-    "info": "Reads DB1 REALs at byte offsets 0, 4, 8 via node-red-contrib-s7 (ISO-on-TCP). TIA: DB1 non-optimized; CPU protection \u2192 Permit access with PUT/GET.\nDashboard: http://localhost:1880/ui (default path)."
+    "info": "Reads DB1 REALs at byte offsets 0, 4, 8 via node-red-contrib-s7 (ISO-on-TCP). TIA: DB1 non-optimized; CPU protection → Permit access with PUT/GET.\nDashboard: http://localhost:1880/ui (default path)."
   },
   {
     "id": "a1000002.s7endpoint",
@@ -4519,7 +4519,7 @@
     "type": "function",
     "z": "a1000001.0001tab",
     "name": "SQLite: query power trend history",
-    "func": "const minutes = Math.max(60, Math.min(60 * 24 * 366, Number(msg.req?.query?.minutes ?? 60 * 24 * 30)));\nconst sinceEpoch = Math.floor(Date.now() / 1000) - Math.floor(minutes * 60);\n\n// Optional bucket override (seconds) to keep long windows lightweight.\n// Accepts: bucketSec (number) or bucket (\"1m\"|\"5m\"|\"15m\"|\"1h\"|\"1d\").\nconst q = msg.req?.query ?? {};\nconst bucketMap = { '1m': 60, '5m': 300, '15m': 900, '1h': 3600, '1d': 86400 };\nconst parsedBucketSec = Number(q.bucketSec ?? q.bucket_sec);\nconst bucketToken = typeof q.bucket === 'string' ? q.bucket.trim().toLowerCase() : '';\n\n// Default bucket size: finer for shorter windows so the curve looks continuous.\n// - <= 31d: 1 minute\n// - 32d\u201390d: 5 minutes\n// - 91d\u2013365d: 15 minutes\n// - > 365d: 60 minutes\nlet bucketSec = 60;\nif (minutes > 60 * 24 * 365) bucketSec = 3600;\nelse if (minutes > 60 * 24 * 90) bucketSec = 900;\nelse if (minutes > 60 * 24 * 31) bucketSec = 300;\n\n// Enforce a max number of points to avoid browser OOM.\n// Increase bucket size if the estimated number of buckets is too high.\nconst MAX_POINTS = 5000;\nconst estimate = Math.ceil((minutes * 60) / bucketSec);\nif (estimate > MAX_POINTS) {\n  const need = Math.ceil((minutes * 60) / MAX_POINTS);\n  // Snap to a reasonable step.\n  const steps = [60, 300, 900, 3600, 86400];\n  bucketSec = steps.find((s) => s >= need) ?? 86400;\n}\n\n// Apply explicit bucket override last.\nif (Number.isFinite(parsedBucketSec) && parsedBucketSec > 0) {\n  const steps = [60, 300, 900, 3600, 86400];\n  const want = Math.max(60, Math.min(86400, Math.floor(parsedBucketSec)));\n  bucketSec = steps.find((s) => s >= want) ?? 86400;\n} else if (bucketToken && bucketMap[bucketToken]) {\n  bucketSec = bucketMap[bucketToken];\n}\n\nmsg.topic = `WITH b AS (\n  SELECT\n    (ts_epoch / ${bucketSec}) * ${bucketSec} AS bucket_epoch,\n    MAX(ts_epoch) AS last_epoch,\n    AVG(Power_kW) AS kw,\n    AVG(Voltage_V) AS voltageV,\n    AVG(Current_A) AS currentA,\n    AVG(PowerFactor) AS pf\n  FROM plc_samples\n  WHERE ts_epoch >= ${sinceEpoch}\n  GROUP BY bucket_epoch\n)\nSELECT\n  strftime('%Y-%m-%dT%H:%M:00.000Z', datetime(last_epoch, 'unixepoch')) AS ts,\n  COALESCE(kw, 0) AS kw,\n  COALESCE(voltageV, 0) AS voltageV,\n  COALESCE(currentA, 0) AS currentA,\n  COALESCE(pf, 0) AS pf,\n  0 AS kvar\nFROM b\nORDER BY last_epoch ASC;`;\n\ndelete msg.payload;\nreturn msg;\n",
+    "func": "const minutes = Math.max(60, Math.min(60 * 24 * 366, Number(msg.req?.query?.minutes ?? 60 * 24 * 30)));\nconst sinceEpoch = Math.floor(Date.now() / 1000) - Math.floor(minutes * 60);\n\n// Optional bucket override (seconds) to keep long windows lightweight.\n// Accepts: bucketSec (number) or bucket (\"1m\"|\"5m\"|\"15m\"|\"1h\"|\"1d\").\nconst q = msg.req?.query ?? {};\nconst bucketMap = { '1m': 60, '5m': 300, '15m': 900, '1h': 3600, '1d': 86400 };\nconst parsedBucketSec = Number(q.bucketSec ?? q.bucket_sec);\nconst bucketToken = typeof q.bucket === 'string' ? q.bucket.trim().toLowerCase() : '';\n\n// Default bucket size: finer for shorter windows so the curve looks continuous.\n// - <= 31d: 1 minute\n// - 32d–90d: 5 minutes\n// - 91d–365d: 15 minutes\n// - > 365d: 60 minutes\nlet bucketSec = 60;\nif (minutes > 60 * 24 * 365) bucketSec = 3600;\nelse if (minutes > 60 * 24 * 90) bucketSec = 900;\nelse if (minutes > 60 * 24 * 31) bucketSec = 300;\n\n// Enforce a max number of points to avoid browser OOM.\n// Increase bucket size if the estimated number of buckets is too high.\nconst MAX_POINTS = 5000;\nconst estimate = Math.ceil((minutes * 60) / bucketSec);\nif (estimate > MAX_POINTS) {\n  const need = Math.ceil((minutes * 60) / MAX_POINTS);\n  // Snap to a reasonable step.\n  const steps = [60, 300, 900, 3600, 86400];\n  bucketSec = steps.find((s) => s >= need) ?? 86400;\n}\n\n// Apply explicit bucket override last.\nif (Number.isFinite(parsedBucketSec) && parsedBucketSec > 0) {\n  const steps = [60, 300, 900, 3600, 86400];\n  const want = Math.max(60, Math.min(86400, Math.floor(parsedBucketSec)));\n  bucketSec = steps.find((s) => s >= want) ?? 86400;\n} else if (bucketToken && bucketMap[bucketToken]) {\n  bucketSec = bucketMap[bucketToken];\n}\n\nmsg.topic = `WITH b AS (\n  SELECT\n    (ts_epoch / ${bucketSec}) * ${bucketSec} AS bucket_epoch,\n    MAX(ts_epoch) AS last_epoch,\n    AVG(Power_kW) AS kw,\n    AVG(Voltage_V) AS voltageV,\n    AVG(Current_A) AS currentA,\n    AVG(PowerFactor) AS pf\n  FROM plc_samples\n  WHERE ts_epoch >= ${sinceEpoch}\n  GROUP BY bucket_epoch\n)\nSELECT\n  strftime('%Y-%m-%dT%H:%M:00.000Z', datetime(last_epoch, 'unixepoch')) AS ts,\n  COALESCE(kw, 0) AS kw,\n  COALESCE(voltageV, 0) AS voltageV,\n  COALESCE(currentA, 0) AS currentA,\n  COALESCE(pf, 0) AS pf,\n  0 AS kvar\nFROM b\nORDER BY last_epoch ASC;`;\n\ndelete msg.payload;\nreturn msg;\n",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -4655,7 +4655,7 @@
     "type": "function",
     "z": "a1000001.0001tab",
     "name": "Build JSON",
-    "func": "const snap = global.get('plcSnapshot');\nmsg.payload = snap || {\n  ts: new Date().toISOString(),\n  values: null,\n  warning: 'No S7 data received yet \u2014 check PLC IP, rack/slot, DB addresses, and TIA PUT/GET.'\n};\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
+    "func": "const snap = global.get('plcSnapshot');\nmsg.payload = snap || {\n  ts: new Date().toISOString(),\n  values: null,\n  warning: 'No S7 data received yet — check PLC IP, rack/slot, DB addresses, and TIA PUT/GET.'\n};\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -4727,7 +4727,7 @@
     "id": "a1000017.sqlcreate",
     "type": "function",
     "z": "a1000001.0001tab",
-    "name": "SQLite: create schema (v3 \u2014 meter_samples)",
+    "name": "SQLite: create schema (v3 — meter_samples)",
     "func": "msg.topic = `CREATE TABLE IF NOT EXISTS plc_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  Power_kW REAL,\n  Energy_kWh REAL,\n  Voltage_V REAL,\n  Current_A REAL,\n  PowerFactor REAL,\n  Total_CrackerLine1_kWh REAL,\n  Total_CrackerLine2_kWh REAL,\n  Total_PretzelLine_kWh REAL,\n  Total_WaferLine1_kWh REAL,\n  Total_WaferLine2_kWh REAL,\n  Total_ChocoyChocoLine_kWh REAL,\n  Total_DynamiteLine_kWh REAL,\n  Total_XOLine_kWh REAL,\n  Total_MaxxLine_kWh REAL,\n  Total_MainLine_kWh REAL,\n  Total_UtilitiesJaguar_kWh REAL,\n  Total_UtilitiesLighting_kWh REAL\n);\nCREATE INDEX IF NOT EXISTS idx_plc_samples_ts ON plc_samples(ts);\nCREATE INDEX IF NOT EXISTS idx_plc_samples_epoch ON plc_samples(ts_epoch);\n\nCREATE TABLE IF NOT EXISTS meter_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  meter_id TEXT NOT NULL,\n  real_power_kw REAL,\n  reactive_power_kvar REAL,\n  apparent_power_kva REAL,\n  real_energy_kwh REAL,\n  reactive_energy_kvarh REAL,\n  apparent_energy_kvah REAL,\n  voltage_ab REAL,\n  voltage_bc REAL,\n  voltage_ca REAL,\n  voltage_ll_avg REAL,\n  voltage_an REAL,\n  voltage_bn REAL,\n  voltage_cn REAL,\n  voltage_ln_avg REAL,\n  current_a REAL,\n  current_b REAL,\n  current_c REAL,\n  current_avg REAL,\n  power_factor REAL,\n  frequency REAL\n);\nCREATE INDEX IF NOT EXISTS idx_meter_epoch_id ON meter_samples(ts_epoch, meter_id);\nCREATE INDEX IF NOT EXISTS idx_meter_id_epoch ON meter_samples(meter_id, ts_epoch);\n\nCREATE TABLE IF NOT EXISTS demand_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  current_demand_kw REAL NOT NULL,\n  instant_kw REAL NOT NULL\n);\nCREATE INDEX IF NOT EXISTS idx_demand_samples_epoch ON demand_samples(ts_epoch);\n\nCREATE TABLE IF NOT EXISTS enhanced_alerts (\n  id TEXT PRIMARY KEY NOT NULL,\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  payload TEXT NOT NULL\n);\nCREATE INDEX IF NOT EXISTS idx_enhanced_alerts_ts_epoch ON enhanced_alerts(ts_epoch DESC);`;\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
@@ -5083,7 +5083,7 @@
     "type": "function",
     "z": "a1000001.0001tab",
     "name": "Build full JSON",
-    "func": "const snap = global.get('plcFullSnapshot');\nmsg.payload = snap || {\n  ts: new Date().toISOString(),\n  values: null,\n  warning: 'No full S7 data received yet \u2014 check PLC connection and DB16 access.'\n};\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
+    "func": "const snap = global.get('plcFullSnapshot');\nmsg.payload = snap || {\n  ts: new Date().toISOString(),\n  values: null,\n  warning: 'No full S7 data received yet — check PLC connection and DB16 access.'\n};\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -5214,7 +5214,7 @@
     "type": "function",
     "z": "a1000001.0001tab",
     "name": "Demand tracker (15-min rolling)",
-    "func": "const v = msg.payload || {};\nif (!msg.payload || typeof msg.payload !== 'object') return null;\n\nconst now = Date.now();\nconst toNum = (x) => {\n  const n = typeof x === 'number' ? x : Number(x);\n  return Number.isFinite(n) ? n : 0;\n};\n\n// --- Read total plant kW (same logic as existing insert node) ---\nlet totalKw = toNum(v.Power_kW);\nif (!Number.isFinite(totalKw) || totalKw <= 0) {\n  const meters = [\n    'RIO1CM1_EMU4_1','RIO1CM1_EMU4_2',\n    'RIO1CM2_EM6400_10','RIO1CM2_EM6400_11',\n    'RIO2CM1_EMU4_1','RIO2CM1_EMU4_2','RIO2CM1_EMU4_3','RIO2CM1_EMU4_4',\n    'RIO2CM1_EMU4_5','RIO2CM1_EMU4_6','RIO2CM1_EMU4_7','RIO2CM1_EMU4_8',\n    'RIO2CM1_EMU4_9','RIO2CM1_EMU4_10','RIO2CM1_EMU4_11','RIO2CM1_EMU4_12',\n    'RIO2CM2_EM6400_1','RIO2CM2_EM6400_2','RIO2CM2_EM6400_3',\n    'RIO2CM2_EM6400_4','RIO2CM2_EM6400_5','RIO2CM2_EM6400_6',\n    'RIO2_PAC3200_51','RIO2_PAC3200_53','RIO2_UMG508_52'\n  ];\n  totalKw = 0;\n  for (const m of meters) totalKw += toNum(v[m + '_Real_power']);\n}\n\n// --- Rolling 15-min window (900 seconds) ---\nconst WINDOW_MS = 15 * 60 * 1000;\nconst buf = global.get('demandBuf') || [];\nbuf.push({ t: now, kw: totalKw });\n\n// Trim older than 15 min\nwhile (buf.length > 0 && buf[0].t < now - WINDOW_MS) buf.shift();\nglobal.set('demandBuf', buf);\n\n// Current 15-min average demand\nconst avgKw = buf.length > 0\n  ? buf.reduce((s, p) => s + p.kw, 0) / buf.length\n  : totalKw;\n\n// --- Monthly peak tracking ---\nconst currentMonth = new Date().toISOString().slice(0, 7); // \"2026-03\"\nlet state = global.get('demandState') || {};\nif (state.month !== currentMonth) {\n  // New month \u2014 reset\n  state = { month: currentMonth, peakKw: 0, peakTs: null, thresholdKw: state.thresholdKw || 0 };\n}\n\nif (avgKw > state.peakKw) {\n  state.peakKw = avgKw;\n  state.peakTs = new Date().toISOString();\n}\n\n// Default threshold: 110% of first observed peak (auto-calibrating)\nif (state.thresholdKw <= 0 && state.peakKw > 0) {\n  state.thresholdKw = Math.ceil(state.peakKw * 1.1);\n}\n\nconst threshold = state.thresholdKw || 0;\nconst pctOfThreshold = threshold > 0 ? (avgKw / threshold) : 0;\n\nglobal.set('demandState', state);\n\n// --- Generate alerts at 80% and 95% of threshold ---\nconst lastAlertLevel = global.get('demandAlertLevel') || 0;\nlet newLevel = 0;\nif (pctOfThreshold >= 0.95) newLevel = 2;\nelse if (pctOfThreshold >= 0.80) newLevel = 1;\n\nif (newLevel > lastAlertLevel) {\n  global.set('demandAlertLevel', newLevel);\n\n  const alerts = global.get('enhancedAlerts') || [];\n  const ts = new Date().toISOString();\n  const id = 'demand-' + ts + '-' + Math.random().toString(16).slice(2, 8);\n  const severity = newLevel === 2 ? 'critical' : 'warning';\n  const priority = newLevel === 2 ? 'urgent' : 'high';\n  const pctStr = (pctOfThreshold * 100).toFixed(0);\n  const message = newLevel === 2\n    ? 'Demand at ' + pctStr + '% of threshold \u2014 shed load NOW'\n    : 'Demand approaching threshold (' + pctStr + '%)';\n  const detail = 'Current 15-min avg: ' + avgKw.toFixed(1) + ' kW. Threshold: '\n    + threshold.toFixed(0) + ' kW. Monthly peak: ' + state.peakKw.toFixed(1) + ' kW.';\n\n  alerts.unshift({\n    id,\n    meterId: 'plant',\n    meterName: 'Plant Demand',\n    severity,\n    priority,\n    category: 'energy',\n    status: 'active',\n    message,\n    detail,\n    ts,\n    acknowledgedAt: null,\n    acknowledgedBy: null,\n    resolvedAt: null,\n    notes: [],\n    incidentId: null\n  });\n  while (alerts.length > 500) alerts.pop();\n  global.set('enhancedAlerts', alerts);\n}\n\n// Reset alert level when demand drops below 75%\nif (pctOfThreshold < 0.75 && lastAlertLevel > 0) {\n  global.set('demandAlertLevel', 0);\n}\n\nconst insertEveryMs = 60_000;\nconst lastIns = global.get('demandSampleLastMs') || 0;\nif (now - lastIns >= insertEveryMs) {\n  global.set('demandSampleLastMs', now);\n  const ts = new Date().toISOString().replace(/'/g, \"''\");\n  const tsEpoch = Math.floor(now / 1000);\n  msg.topic = `INSERT INTO demand_samples (ts, ts_epoch, current_demand_kw, instant_kw) VALUES ('${ts}', ${tsEpoch}, ${Number(avgKw)}, ${Number(totalKw)});`;\n  return msg;\n}\nreturn null;",
+    "func": "const v = msg.payload || {}\nif (!msg.payload || typeof msg.payload !== 'object') return null\n\nconst WINDOW_MS = 15 * 60 * 1000\nconst PLANT_MAX_KW = 50000\nconst now = Date.now()\n\nconst toNum = (x) => {\n  const n = typeof x === 'number' ? x : Number(x)\n  return Number.isFinite(n) ? n : NaN\n}\n\nlet totalKw = toNum(v.Power_kW)\nif (!Number.isFinite(totalKw) || totalKw <= 0) {\n  const meters = [\n    'RIO1CM1_EMU4_1',\n    'RIO1CM1_EMU4_2',\n    'RIO1CM2_EM6400_10',\n    'RIO1CM2_EM6400_11',\n    'RIO2CM1_EMU4_1',\n    'RIO2CM1_EMU4_2',\n    'RIO2CM1_EMU4_3',\n    'RIO2CM1_EMU4_4',\n    'RIO2CM1_EMU4_5',\n    'RIO2CM1_EMU4_6',\n    'RIO2CM1_EMU4_7',\n    'RIO2CM1_EMU4_8',\n    'RIO2CM1_EMU4_9',\n    'RIO2CM1_EMU4_10',\n    'RIO2CM1_EMU4_11',\n    'RIO2CM1_EMU4_12',\n    'RIO2CM2_EM6400_1',\n    'RIO2CM2_EM6400_2',\n    'RIO2CM2_EM6400_3',\n    'RIO2CM2_EM6400_4',\n    'RIO2CM2_EM6400_5',\n    'RIO2CM2_EM6400_6',\n    'RIO2_PAC3200_51',\n    'RIO2_PAC3200_53',\n    'RIO2_UMG508_52',\n  ]\n  totalKw = 0\n  for (const m of meters) totalKw += toNum(v[m + '_Real_power'])\n}\n\nconst validKw = (kw) => Number.isFinite(kw) && kw > 0 && kw <= PLANT_MAX_KW\n\nif (validKw(totalKw)) {\n  global.set('demandLastInstantKw', totalKw)\n}\n\nconst instantKw = global.get('demandLastInstantKw')\nconst instantKwNum = Number.isFinite(instantKw) ? instantKw : 0\n\nconst buf = global.get('demandBuf') || []\nif (validKw(totalKw)) {\n  buf.push({ t: now, kw: totalKw })\n}\nwhile (buf.length > 0 && buf[0].t < now - WINDOW_MS) buf.shift()\nglobal.set('demandBuf', buf)\n\nfunction timeWeightedKw(samples, tNow, winMs) {\n  const T0 = tNow - winMs\n  const durSec = (tNow - T0) / 1000\n  if (durSec <= 0) return 0\n  if (!samples || samples.length === 0) return 0\n  const sorted = samples.slice().sort((a, b) => a.t - b.t)\n  const n = sorted.length\n  let integral = 0\n  if (sorted[0].t > T0) {\n    integral += sorted[0].kw * ((sorted[0].t - T0) / 1000)\n  }\n  for (let i = 1; i < n; i++) {\n    const dt = (sorted[i].t - sorted[i - 1].t) / 1000\n    if (dt > 0) integral += sorted[i - 1].kw * dt\n  }\n  const dtLast = (tNow - sorted[n - 1].t) / 1000\n  if (dtLast > 0) integral += sorted[n - 1].kw * dtLast\n  return integral / durSec\n}\n\nconst rollingKw = timeWeightedKw(buf, now, WINDOW_MS)\n\nconst d = new Date(now)\nconst slotMin = Math.floor(d.getMinutes() / 15) * 15\nconst slotStart = new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), slotMin, 0, 0).getTime()\nlet bill = global.get('demandBilling') || { slotStart: 0, maxKw: 0 }\nif (bill.slotStart !== slotStart) {\n  bill = { slotStart: slotStart, maxKw: rollingKw }\n} else {\n  bill.maxKw = Math.max(Number(bill.maxKw) || 0, rollingKw)\n}\nglobal.set('demandBilling', bill)\nconst fixedDemandKw = bill.maxKw\n\nconst currentMonth = new Date().toISOString().slice(0, 7)\nlet state = global.get('demandState') || {}\nif (state.month !== currentMonth) {\n  state = { month: currentMonth, peakKw: 0, peakTs: null, thresholdKw: state.thresholdKw || 0 }\n}\n\nif (rollingKw > state.peakKw) {\n  state.peakKw = rollingKw\n  state.peakTs = new Date().toISOString()\n}\n\nif (state.thresholdKw <= 0 && state.peakKw > 0) {\n  state.thresholdKw = Math.ceil(state.peakKw * 1.1)\n}\n\nconst threshold = state.thresholdKw || 0\nconst pctOfThreshold = threshold > 0 ? rollingKw / threshold : 0\n\nglobal.set('demandState', state)\n\nconst lastAlertLevel = global.get('demandAlertLevel') || 0\nlet newLevel = 0\nif (pctOfThreshold >= 0.95) newLevel = 2\nelse if (pctOfThreshold >= 0.8) newLevel = 1\n\nif (newLevel > lastAlertLevel) {\n  global.set('demandAlertLevel', newLevel)\n  const alerts = global.get('enhancedAlerts') || []\n  const ts = new Date().toISOString()\n  const id = 'demand-' + ts + '-' + Math.random().toString(16).slice(2, 8)\n  const severity = newLevel === 2 ? 'critical' : 'warning'\n  const priority = newLevel === 2 ? 'urgent' : 'high'\n  const pctStr = (pctOfThreshold * 100).toFixed(0)\n  const message =\n    newLevel === 2\n      ? 'Demand at ' + pctStr + '% of threshold — shed load NOW'\n      : 'Demand approaching threshold (' + pctStr + '%)'\n  const detail =\n    'Time-weighted 15-min rolling: ' +\n    rollingKw.toFixed(1) +\n    ' kW. Threshold: ' +\n    threshold.toFixed(0) +\n    ' kW. Monthly peak: ' +\n    state.peakKw.toFixed(1) +\n    ' kW.'\n  alerts.unshift({\n    id,\n    meterId: 'plant',\n    meterName: 'Plant Demand',\n    severity,\n    priority,\n    category: 'energy',\n    status: 'active',\n    message,\n    detail,\n    ts,\n    acknowledgedAt: null,\n    acknowledgedBy: null,\n    resolvedAt: null,\n    notes: [],\n    incidentId: null,\n  })\n  while (alerts.length > 500) alerts.pop()\n  global.set('enhancedAlerts', alerts)\n}\n\nif (pctOfThreshold < 0.75 && lastAlertLevel > 0) {\n  global.set('demandAlertLevel', 0)\n}\n\nglobal.set('demandLastMeta', {\n  ts: new Date().toISOString(),\n  instantKw: Math.round(instantKwNum * 10) / 10,\n  currentDemandKw: Math.round(rollingKw * 10) / 10,\n  fixedDemandKw: Math.round(fixedDemandKw * 10) / 10,\n  monthlyPeakKw: Math.round((state.peakKw || 0) * 10) / 10,\n  monthlyPeakTs: state.peakTs || null,\n  thresholdKw: threshold,\n  pctOfThreshold: Math.round(pctOfThreshold * 1000) / 10,\n  windowSeconds: 900,\n  samplesInWindow: buf.length,\n})\n\nconst insertEveryMs = 60000\nconst lastIns = global.get('demandSampleLastMs') || 0\nif (now - lastIns >= insertEveryMs) {\n  global.set('demandSampleLastMs', now)\n  const ts = new Date().toISOString().replace(/'/g, \"''\")\n  const tsEpoch = Math.floor(now / 1000)\n  msg.topic = `INSERT INTO demand_samples (ts, ts_epoch, current_demand_kw, instant_kw) VALUES ('${ts}', ${tsEpoch}, ${Number(rollingKw)}, ${Number(instantKwNum)});`\n  return msg\n}\nreturn null\n",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -5251,7 +5251,7 @@
     "type": "function",
     "z": "a1000001.0001tab",
     "name": "Demand: prepare SQL",
-    "func": "const state = global.get('demandState') || {};\nconst buf = global.get('demandBuf') || [];\n\nconst setTh = Number(msg.req?.query?.setThreshold);\nif (Number.isFinite(setTh) && setTh > 0) {\n  state.thresholdKw = setTh;\n  global.set('demandState', state);\n}\n\nconst currentKw = buf.length > 0\n  ? buf.reduce((s, p) => s + p.kw, 0) / buf.length\n  : 0;\n\nconst instantKw = buf.length > 0 ? buf[buf.length - 1].kw : 0;\n\nconst threshold = state.thresholdKw || 0;\nconst pctOfThreshold = threshold > 0 ? currentKw / threshold : 0;\n\nconst minutesParam = msg.req?.query?.minutes;\nconst allHistory = !minutesParam || minutesParam === 'all' || minutesParam === '';\nlet minutes = allHistory ? (60 * 24 * 366 * 5) : Math.max(15, Math.min(60 * 24 * 800, Number(minutesParam)));\nconst sinceEpoch = allHistory ? 0 : Math.floor(Date.now() / 1000) - Math.floor(minutes * 60);\n\nlet bucketSec = 60;\nif (minutes > 60 * 24 * 90) bucketSec = 3600;\nelse if (minutes > 60 * 24 * 30) bucketSec = 900;\nelse if (minutes > 60 * 24 * 7) bucketSec = 300;\n\nmsg._demandMeta = {\n  ts: new Date().toISOString(),\n  month: state.month || new Date().toISOString().slice(0, 7),\n  instantKw,\n  currentDemandKw: Math.round(currentKw * 10) / 10,\n  monthlyPeakKw: Math.round((state.peakKw || 0) * 10) / 10,\n  monthlyPeakTs: state.peakTs || null,\n  thresholdKw: threshold,\n  pctOfThreshold: Math.round(pctOfThreshold * 1000) / 10,\n  windowSeconds: 900,\n  samplesInWindow: buf.length,\n  allHistory\n};\n\nmsg.topic = `WITH b AS (\n  SELECT\n    (ts_epoch / ${bucketSec}) * ${bucketSec} AS bucket_epoch,\n    MAX(ts_epoch) AS last_epoch,\n    AVG(current_demand_kw) AS kw\n  FROM demand_samples\n  WHERE ts_epoch >= ${sinceEpoch}\n  GROUP BY bucket_epoch\n)\nSELECT\n  strftime('%Y-%m-%dT%H:%M:%SZ', datetime(last_epoch, 'unixepoch')) AS ts,\n  COALESCE(kw, 0) AS current_demand_kw\nFROM b\nORDER BY last_epoch ASC\nLIMIT 200000;`;\n\ndelete msg.payload;\nreturn msg;",
+    "func": "const state = global.get('demandState') || {}\nconst buf = global.get('demandBuf') || []\nconst WINDOW_MS = 15 * 60 * 1000\n\nconst setTh = Number(msg.req?.query?.setThreshold)\nif (Number.isFinite(setTh) && setTh > 0) {\n  state.thresholdKw = setTh\n  global.set('demandState', state)\n}\n\nfunction timeWeightedKw(samples, tNow, winMs) {\n  const T0 = tNow - winMs\n  const durSec = (tNow - T0) / 1000\n  if (durSec <= 0) return 0\n  if (!samples || samples.length === 0) return 0\n  const sorted = samples.slice().sort((a, b) => a.t - b.t)\n  const n = sorted.length\n  let integral = 0\n  if (sorted[0].t > T0) {\n    integral += sorted[0].kw * ((sorted[0].t - T0) / 1000)\n  }\n  for (let i = 1; i < n; i++) {\n    const dt = (sorted[i].t - sorted[i - 1].t) / 1000\n    if (dt > 0) integral += sorted[i - 1].kw * dt\n  }\n  const dtLast = (tNow - sorted[n - 1].t) / 1000\n  if (dtLast > 0) integral += sorted[n - 1].kw * dtLast\n  return integral / durSec\n}\n\nconst now = Date.now()\nconst meta0 = global.get('demandLastMeta') || {}\nconst hasMeta = meta0 && typeof meta0.currentDemandKw === 'number'\n\nlet instantKw = meta0.instantKw\nlet currentDemandKw = meta0.currentDemandKw\nlet fixedDemandKw = meta0.fixedDemandKw\nlet monthlyPeakKw = meta0.monthlyPeakKw\nlet monthlyPeakTs = meta0.monthlyPeakTs\nlet pctOfThreshold = meta0.pctOfThreshold\nlet samplesInWindow = meta0.samplesInWindow\nlet tsIso = meta0.ts\n\nif (!hasMeta) {\n  const tw = timeWeightedKw(buf, now, WINDOW_MS)\n  currentDemandKw = Math.round(tw * 10) / 10\n  instantKw = buf.length > 0 ? Math.round(buf[buf.length - 1].kw * 10) / 10 : 0\n  fixedDemandKw = 0\n  const th0 = state.thresholdKw || 0\n  pctOfThreshold = th0 > 0 ? Math.round((tw / th0) * 1000) / 10 : 0\n  samplesInWindow = buf.length\n  tsIso = new Date().toISOString()\n  monthlyPeakKw = Math.round((state.peakKw || 0) * 10) / 10\n  monthlyPeakTs = state.peakTs || null\n}\n\nif (!Number.isFinite(fixedDemandKw)) fixedDemandKw = 0\nif (!Number.isFinite(instantKw)) instantKw = 0\nif (!Number.isFinite(monthlyPeakKw)) monthlyPeakKw = Math.round((state.peakKw || 0) * 10) / 10\nif (monthlyPeakTs === undefined) monthlyPeakTs = state.peakTs || null\nif (!tsIso) tsIso = new Date().toISOString()\nif (!Number.isFinite(samplesInWindow)) samplesInWindow = buf.length\n\nconst threshold = state.thresholdKw || 0\nif (!hasMeta || !Number.isFinite(pctOfThreshold)) {\n  pctOfThreshold = threshold > 0 ? Math.round((currentDemandKw / threshold) * 1000) / 10 : 0\n}\n\nconst minutesParam = msg.req?.query?.minutes\nconst allHistory = !minutesParam || minutesParam === 'all' || minutesParam === ''\nlet minutes = allHistory ? 60 * 24 * 366 * 5 : Math.max(15, Math.min(60 * 24 * 800, Number(minutesParam)))\nconst sinceEpoch = allHistory ? 0 : Math.floor(Date.now() / 1000) - Math.floor(minutes * 60)\n\nlet bucketSec = 60\nif (minutes > 60 * 24 * 90) bucketSec = 3600\nelse if (minutes > 60 * 24 * 30) bucketSec = 900\nelse if (minutes > 60 * 24 * 7) bucketSec = 300\n\nmsg._demandMeta = {\n  ts: tsIso,\n  month: state.month || new Date().toISOString().slice(0, 7),\n  instantKw,\n  currentDemandKw,\n  fixedDemandKw: Math.round(fixedDemandKw * 10) / 10,\n  monthlyPeakKw: Math.round((monthlyPeakKw || 0) * 10) / 10,\n  monthlyPeakTs,\n  thresholdKw: threshold,\n  pctOfThreshold,\n  windowSeconds: 900,\n  samplesInWindow,\n  allHistory,\n  pctBasis: 'rolling',\n}\n\nmsg.topic = `WITH b AS (\n  SELECT\n    (ts_epoch / ${bucketSec}) * ${bucketSec} AS bucket_epoch,\n    MAX(ts_epoch) AS last_epoch,\n    AVG(current_demand_kw) AS kw\n  FROM demand_samples\n  WHERE ts_epoch >= ${sinceEpoch}\n  GROUP BY bucket_epoch\n)\nSELECT\n  strftime('%Y-%m-%dT%H:%M:%SZ', datetime(last_epoch, 'unixepoch')) AS ts,\n  COALESCE(kw, 0) AS current_demand_kw\nFROM b\nORDER BY last_epoch ASC\nLIMIT 200000;`\n\ndelete msg.payload\nreturn msg\n",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -5287,7 +5287,7 @@
     "type": "function",
     "z": "a1000001.0001tab",
     "name": "Demand: merge JSON",
-    "func": "const meta = msg._demandMeta || {};\nconst rows = Array.isArray(msg.payload) ? msg.payload : [];\n\nlet trend = rows.map((r) => ({\n  ts: r.ts,\n  kw: Number(r.current_demand_kw) || 0\n}));\n\nconst nowIso = meta.ts;\nconst curKw = meta.currentDemandKw;\nconst lastTs = trend.length > 0 ? Date.parse(trend[trend.length - 1].ts) : NaN;\nif (trend.length === 0 || !Number.isFinite(lastTs) || Date.parse(nowIso) > lastTs + 25000) {\n  trend = trend.concat([{ ts: nowIso, kw: curKw }]);\n}\n\nconst trendStartTs = trend.length > 0 ? trend[0].ts : null;\n\nmsg.payload = {\n  ts: meta.ts,\n  month: meta.month,\n  instantKw: meta.instantKw,\n  currentDemandKw: meta.currentDemandKw,\n  monthlyPeakKw: meta.monthlyPeakKw,\n  monthlyPeakTs: meta.monthlyPeakTs,\n  thresholdKw: meta.thresholdKw,\n  pctOfThreshold: meta.pctOfThreshold,\n  windowSeconds: meta.windowSeconds,\n  samplesInWindow: meta.samplesInWindow,\n  trend,\n  trendStartTs\n};\n\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' };\ndelete msg._demandMeta;\nreturn msg;",
+    "func": "const meta = msg._demandMeta || {}\nconst rows = Array.isArray(msg.payload) ? msg.payload : []\n\nlet trend = rows.map((r) => ({\n  ts: r.ts,\n  kw: Number(r.current_demand_kw) || 0,\n}))\n\nconst nowIso = meta.ts\nconst curKw = meta.currentDemandKw\nconst lastTs = trend.length > 0 ? Date.parse(trend[trend.length - 1].ts) : NaN\nif (trend.length === 0 || !Number.isFinite(lastTs) || Date.parse(nowIso) > lastTs + 25000) {\n  trend = trend.concat([{ ts: nowIso, kw: curKw }])\n}\n\nconst trendStartTs = trend.length > 0 ? trend[0].ts : null\n\nconst th = meta.thresholdKw || 0\nconst roll = meta.currentDemandKw || 0\nconst exceedsThreshold = th > 0 && roll > th\n\nmsg.payload = {\n  ts: meta.ts,\n  month: meta.month,\n  instantKw: meta.instantKw,\n  currentDemandKw: meta.currentDemandKw,\n  fixedDemandKw: meta.fixedDemandKw ?? 0,\n  monthlyPeakKw: meta.monthlyPeakKw,\n  monthlyPeakTs: meta.monthlyPeakTs,\n  thresholdKw: meta.thresholdKw,\n  pctOfThreshold: meta.pctOfThreshold,\n  pctBasis: meta.pctBasis || 'rolling',\n  windowSeconds: meta.windowSeconds ?? 900,\n  samplesInWindow: meta.samplesInWindow,\n  trend,\n  trendStartTs,\n  exceedsThreshold,\n}\n\nmsg.headers = { 'Content-Type': 'application/json; charset=utf-8' }\ndelete msg._demandMeta\nreturn msg\n",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -5380,7 +5380,7 @@
     "type": "function",
     "z": "b2f00001.tab",
     "name": "Format for dashboard",
-    "func": "const p = msg.payload;\nif (!p || typeof p !== 'object') {\n    return [ { payload: 'Waiting for PLC\u2026' }, null, null, null ];\n}\nconst r0 = Number(p.DB1_REAL0);\nconst r4 = Number(p.DB1_REAL4);\nconst r8 = Number(p.DB1_REAL8);\nconst line = (k, v) => `${k}: ${Number.isFinite(v) ? v.toFixed(3) : '\u2014'}`;\nconst text = [\n  line('DB1,REAL0', r0),\n  line('DB1,REAL4', r4),\n  line('DB1,REAL8', r8)\n].join('\\n');\nreturn [\n  { payload: text },\n  { payload: r0 },\n  { payload: r4 },\n  { payload: r8 }\n];",
+    "func": "const p = msg.payload;\nif (!p || typeof p !== 'object') {\n    return [ { payload: 'Waiting for PLC…' }, null, null, null ];\n}\nconst r0 = Number(p.DB1_REAL0);\nconst r4 = Number(p.DB1_REAL4);\nconst r8 = Number(p.DB1_REAL8);\nconst line = (k, v) => `${k}: ${Number.isFinite(v) ? v.toFixed(3) : '—'}`;\nconst text = [\n  line('DB1,REAL0', r0),\n  line('DB1,REAL4', r4),\n  line('DB1,REAL8', r8)\n].join('\\n');\nreturn [\n  { payload: text },\n  { payload: r0 },\n  { payload: r4 },\n  { payload: r8 }\n];",
     "outputs": 4,
     "timeout": 0,
     "noerr": 0,
@@ -5729,5 +5729,91 @@
     "wires": [
       []
     ]
+  },
+  {
+    "id": "a1000108.http_loadprofile",
+    "type": "http in",
+    "z": "a1000001.0001tab",
+    "name": "GET /api/trends/load-profile",
+    "url": "/api/trends/load-profile",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": "",
+    "x": 240,
+    "y": 620,
+    "wires": [
+      [
+        "a1000109.loadprofile_sql"
+      ]
+    ]
+  },
+  {
+    "id": "a1000109.loadprofile_sql",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "SQLite: load profile raw kW samples",
+    "func": "const q = msg.req?.query ?? {};\nconst hours = Math.min(48, Math.max(1, Number(q.hours) || 24));\nconst bucketMap = { '1m': 60, '5m': 300, '15m': 900, '1h': 3600 };\nlet bucketSec = Number(q.bucketSec ?? q.bucket_sec);\nconst bt = typeof q.bucket === 'string' ? q.bucket.trim().toLowerCase() : '';\nif (!Number.isFinite(bucketSec) || bucketSec <= 0) {\n  bucketSec = bucketMap[bt] ?? 300;\n}\nbucketSec = Math.max(60, Math.min(3600, Math.floor(bucketSec)));\nconst nowSec = Math.floor(Date.now() / 1000);\nconst sinceSec = nowSec - hours * 3600;\nmsg.bucketSec = bucketSec;\nmsg.hours = hours;\nmsg.topic = `SELECT ts_epoch, Power_kW FROM plc_samples WHERE ts_epoch >= ${sinceSec} AND Power_kW > 0 AND Power_kW <= 50000 ORDER BY ts_epoch ASC LIMIT 250000`;\ndelete msg.payload;\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 480,
+    "y": 620,
+    "wires": [
+      [
+        "a1000110.sqliteread_loadprofile"
+      ]
+    ]
+  },
+  {
+    "id": "a1000110.sqliteread_loadprofile",
+    "type": "sqlite",
+    "z": "a1000001.0001tab",
+    "mydb": "a1000012.sqlitedb",
+    "sqlquery": "msg.topic",
+    "sql": "",
+    "name": "SQLite read (load profile)",
+    "x": 720,
+    "y": 620,
+    "wires": [
+      [
+        "a1000111.loadprofile_compute"
+      ]
+    ]
+  },
+  {
+    "id": "a1000111.loadprofile_compute",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "Load profile: time-weighted avg kW / bucket",
+    "func": "const rows = Array.isArray(msg.payload) ? msg.payload : [];\nconst bucketSec = Number(msg.bucketSec) || 300;\nconst hours = Number(msg.hours) || 24;\nconst MAX_KW = 50000;\nconst nowMs = Date.now();\nconst nowSec = Math.floor(nowMs / 1000);\nconst sinceSec = nowSec - hours * 3600;\n\nconst points = rows\n  .map((r) => ({ t: Number(r.ts_epoch) * 1000, kw: Number(r.Power_kW) }))\n  .filter((p) => Number.isFinite(p.t) && Number.isFinite(p.kw) && p.kw > 0 && p.kw <= MAX_KW)\n  .sort((a, b) => a.t - b.t);\n\nfunction bucketAvg(pts, B0, B1, nowM) {\n  let sumKwDt = 0;\n  let sumDt = 0;\n  const n = pts.length;\n  if (n === 0) return null;\n  const t0 = pts[0].t;\n  if (t0 > B0) {\n    const a = B0;\n    const b = Math.min(B1, t0);\n    if (b > a) {\n      const dt = (b - a) / 1000;\n      sumKwDt += pts[0].kw * dt;\n      sumDt += dt;\n    }\n  }\n  for (let i = 0; i < n - 1; i++) {\n    const kw = pts[i].kw;\n    const seg0 = pts[i].t;\n    const seg1 = pts[i + 1].t;\n    const a = Math.max(B0, seg0);\n    const b = Math.min(B1, seg1);\n    if (b > a) {\n      const dt = (b - a) / 1000;\n      sumKwDt += kw * dt;\n      sumDt += dt;\n    }\n  }\n  const last = pts[n - 1];\n  const tailEnd = Math.min(B1, nowM);\n  if (last.t < tailEnd) {\n    const a = Math.max(B0, last.t);\n    const b = tailEnd;\n    if (b > a) {\n      const dt = (b - a) / 1000;\n      sumKwDt += last.kw * dt;\n      sumDt += dt;\n    }\n  }\n  if (sumDt <= 0) return null;\n  return sumKwDt / sumDt;\n}\n\nconst bucketMs = bucketSec * 1000;\nconst startBucketSec = Math.floor(sinceSec / bucketSec) * bucketSec;\nconst endBucketSec = Math.floor(nowSec / bucketSec) * bucketSec;\n\nconst out = [];\nlet lastVal = null;\nfor (let bs = startBucketSec; bs <= endBucketSec; bs += bucketSec) {\n  const B0 = bs * 1000;\n  const B1 = B0 + bucketMs;\n  let avg = bucketAvg(points, B0, B1, nowMs);\n  if (avg === null && lastVal !== null) avg = lastVal;\n  if (avg !== null) {\n    lastVal = avg;\n    out.push({ ts: new Date(B0).toISOString(), demandKw: Math.round(avg * 100) / 100 });\n  }\n}\n\nmsg.statusCode = 200;\nmsg.payload = out;\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 940,
+    "y": 620,
+    "wires": [
+      [
+        "a1000112.http_loadprofile_res"
+      ]
+    ]
+  },
+  {
+    "id": "a1000112.http_loadprofile_res",
+    "type": "http response",
+    "z": "a1000001.0001tab",
+    "name": "",
+    "statusCode": "",
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8"
+    },
+    "x": 1160,
+    "y": 620,
+    "wires": []
   }
 ]

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useEnergyIntervals, useNodeRedHealth, usePlcFullSnapshot, usePowerTrend } from '../hooks/queries'
+import { useEnergyIntervals, usePlantLoadProfile, useNodeRedHealth, usePlcFullSnapshot, usePowerTrend } from '../hooks/queries'
 import { Badge, type BadgeColor } from '../components/ui/Badge'
 import { DemandTracker } from '../components/ui/DemandTracker'
 import { SegmentedControl } from '../components/ui/SegmentedControl'
@@ -113,6 +113,7 @@ export function DashboardScadaPage() {
   const [lineEnergyWindow, setLineEnergyWindow] = useState<LineEnergyWindow>('weekly')
   const [lineEnergyHover, setLineEnergyHover] = useState<{ line: string; kwh: number } | null>(null)
   const [lineEnergyViewMode, setLineEnergyViewMode] = useState<LineEnergyViewMode>('abs')
+  const [loadProfileBucket, setLoadProfileBucket] = useState<'1m' | '5m' | '15m' | '1h'>('5m')
   const trendMinutes =
     trendWindow === '1h'
       ? 60
@@ -134,7 +135,7 @@ export function DashboardScadaPage() {
   // Always keep enough history for fluctuation detection, even when viewing 1h/6h/etc.
   const fetchMinutes = Math.max(trendMinutes, 24 * 60)
   const trendQ = usePowerTrend(fetchMinutes, { bucket: trendBucket })
-  const energy24hQ = useEnergyIntervals(24)
+  const loadProfileQ = usePlantLoadProfile(24, { bucket: loadProfileBucket })
   const energy48hQ = useEnergyIntervals(48)
   const lineEnergyHours =
     lineEnergyWindow === 'daily' ? 24 : lineEnergyWindow === 'weekly' ? 24 * 7 : lineEnergyWindow === 'monthly' ? 24 * 30 : 24 * 365
@@ -598,18 +599,7 @@ export function DashboardScadaPage() {
     })
   }, [fluctuationAlerts, powerTrendVisible])
 
-  const totalDemandSeries24h = useMemo(() => {
-    const ivs = energy24hQ.data ?? []
-    const map = new Map<string, { ts: string; demandKw: number }>()
-    for (const iv of ivs) {
-      const prev = map.get(iv.ts)
-      if (!prev) map.set(iv.ts, { ts: iv.ts, demandKw: iv.demandKw })
-      else prev.demandKw += iv.demandKw
-    }
-    return Array.from(map.values()).sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts))
-  }, [energy24hQ.data])
-
-  const loadProfile24h = useMemo(() => totalDemandSeries24h.map((r) => ({ ts: r.ts, demandKw: r.demandKw })), [totalDemandSeries24h])
+  const loadProfile24h = loadProfileQ.data ?? []
 
   const loadProfileTick = (iso: string) => {
     const d = new Date(iso)
@@ -825,9 +815,21 @@ export function DashboardScadaPage() {
 
           <div className="grid gap-3 lg:grid-cols-2">
             <div className="card card-hover overflow-hidden p-4">
-              <div className="mb-2 flex items-center justify-between gap-2">
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                 <div className="text-sm font-semibold text-[var(--text)]">24-hour load profile</div>
-                <div className="text-[11px] text-[var(--muted)]">Total demand across meters</div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <SegmentedControl
+                    value={loadProfileBucket}
+                    onChange={(id) => setLoadProfileBucket(id as typeof loadProfileBucket)}
+                    options={[
+                      { id: '1m', label: '1m' },
+                      { id: '5m', label: '5m' },
+                      { id: '15m', label: '15m' },
+                      { id: '1h', label: '1h' },
+                    ]}
+                  />
+                  <div className="text-[11px] text-[var(--muted)]">Avg kW · plant total</div>
+                </div>
               </div>
               <div className="h-48 min-h-[160px] w-full min-w-0">
                 <ResponsiveContainer width="100%" height="100%">
