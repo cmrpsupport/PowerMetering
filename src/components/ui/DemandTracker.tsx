@@ -294,10 +294,17 @@ export function DemandTracker({ variant = 'card' }: DemandTrackerProps) {
         </div>
         <div className="text-center">
           <div className="text-[10px] font-medium uppercase text-[var(--muted)]">Fixed (block)</div>
-          <div className="text-sm font-semibold tabular-nums text-[var(--text)]">{fmt(fixedKw, 1)} kW</div>
-          {demand.fixedBlockIsPartial ? (
-            <div className="mt-0.5 text-[10px] text-[var(--muted)]">Calculating… (partial interval)</div>
-          ) : null}
+          {(() => {
+            const elapsedSec = Math.max(0, Math.min(900, Math.floor(Number(demand.fixedBlockSecondsElapsed ?? 0))))
+            const elapsedMin = Math.floor(elapsedSec / 60)
+            const isPartial = demand.fixedBlockIsPartial === true || elapsedSec < 900
+            const suffix = isPartial ? ` (Partial: ${elapsedMin}m / 15m)` : ''
+            return (
+              <div className="text-sm font-semibold tabular-nums text-[var(--text)]">
+                {fmt(fixedKw, 1)} kW{suffix}
+              </div>
+            )
+          })()}
         </div>
         <div className="text-center">
           <div className="text-[10px] font-medium uppercase text-[var(--muted)]">% threshold</div>
