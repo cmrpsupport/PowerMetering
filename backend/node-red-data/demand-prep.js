@@ -1,6 +1,7 @@
 const state = global.get('demandState') || {}
 const buf = global.get('demandBuf') || []
 const WINDOW_MS = 15 * 60 * 1000
+const WINDOW_SEC = WINDOW_MS / 1000
 
 const setTh = Number(msg.req?.query?.setThreshold)
 if (Number.isFinite(setTh) && setTh > 0) {
@@ -10,22 +11,33 @@ if (Number.isFinite(setTh) && setTh > 0) {
 
 function timeWeightedKw(samples, tNow, winMs) {
   const T0 = tNow - winMs
-  const durSec = (tNow - T0) / 1000
-  if (durSec <= 0) return 0
   if (!samples || samples.length === 0) return 0
+  if (!Number.isFinite(T0) || !Number.isFinite(tNow) || WINDOW_SEC <= 0) return 0
+
   const sorted = samples.slice().sort((a, b) => a.t - b.t)
-  const n = sorted.length
+  if (sorted.length === 0) return 0
+
+  // integrate kW over [T0, tNow] with piecewise-constant intervals
   let integral = 0
-  if (sorted[0].t > T0) {
-    integral += sorted[0].kw * ((sorted[0].t - T0) / 1000)
+  let idx = 0
+  while (idx < sorted.length && sorted[idx].t <= T0) idx++
+  let kwPrev = idx > 0 ? sorted[idx - 1].kw : sorted[0].kw
+  let tCursor = T0
+
+  while (idx < sorted.length) {
+    const tNext = sorted[idx].t
+    if (tNext >= tNow) break
+    const dtSec = (tNext - tCursor) / 1000
+    if (dtSec > 0) integral += kwPrev * dtSec
+    tCursor = tNext
+    kwPrev = sorted[idx].kw
+    idx++
   }
-  for (let i = 1; i < n; i++) {
-    const dt = (sorted[i].t - sorted[i - 1].t) / 1000
-    if (dt > 0) integral += sorted[i - 1].kw * dt
-  }
-  const dtLast = (tNow - sorted[n - 1].t) / 1000
-  if (dtLast > 0) integral += sorted[n - 1].kw * dtLast
-  return integral / durSec
+
+  const dtLastSec = (tNow - tCursor) / 1000
+  if (dtLastSec > 0) integral += kwPrev * dtLastSec
+
+  return integral / WINDOW_SEC
 }
 
 const now = Date.now()

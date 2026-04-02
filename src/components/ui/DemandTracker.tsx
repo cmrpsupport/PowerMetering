@@ -27,6 +27,9 @@ function barColor(pct: number): string {
   return 'var(--accent-green)'
 }
 
+const ROLLING_WINDOW_MS = 15 * 60 * 1000
+const ROLLING_WINDOW_SEC = ROLLING_WINDOW_MS / 1000
+
 function formatTick(ts: string) {
   const t = Date.parse(ts)
   if (!Number.isFinite(t)) return ''
@@ -49,18 +52,133 @@ export function DemandTracker({ variant = 'card' }: DemandTrackerProps) {
   const [editing, setEditing] = useState(false)
   const [thresholdInput, setThresholdInput] = useState('')
 
-  const pct = demand?.pctOfThreshold ?? 0
+  const derived = useMemo(() => {
+    if (!demand) return null
+
+    const nowMs = Number.isFinite(Date.parse(demand.ts)) ? Date.parse(demand.ts) : Date.now()
+    const threshold = demand.thresholdKw ?? 0
+
+    const baseSamples = (demand.trend ?? [])
+      .map((p) => ({
+        t: Date.parse(p.ts),
+        kw: Number(p.kw),
+      }))
+      .filter((s) => Number.isFinite(s.t) && Number.isFinite(s.kw))
+
+    // Include latest instantaneous value at "now".
+    const sampleMap = new Map<number, number>()
+    for (const s of baseSamples) sampleMap.set(s.t, s.kw)
+    sampleMap.set(nowMs, Number(demand.instantKw))
+    const samples = Array.from(sampleMap.entries())
+      .map(([t, kw]) => ({ t, kw }))
+      .sort((a, b) => a.t - b.t)
+
+    if (samples.length < 2) {
+      return { rollingNow: 0, fixedNow: 0, pctNow: 0, exceedsNow: false, trend: [] as { ts: string; kw: number }[] }
+    }
+
+    const tArr = samples.map((s) => s.t)
+    const kwArr = samples.map((s) => s.kw)
+    const cumulative = new Array(samples.length).fill(0) as number[]
+    for (let i = 1; i < samples.length; i++) {
+      cumulative[i] = cumulative[i - 1] + kwArr[i - 1] * (tArr[i] - tArr[i - 1]) / 1000
+    }
+
+    const upperBound = (x: number) => {
+      let lo = 0
+      let hi = tArr.length
+      while (lo < hi) {
+        const mid = (lo + hi) >> 1
+        if (tArr[mid] <= x) lo = mid + 1
+        else hi = mid
+      }
+      return lo
+    }
+
+    const integrateKwOverMs = (startMs: number, endMs: number) => {
+      if (!(Number.isFinite(startMs) && Number.isFinite(endMs))) return 0
+      if (endMs <= startMs) return 0
+      if (samples.length < 2) return 0
+
+      let start = startMs
+      const end = endMs
+      let integralKwSec = 0
+
+      // Extrapolate using first sample's kW before the first timestamp.
+      if (start < tArr[0]) {
+        integralKwSec += kwArr[0] * (Math.min(end, tArr[0]) - start) / 1000
+        start = tArr[0]
+        if (end <= tArr[0]) return integralKwSec
+      }
+
+      // Clamp end (should generally be <= last sample).
+      const endClamped = Math.min(end, tArr[tArr.length - 1])
+      if (endClamped <= start) return integralKwSec
+
+      // start >= tArr[0], endClamped <= tArr[last]
+      const idxStart = Math.max(0, upperBound(start) - 1)
+      const idxEnd = Math.max(0, upperBound(endClamped) - 1)
+
+      // Partial from start to the next sample boundary (or end).
+      const tNext = idxStart + 1 < tArr.length ? tArr[idxStart + 1] : endClamped
+      const partEnd = Math.min(endClamped, tNext)
+      const dt1 = partEnd - start
+      if (dt1 > 0) integralKwSec += kwArr[idxStart] * dt1 / 1000
+      if (partEnd >= endClamped) return integralKwSec
+
+      // Full segments between tArr[idxStart+1]..tArr[idxEnd]
+      const fullStartIdx = idxStart + 1
+      if (idxEnd >= fullStartIdx) {
+        integralKwSec += cumulative[idxEnd] - cumulative[fullStartIdx]
+      }
+
+      // Partial at the end if endClamped is inside a step segment.
+      if (endClamped > tArr[idxEnd] && idxEnd < kwArr.length) {
+        integralKwSec += kwArr[idxEnd] * (endClamped - tArr[idxEnd]) / 1000
+      }
+
+      return integralKwSec
+    }
+
+    const rollingNow = integrateKwOverMs(nowMs - ROLLING_WINDOW_MS, nowMs) / ROLLING_WINDOW_SEC
+
+    const d0 = new Date(nowMs)
+    const slotMin = Math.floor(d0.getMinutes() / 15) * 15
+    const slotStartMs = new Date(d0.getFullYear(), d0.getMonth(), d0.getDate(), d0.getHours(), slotMin, 0, 0).getTime()
+    const fixedNow = integrateKwOverMs(slotStartMs, nowMs) / ROLLING_WINDOW_SEC
+
+    const pctNow = threshold > 0 ? (rollingNow / threshold) * 100 : 0
+    const exceedsNow = threshold > 0 ? rollingNow > threshold : false
+
+    // Downsample derived trend for performance and readability.
+    const rawTrend = demand.trend ?? []
+    const maxPoints = 240
+    const step = rawTrend.length > maxPoints ? Math.ceil(rawTrend.length / maxPoints) : 1
+    const derivedTrend = rawTrend
+      .filter((_, i) => i % step === 0 || i === rawTrend.length - 1)
+      .map((p) => {
+        const t = Date.parse(p.ts)
+        const kw = Number.isFinite(t) ? integrateKwOverMs(t - ROLLING_WINDOW_MS, t) / ROLLING_WINDOW_SEC : 0
+        return { ts: p.ts, kw }
+      })
+
+    return { rollingNow, fixedNow, pctNow, exceedsNow, trend: derivedTrend }
+  }, [demand])
+
+  const pct = derived?.pctNow ?? demand?.pctOfThreshold ?? 0
   const color = barColor(pct)
-  const fixedKw = demand?.fixedDemandKw ?? 0
-  const exceeds = demand?.exceedsThreshold === true
+  const fixedKw = derived?.fixedNow ?? demand?.fixedDemandKw ?? 0
+  const exceeds = derived?.exceedsNow ?? demand?.exceedsThreshold === true
+
+  const rollingNow = derived?.rollingNow ?? demand?.currentDemandKw ?? 0
 
   const chartData = useMemo(() => {
-    const t = demand?.trend ?? []
+    const t = derived?.trend ?? demand?.trend ?? []
     return t.map((p) => ({
       ...p,
       t: Date.parse(p.ts),
     }))
-  }, [demand?.trend])
+  }, [derived?.trend, demand?.trend])
 
   const handleSetThreshold = async () => {
     const kw = Number(thresholdInput)
@@ -136,7 +254,7 @@ export function DemandTracker({ variant = 'card' }: DemandTrackerProps) {
 
       <div className="mb-1 flex items-baseline justify-between">
         <span className="text-2xl font-bold text-[var(--text)]">
-          {fmt(demand.currentDemandKw, 1)} <span className="text-sm font-normal text-[var(--muted)]">kW</span>
+          {fmt(rollingNow, 1)} <span className="text-sm font-normal text-[var(--muted)]">kW</span>
         </span>
         <span className="text-xs text-[var(--muted)]">
           {fmt(pct, 1)}% of threshold
@@ -172,7 +290,7 @@ export function DemandTracker({ variant = 'card' }: DemandTrackerProps) {
         </div>
         <div className="text-center">
           <div className="text-[10px] font-medium uppercase text-[var(--muted)]">Rolling</div>
-          <div className="text-sm font-semibold tabular-nums text-[var(--text)]">{fmt(demand.currentDemandKw, 1)} kW</div>
+          <div className="text-sm font-semibold tabular-nums text-[var(--text)]">{fmt(rollingNow, 1)} kW</div>
         </div>
         <div className="text-center">
           <div className="text-[10px] font-medium uppercase text-[var(--muted)]">Fixed (block)</div>
@@ -232,7 +350,7 @@ export function DemandTracker({ variant = 'card' }: DemandTrackerProps) {
                   fontSize: 12,
                 }}
                 labelFormatter={(l) => (typeof l === 'string' ? formatTick(l) : String(l))}
-                formatter={(v: number) => [`${fmt(v, 1)} kW`, 'Logged rolling demand']}
+                formatter={(v: number) => [`${fmt(v, 1)} kW`, 'Derived rolling demand (15-min avg)']}
               />
               {demand.thresholdKw > 0 ? (
                 <ReferenceLine
