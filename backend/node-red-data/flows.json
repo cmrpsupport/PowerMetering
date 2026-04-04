@@ -4754,6 +4754,78 @@
     "x": 690,
     "y": 120,
     "wires": [
+      [
+        "a1000018a.check_chooey_column"
+      ]
+    ]
+  },
+  {
+    "id": "a1000018a.check_chooey_column",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "SQLite: pragma check Chooey column",
+    "func": "msg.topic = `SELECT COUNT(*) AS cnt FROM pragma_table_info('plc_samples') WHERE name='Total_ChooeyChocoLine_kWh'`;\nmsg.payload = null;\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 900,
+    "y": 120,
+    "wires": [
+      [
+        "a1000018b.read_pragma_chooey"
+      ]
+    ]
+  },
+  {
+    "id": "a1000018b.read_pragma_chooey",
+    "type": "sqlite",
+    "z": "a1000001.0001tab",
+    "mydb": "a1000012.sqlitedb",
+    "sqlquery": "msg.topic",
+    "sql": "",
+    "name": "SQLite read pragma",
+    "x": 1120,
+    "y": 120,
+    "wires": [
+      [
+        "a1000018c.maybe_add_chooey_column"
+      ]
+    ]
+  },
+  {
+    "id": "a1000018c.maybe_add_chooey_column",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "SQLite: ADD COLUMN if missing",
+    "func": "const rows = msg.payload;\nlet raw = null;\nif (Array.isArray(rows) && rows[0]) raw = rows[0].cnt;\nelse if (rows && typeof rows === 'object' && !Array.isArray(rows)) raw = rows.cnt;\nconst n = Number(raw);\nif (Number.isFinite(n) && n > 0) return null;\nmsg.topic = `ALTER TABLE plc_samples ADD COLUMN Total_ChooeyChocoLine_kWh REAL;`;\nmsg.payload = null;\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 1340,
+    "y": 120,
+    "wires": [
+      [
+        "a1000018d.exec_chooey_alter"
+      ]
+    ]
+  },
+  {
+    "id": "a1000018d.exec_chooey_alter",
+    "type": "sqlite",
+    "z": "a1000001.0001tab",
+    "mydb": "a1000012.sqlitedb",
+    "sqlquery": "msg.topic",
+    "sql": "",
+    "name": "SQLite exec ADD COLUMN",
+    "x": 1560,
+    "y": 120,
+    "wires": [
       []
     ]
   },
