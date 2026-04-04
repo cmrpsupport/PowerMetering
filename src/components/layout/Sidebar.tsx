@@ -4,7 +4,6 @@ import {
   LayoutDashboard,
   Network,
   LineChart,
-  ListChecks,
   LayoutGrid,
   Database,
   Factory,
@@ -21,8 +20,7 @@ const navItems: NavItem[] = [
   { to: '/production-input', label: 'Production Input', icon: Table2 },
   { to: '/real-time-data', label: 'Live Meters', icon: Database },
   { to: '/topology', label: 'Single Line', icon: Network },
-  { to: '/power-quality', label: 'PQ Trends', icon: LineChart },
-  { to: '/power-quality/events', label: 'PQ Events', icon: ListChecks },
+  { to: '/power-quality', label: 'Power Quality', icon: LineChart },
   { to: '/alerts', label: 'Alarms', icon: BellRing },
   { to: '/', label: 'Consumption', icon: LayoutDashboard },
 ]

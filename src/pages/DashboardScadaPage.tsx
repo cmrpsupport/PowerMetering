@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useEnergyIntervals, usePlantLoadProfile, useNodeRedHealth, usePlcFullSnapshot, usePowerTrend } from '../hooks/queries'
-import { Badge, type BadgeColor } from '../components/ui/Badge'
 import { DemandTracker } from '../components/ui/DemandTracker'
 import { SegmentedControl } from '../components/ui/SegmentedControl'
 import { KpiCard, type KpiStatus } from '../components/ui/KpiCard'
@@ -54,24 +53,6 @@ type TrendWindow = '1h' | '6h' | '12h' | '24h' | '7d' | '30d' | '6mo' | '1y'
 type EnergyWindow = TrendWindow | 'all'
 type LineEnergyWindow = 'daily' | 'weekly' | 'monthly' | '1y'
 type LineEnergyViewMode = 'abs' | 'pct'
-
-type FluctuationSeverity = 'warning' | 'critical'
-type FluctuationMetric = 'kw' | 'voltage' | 'current'
-
-type FluctuationAlert = {
-  id: string
-  ts: string
-  metric: FluctuationMetric
-  severity: FluctuationSeverity
-  value: number
-  prevValue: number
-  delta: number
-  deltaPct: number | null
-}
-
-function severityColor(sev: FluctuationSeverity): BadgeColor {
-  return sev === 'critical' ? 'red' : 'yellow'
-}
 
 function AxisTickAngled({
   x,
@@ -459,18 +440,6 @@ export function DashboardScadaPage() {
     return Date.parse(powerTrendVisible[powerTrendVisible.length - 1].ts) - Date.parse(powerTrendVisible[0].ts)
   }, [powerTrendVisible])
 
-  const pvcTick = useMemo(() => {
-    // Make ranges visually distinct: show date for multi-day windows.
-    if (pvcSpanMs >= 1000 * 60 * 60 * 24 * 14) {
-      return (v: unknown) => new Date(String(v)).toLocaleDateString([], { month: 'short', day: '2-digit' })
-    }
-    if (pvcSpanMs >= 1000 * 60 * 60 * 24) {
-      return (v: unknown) =>
-        new Date(String(v)).toLocaleString([], { month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' })
-    }
-    return (v: unknown) => new Date(String(v)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  }, [pvcSpanMs])
-
   const pvcMainSeries = useMemo(() => {
     const pts = powerTrendVisible.map((p) => ({
       ts: p.ts,
@@ -485,22 +454,6 @@ export function DashboardScadaPage() {
     // Ensure tick labels render nicely by keeping a consistent bucket step.
     return aggregateTrendByBucket(down, bucketMs)
   }, [powerTrendVisible, pvcSpanMs])
-
-  const fluctuationSourceSeries = useMemo(() => {
-    // Always compute alerts from a stable 24h window so the list doesn't vanish when switching ranges.
-    if (powerTrendFull.length === 0) return [] as TrendPoint[]
-    const endMs = Date.now()
-    const startMs = endMs - 24 * 60 * 60_000
-    const raw = powerTrendFull.filter((p) => {
-      const t = Date.parse(p.ts)
-      return t >= startMs && t <= endMs
-    })
-    if (raw.length < 2) return [] as TrendPoint[]
-    const spanMs = Date.parse(raw[raw.length - 1].ts) - Date.parse(raw[0].ts)
-    const down = downsampleTrendForChart(raw, spanMs)
-    const bucketMs = bucketMsForVisibleSpan(spanMs)
-    return aggregateTrendByBucket(down, bucketMs)
-  }, [powerTrendFull])
 
   const pvcSpark = useMemo(() => {
     const last = pvcMainSeries.slice(-28)
@@ -528,55 +481,6 @@ export function DashboardScadaPage() {
       pf: prev && cur ? pct(prev.pf, cur.pf) : null,
     }
   }, [pvcMainSeries])
-
-  const fluctuationAlerts = useMemo<FluctuationAlert[]>(() => {
-    const pts = fluctuationSourceSeries
-    if (pts.length < 3) return []
-
-    const alerts: FluctuationAlert[] = []
-    for (let i = 1; i < pts.length; i++) {
-      const cur = pts[i]
-      const prev = pts[i - 1]
-      if (!cur || !prev) continue
-
-      const check = (metric: FluctuationMetric, value: number, prevValue: number) => {
-        const denom = Math.max(1e-6, Math.abs(prevValue))
-        const delta = value - prevValue
-        const deltaPct = Number.isFinite(prevValue) && Math.abs(prevValue) > 1e-6 ? delta / denom : null
-        const absPct = deltaPct === null ? 0 : Math.abs(deltaPct)
-        const severity: FluctuationSeverity | null = absPct > 0.4 ? 'critical' : absPct > 0.25 ? 'warning' : null
-        if (!severity) return
-        alerts.push({
-          id: `${metric}:${cur.ts}`,
-          ts: cur.ts,
-          metric,
-          severity,
-          value,
-          prevValue,
-          delta,
-          deltaPct,
-        })
-      }
-
-      check('kw', cur.kw, prev.kw)
-      check('voltage', cur.voltageV, prev.voltageV)
-      check('current', cur.currentA, prev.currentA)
-    }
-
-    return alerts
-      .sort((a, b) => (a.ts < b.ts ? 1 : -1))
-      .slice(0, 5)
-  }, [fluctuationSourceSeries])
-
-  const fluctuationAlertsVisible = useMemo(() => {
-    if (fluctuationAlerts.length === 0 || powerTrendVisible.length === 0) return []
-    const startMs = Date.parse(powerTrendVisible[0].ts)
-    const endMs = Date.parse(powerTrendVisible[powerTrendVisible.length - 1].ts)
-    return fluctuationAlerts.filter((a) => {
-      const t = Date.parse(a.ts)
-      return t >= startMs && t <= endMs
-    })
-  }, [fluctuationAlerts, powerTrendVisible])
 
   const loadProfile24h = loadProfileQ.data ?? []
 
@@ -1066,60 +970,8 @@ export function DashboardScadaPage() {
         </div>
 
         <div className="min-h-0">
-          <div className="grid h-full min-h-0 grid-rows-[auto_1fr] gap-3">
-            <div className="card card-hover overflow-hidden p-4">
-              <DemandTracker variant="embedded" />
-            </div>
-            <div className="card card-hover flex min-h-0 flex-col overflow-hidden p-4">
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <div className="text-sm font-semibold text-[var(--text)]">Fluctuations</div>
-                <div className="text-[11px] text-[var(--muted)]">Δ &gt; 25% warn · &gt; 40% crit</div>
-              </div>
-
-              {fluctuationAlerts.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-[var(--border)] px-3 py-6 text-center text-xs text-[var(--muted)]">
-                  No spikes detected in current window.
-                </div>
-              ) : (
-                <div className="min-h-0 flex-1 overflow-auto pr-1 [scrollbar-gutter:stable]">
-                  <div className="space-y-2">
-                  {fluctuationAlerts.map((a) => (
-                    <div
-                      key={a.id}
-                      className="rounded-lg border border-[var(--border)] bg-[color-mix(in_srgb,var(--muted)_6%,var(--card))] p-3"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <div className="text-xs font-semibold text-[var(--text)]">{a.metric.toUpperCase()} spike</div>
-                          <div className="mt-0.5 text-[11px] text-[var(--muted)]">
-                            {new Date(a.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </div>
-                        </div>
-                        <Badge color={severityColor(a.severity)}>{a.severity}</Badge>
-                      </div>
-
-                      <div className="mt-2 grid grid-cols-3 gap-2 text-[11px]">
-                        <div>
-                          <div className="text-[10px] text-[var(--muted)]">Prev</div>
-                          <div className="font-mono text-[var(--text)]">{fmt(a.prevValue, 1)}</div>
-                        </div>
-                        <div>
-                          <div className="text-[10px] text-[var(--muted)]">Now</div>
-                          <div className="font-mono text-[var(--text)]">{fmt(a.value, 1)}</div>
-                        </div>
-                        <div>
-                          <div className="text-[10px] text-[var(--muted)]">Δ%</div>
-                          <div className="font-mono text-[var(--text)]">
-                            {a.deltaPct === null ? '—' : `${fmt(a.deltaPct * 100, 0)}%`}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  </div>
-                </div>
-              )}
-            </div>
+          <div className="card card-hover h-full min-h-0 overflow-hidden p-4">
+            <DemandTracker variant="embedded" />
           </div>
         </div>
       </div>

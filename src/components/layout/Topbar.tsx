@@ -18,10 +18,7 @@ function titleForPath(pathname: string) {
   if (pathname.startsWith('/meters/')) return 'Meter Detail'
   if (pathname === '/alerts') return 'Alarms'
   if (pathname === '/topology') return 'Single Line'
-  if (pathname === '/power-quality') return 'PQ Trends'
-  if (pathname === '/power-quality/trends') return 'PQ Trends'
-  if (pathname === '/power-quality/events') return 'PQ Events'
-  if (pathname.startsWith('/power-quality/')) return 'Power Quality'
+  if (pathname === '/power-quality' || pathname.startsWith('/power-quality/')) return 'Power Quality'
   if (pathname === '/reports/consumption') return 'Consumption'
   return 'Power Monitoring'
 }

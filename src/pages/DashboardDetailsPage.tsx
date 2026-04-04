@@ -28,16 +28,10 @@ const CARDS: HubCard[] = [
     cta: 'Open topology',
   },
   {
-    title: 'Power Quality (SCADA)',
-    desc: 'Single-screen PQ trends (V, Hz, PF, kW/kVAR).',
+    title: 'Power Quality',
+    desc: 'Shaded PQ trends, fluctuation markers, and voltage events (sags/swells/interruptions) on one page.',
     to: '/power-quality',
-    cta: 'Open PQ SCADA',
-  },
-  {
-    title: 'Power Quality Events',
-    desc: 'Voltage sags/swells/interruptions timeline and event table for investigation.',
-    to: '/power-quality/events',
-    cta: 'Open events',
+    cta: 'Open Power Quality',
   },
   {
     title: 'Dashboard (legacy analytics)',

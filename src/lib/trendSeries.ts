@@ -5,6 +5,8 @@ export type TrendPoint = {
   kw: number
   voltageV: number
   currentA: number
+  /** System frequency (Hz) when available from telemetry. */
+  frequencyHz?: number
   pf?: number
   kvar?: number
 }
@@ -52,11 +54,13 @@ export function aggregateTrendByBucket(points: TrendPoint[], bucketMs: number): 
     const ts = new Date(bucketStart).toISOString()
     const pfs = buf.map((p) => p.pf).filter((v): v is number => v !== undefined && Number.isFinite(v))
     const kvars = buf.map((p) => p.kvar).filter((v): v is number => v !== undefined && Number.isFinite(v))
+    const freqs = buf.map((p) => p.frequencyHz).filter((v): v is number => v !== undefined && Number.isFinite(v))
     out.push({
       ts,
       kw: avg(buf.map((p) => p.kw)),
       voltageV: avg(buf.map((p) => p.voltageV)),
       currentA: avg(buf.map((p) => p.currentA)),
+      ...(freqs.length ? { frequencyHz: freqs.reduce((a, b) => a + b, 0) / freqs.length } : {}),
       ...(pfs.length ? { pf: pfs.reduce((a, b) => a + b, 0) / pfs.length } : {}),
       ...(kvars.length ? { kvar: kvars.reduce((a, b) => a + b, 0) / kvars.length } : {}),
     })
@@ -159,9 +163,9 @@ export function aggregateFluctuationByBucket(points: FluctuationBucketPoint[], b
 /**
  * Downsample for rendering: adaptive bucket size then cap (main chart).
  */
-export function downsampleTrendForChart(points: TrendPoint[], spanMs: number): TrendPoint[] {
+export function downsampleTrendForChart(points: TrendPoint[], spanMs: number, bucketMsOverride?: number): TrendPoint[] {
   if (points.length === 0) return []
-  const bucketMs = bucketMsForVisibleSpan(spanMs)
+  const bucketMs = bucketMsOverride ?? bucketMsForVisibleSpan(spanMs)
   let agg = aggregateTrendByBucket(points, bucketMs)
   if (agg.length <= MAX_MAIN_CHART_POINTS) return agg
   const stride = Math.ceil(agg.length / MAX_MAIN_CHART_POINTS)

@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppLayout } from './components/layout/AppLayout'
 import { DashboardPage } from './pages/DashboardPage'
 import { DashboardScadaPage } from './pages/DashboardScadaPage'
@@ -9,7 +9,6 @@ import { ConsumptionReportPage } from './pages/ConsumptionReportPage'
 import { LineDashboardPage } from './pages/LineDashboardPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { TopologyPage } from './pages/TopologyPage'
-import { PowerQualityPage } from './pages/PowerQualityPage'
 import { PowerQualityTrendsPage } from './pages/PowerQualityTrendsPage'
 import { RealTimeDataPage } from './pages/RealTimeDataPage'
 import { PvcTrendsPage } from './pages/PvcTrendsPage'
@@ -30,8 +29,8 @@ export default function App() {
         <Route path="alerts" element={<AlertsPage />} />
         <Route path="topology" element={<TopologyPage />} />
         <Route path="power-quality" element={<PowerQualityTrendsPage />} />
-        <Route path="power-quality/trends" element={<PowerQualityTrendsPage />} />
-        <Route path="power-quality/events" element={<PowerQualityPage />} />
+        <Route path="power-quality/trends" element={<Navigate to="/power-quality" replace />} />
+        <Route path="power-quality/events" element={<Navigate to="/power-quality" replace />} />
         <Route path="real-time-data" element={<RealTimeDataPage />} />
         <Route
           path="production-efficiency"

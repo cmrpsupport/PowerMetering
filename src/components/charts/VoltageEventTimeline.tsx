@@ -57,13 +57,13 @@ function CustomTooltip({
   if (!active || !payload?.length) return null
   const d = payload[0].payload
   return (
-    <div className="rounded-lg border border-slate-300 bg-white p-3 text-sm shadow-lg dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200">
+    <div className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-3 text-sm text-[var(--text)] shadow-lg">
       <p className="font-semibold">{EVENT_LABELS[d.type]}</p>
       <p>Time: {formatTime(d.ts)}</p>
       <p>Magnitude: {d.magnitudePu.toFixed(3)} pu</p>
       <p>Duration: {d.durationMs} ms</p>
       <p>Phase: {d.phase}</p>
-      {d.description && <p className="mt-1 text-slate-500 dark:text-slate-400">{d.description}</p>}
+      {d.description && <p className="mt-1 text-[var(--muted)]">{d.description}</p>}
     </div>
   )
 }
@@ -89,17 +89,17 @@ export default function VoltageEventTimeline({ events }: Props) {
   )
 
   return (
-    <div className="w-full rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
-      <ResponsiveContainer width="100%" height={320}>
-        <ScatterChart margin={{ top: 10, right: 20, bottom: 20, left: 10 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" opacity={0.3} />
+    <div className="w-full min-w-0 overflow-hidden p-2 sm:p-3">
+      <ResponsiveContainer width="100%" height={300} className="min-w-0">
+        <ScatterChart margin={{ top: 8, right: 12, bottom: 28, left: 8 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" opacity={0.85} />
           <XAxis
             dataKey="ts"
             type="number"
             domain={['dataMin', 'dataMax']}
             tickFormatter={formatTime}
-            tick={{ fill: '#94a3b8', fontSize: 11 }}
-            stroke="#94a3b8"
+            tick={{ fill: 'var(--chart-axis)', fontSize: 11 }}
+            stroke="var(--chart-axis)"
             name="Time"
           />
           <YAxis
@@ -107,20 +107,18 @@ export default function VoltageEventTimeline({ events }: Props) {
             type="number"
             name="Magnitude"
             unit=" pu"
-            tick={{ fill: '#94a3b8', fontSize: 12 }}
-            stroke="#94a3b8"
+            tick={{ fill: 'var(--chart-axis)', fontSize: 12 }}
+            stroke="var(--chart-axis)"
             label={{
               value: 'Magnitude (pu)',
               angle: -90,
               position: 'insideLeft',
-              style: { fill: '#94a3b8', fontSize: 12 },
+              style: { fill: 'var(--muted)', fontSize: 11 },
             }}
           />
           <ZAxis dataKey="durationMs" range={[40, 400]} name="Duration (ms)" />
           <Tooltip content={<CustomTooltip />} />
-          <Legend
-            wrapperStyle={{ fontSize: 12 }}
-          />
+          <Legend wrapperStyle={{ fontSize: 11, color: 'var(--muted)', paddingTop: 8 }} verticalAlign="bottom" />
           {eventTypes.map((type) => (
             <Scatter
               key={type}
