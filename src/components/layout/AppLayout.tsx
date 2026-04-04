@@ -27,7 +27,7 @@ export function AppLayout() {
       <div className="flex min-h-0 w-full flex-1">
         <Sidebar />
         <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-auto px-3 py-2 md:px-4 md:py-3 [overscroll-behavior:contain]">
-          <div className="min-h-0 w-full flex-1">
+          <div className="flex min-h-0 w-full flex-1 flex-col">
             <Outlet />
           </div>
         </main>

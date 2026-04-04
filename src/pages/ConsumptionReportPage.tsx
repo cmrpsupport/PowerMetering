@@ -1,29 +1,22 @@
 import { useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { AlertTriangle, Download, TrendingUp, Zap } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { EnergyDrilldownModal } from '../components/energy/EnergyDrilldownModal'
 import { EnergyEmptyState } from '../components/energy/EnergyEmptyState'
-import { EnergyInsightPanel } from '../components/energy/EnergyInsightPanel'
 import { EnergySummaryBar, type SummaryTone } from '../components/energy/EnergySummaryBar'
-import { StackedEnergyChart } from '../components/energy/StackedEnergyChart'
 import { SegmentedControl } from '../components/ui/SegmentedControl'
-import { PLC_PRODUCTION_METERS } from '../constants/plcProductionMeters'
-import { useConsumptionReportIntervals, useDemandStatus, usePlcFullSnapshot } from '../hooks/queries'
+import { useConsumptionReportIntervals, useDemandStatus } from '../hooks/queries'
 import { classifyEnergyCell, type CellAnomaly } from '../lib/energyAnomalies'
 import {
   aggregateConsumptionIntervals,
   consumptionReportToCsv,
-  CONSUMPTION_REPORT_HOURS,
   type ConsumptionReportBucket,
 } from '../lib/consumptionReport'
 import {
-  buildEnergyInsights,
   computePeriodComparisons,
   findGlobalPeakDemand,
   intervalsForBucket,
 } from '../lib/energyInsights'
-import type { PlcMeterData } from '../types'
 import type { ConsumptionGranularity, EnergyInterval } from '../types'
 
 const GRANULARITY_OPTIONS: { id: ConsumptionGranularity; label: string; hint: string }[] = [
@@ -72,16 +65,6 @@ function fmtNum(n: number, decimals = 1) {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   })
-}
-
-function fmtSnap(n: number, decimals = 1): string {
-  if (!Number.isFinite(n) || n === 0) return '\u2014'
-  return n.toFixed(decimals)
-}
-
-function meterHasData(data: PlcMeterData | undefined): boolean {
-  if (!data) return false
-  return data.Real_power !== 0 || data.Voltage_Lave !== 0 || data.Current_Ave !== 0
 }
 
 function rankLinesForRow(b: ConsumptionReportBucket, meterNames: string[]): Map<string, number> {
@@ -135,8 +118,6 @@ export function ConsumptionReportPage() {
   const [drilldown, setDrilldown] = useState<{ bucketKey: string; lineName: string; periodLabel: string } | null>(null)
 
   const q = useConsumptionReportIntervals(granularity)
-  const snapQ = usePlcFullSnapshot()
-  const snap = snapQ.data
   const demandQ = useDemandStatus('24h')
   const queryClient = useQueryClient()
   const granRef = useRef<HTMLDivElement>(null)
@@ -173,11 +154,6 @@ export function ConsumptionReportPage() {
       return ia - ib
     })
   }, [buckets])
-
-  const insights = useMemo(
-    () => buildEnergyInsights(buckets, meterNames, granularity),
-    [buckets, meterNames, granularity],
-  )
 
   const periodCmp = useMemo(() => computePeriodComparisons(buckets, granularity), [buckets, granularity])
 
@@ -232,7 +208,7 @@ export function ConsumptionReportPage() {
   const empty = !q.isLoading && buckets.length === 0
 
   return (
-    <div className="flex w-full min-w-0 flex-col gap-4 pb-8">
+    <div className="flex h-full w-full min-w-0 flex-col gap-3 overflow-hidden">
       <header className="flex min-w-0 flex-col gap-2 border-b border-[var(--border)] pb-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-lg font-semibold text-[var(--text)]">Total energy consumption</h1>
@@ -310,24 +286,14 @@ export function ConsumptionReportPage() {
         </div>
       </div>
 
-      {!empty && !q.isLoading ? <EnergyInsightPanel title={insights.title} bullets={insights.bullets} recommendations={insights.recommendations} /> : null}
-
       {q.isLoading ? (
-        <div className="h-[min(440px,50vh)] min-h-[280px] animate-pulse rounded-2xl border border-[var(--border)] bg-[color-mix(in_srgb,var(--muted)_10%,var(--card))]" />
+        <div className="h-28 animate-pulse rounded-2xl border border-[var(--border)] bg-[color-mix(in_srgb,var(--muted)_10%,var(--card))]" />
       ) : empty ? (
         <EnergyEmptyState
           onChangeDate={() => granRef.current?.scrollIntoView({ behavior: 'smooth' })}
           onRetry={() => queryClient.invalidateQueries({ queryKey: ['energyIntervals', 'consumption'] })}
         />
-      ) : (
-        <StackedEnergyChart
-          buckets={buckets}
-          meterNames={meterNames}
-          lineColors={LINE_COLORS}
-          height={440}
-          granularity={granularity}
-        />
-      )}
+      ) : null}
 
       {q.isError ? (
         <div className="rounded-lg border border-red-500/40 bg-red-950/30 px-4 py-3 text-sm text-red-100">
@@ -336,7 +302,7 @@ export function ConsumptionReportPage() {
       ) : null}
 
       {!empty && !q.isLoading ? (
-        <section className="space-y-3">
+        <section className="flex min-h-0 flex-1 flex-col gap-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-sm font-semibold text-[var(--text)]">
               {dataMode === 'consumption' ? 'Period consumption (kWh)' : 'Cumulative meter totals (kWh)'}
@@ -356,8 +322,8 @@ export function ConsumptionReportPage() {
             </label>
           </div>
 
-          <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
-            <div className="max-h-[min(70vh,620px)] overflow-auto">
+          <div className="flex min-h-0 flex-1 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
+            <div className="min-h-0 flex-1 overflow-auto">
               <table className="w-full min-w-[800px] border-collapse text-sm">
                 <thead className="sticky top-0 z-20 border-b border-[var(--border)] bg-[var(--card)] shadow-sm">
                   <tr className="text-[11px] text-[var(--muted)]">
@@ -475,39 +441,6 @@ export function ConsumptionReportPage() {
                 </tbody>
               </table>
             </div>
-          </div>
-          <p className="text-[11px] text-[var(--muted)]">
-            Cell highlights: yellow/red = large change vs prior period; ⚠ = zero use; bold = top three in row. Click any cell for
-            hourly detail and plant load context.
-          </p>
-        </section>
-      ) : null}
-
-      {/* Compact line quick links */}
-      {!empty && !q.isLoading ? (
-        <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4">
-          <div className="text-xs font-semibold text-[var(--text)]">Production lines</div>
-          <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {PLC_PRODUCTION_METERS.map((def) => {
-              const d = snap?.meters[def.meterIds?.[0] ?? '']
-              return (
-                <div key={def.id} className="rounded-xl border border-[var(--border)] p-3">
-                  <Link to={`/lines/${def.id}`} className="text-sm font-semibold text-[var(--primary)] hover:underline">
-                    {def.name}
-                  </Link>
-                  <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
-                    <div>
-                      <div className="text-[10px] text-[var(--muted)]">Live kW</div>
-                      <div className="font-mono">{fmtSnap(d?.Real_power ?? 0, 1)}</div>
-                    </div>
-                    <div>
-                      <div className="text-[10px] text-[var(--muted)]">E (kWh)</div>
-                      <div className="font-mono">{fmtSnap(d?.Real_energy ?? 0, 1)}</div>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
           </div>
         </section>
       ) : null}
