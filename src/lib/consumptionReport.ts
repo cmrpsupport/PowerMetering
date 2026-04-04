@@ -1,4 +1,5 @@
 import type { ConsumptionGranularity, EnergyInterval } from '../types'
+import { normalizeProductionLineName } from './plcLineNames'
 
 /** Hours of 15‑min intervals to request for each report granularity (mock/API). */
 export const CONSUMPTION_REPORT_HOURS: Record<ConsumptionGranularity, number> = {
@@ -91,7 +92,7 @@ export function aggregateConsumptionIntervals(
     row.totalEnergyKwh += iv.energyKwh
     row.peakDemandKw = Math.max(row.peakDemandKw, iv.demandKw)
 
-    const mn = iv.meterName
+    const mn = normalizeProductionLineName(iv.meterName)
     if (!row.byMeter[mn]) {
       row.byMeter[mn] = { energyKwh: 0, peakDemandKw: 0, cumulativeKwhEnd: null }
     }

@@ -12,6 +12,7 @@ import type {
 
 export type DemandTrendRange = '24h' | '7d' | '30d' | 'all'
 import { PLC_METERS, PLC_TOTAL_ENERGY_KEYS, METER_PARAM_SUFFIXES } from '../constants/plcMeters'
+import { normalizeProductionLineName } from '../lib/plcLineNames'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '').toString()
 
@@ -310,7 +311,8 @@ export async function getEnergyIntervals(
   if (typeof opts?.bucketSec === 'number' && Number.isFinite(opts.bucketSec) && opts.bucketSec > 0) {
     p.set('bucketSec', String(Math.floor(opts.bucketSec)))
   }
-  return await http<EnergyInterval[]>(`/api/energy/intervals?${p.toString()}`).catch(() => [])
+  const raw = await http<EnergyInterval[]>(`/api/energy/intervals?${p.toString()}`).catch(() => [])
+  return raw.map((iv) => ({ ...iv, meterName: normalizeProductionLineName(iv.meterName) }))
 }
 
 /** Last N hours of plant kW as time-weighted averages over fixed clock-aligned buckets (plc_samples Power_kW). */
