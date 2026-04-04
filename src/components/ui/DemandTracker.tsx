@@ -7,13 +7,17 @@ import {
   Area,
   AreaChart,
   CartesianGrid,
+  Line,
+  LineChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
-  ReferenceLine,
 } from 'recharts'
 import { SegmentedControl } from './SegmentedControl'
+import { computeFluctuationAlerts } from '../../lib/fluctuationDetection'
+import type { TrendPoint } from '../../lib/trendSeries'
 
 function fmt(n: number, decimals = 1): string {
   if (!Number.isFinite(n) || n === 0) return '\u2014'
@@ -179,6 +183,26 @@ export function DemandTracker({ variant = 'card' }: DemandTrackerProps) {
       t: Date.parse(p.ts),
     }))
   }, [derived?.trend, demand?.trend])
+
+  const fluctTrendPoints = useMemo((): TrendPoint[] => {
+    const t = derived?.trend ?? demand?.trend ?? []
+    return t.map((p) => ({
+      ts: p.ts,
+      kw: Number(p.kw),
+      voltageV: 0,
+      currentA: 0,
+    }))
+  }, [derived?.trend, demand?.trend])
+
+  const kwFluctuations = useMemo(
+    () => computeFluctuationAlerts(fluctTrendPoints, { maxAlerts: 24 }).filter((a) => a.metric === 'kw'),
+    [fluctTrendPoints],
+  )
+
+  const sparkRows = useMemo(() => {
+    const tail = chartData.slice(-48)
+    return tail.map((p) => ({ ts: p.ts, kw: p.kw }))
+  }, [chartData])
 
   const handleSetThreshold = async () => {
     const kw = Number(thresholdInput)
@@ -425,6 +449,59 @@ export function DemandTracker({ variant = 'card' }: DemandTrackerProps) {
             Set demand threshold
           </button>
         )}
+      </div>
+
+      {/* Step-change fluctuation on logged rolling kW (same rules as PQ / SCADA: |Δ%| &gt;25% warn, &gt;40% crit) */}
+      <div className="mt-3 rounded-lg border border-[var(--border)] bg-[color-mix(in_srgb,var(--muted)_5%,var(--card))] p-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted)]">Fluctuation detection</span>
+          <span className="text-[10px] tabular-nums text-[var(--text)]">
+            {kwFluctuations.length === 0 ? (
+              <span className="text-emerald-500/90">Stable</span>
+            ) : (
+              <>
+                <span className="text-amber-400">{kwFluctuations.filter((a) => a.severity === 'warning').length} warn</span>
+                <span className="mx-1 text-[var(--border)]">·</span>
+                <span className="text-red-400">{kwFluctuations.filter((a) => a.severity === 'critical').length} crit</span>
+              </>
+            )}
+          </span>
+        </div>
+        <div className="mt-1.5 flex min-h-[52px] gap-2">
+          <div className="min-h-[48px] min-w-0 flex-1">
+            {sparkRows.length >= 2 ? (
+              <ResponsiveContainer width="100%" height={48}>
+                <LineChart data={sparkRows} margin={{ top: 4, right: 2, left: 0, bottom: 0 }}>
+                  <Line
+                    type="monotone"
+                    dataKey="kw"
+                    stroke="var(--primary)"
+                    strokeWidth={1.5}
+                    dot={false}
+                    isAnimationActive={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex h-12 items-center text-[10px] text-[var(--muted)]">Need more samples for trend</div>
+            )}
+          </div>
+          <div className="flex max-w-[140px] shrink-0 flex-col justify-center text-[10px] leading-tight text-[var(--muted)]">
+            {kwFluctuations[0] ? (
+              <>
+                <span className="font-medium text-[var(--text)]">Latest spike</span>
+                <span className="tabular-nums">
+                  {kwFluctuations[0].deltaPct === null
+                    ? '—'
+                    : `${(kwFluctuations[0].deltaPct * 100).toFixed(0)}%`}{' '}
+                  · {new Date(kwFluctuations[0].ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </>
+            ) : (
+              <span>No step spikes vs prior point in range.</span>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   )
