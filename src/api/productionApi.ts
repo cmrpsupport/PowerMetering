@@ -81,3 +81,13 @@ export async function updateProductionEntry(body: {
 }): Promise<ProductionMutationResponse> {
   return mutateProduction('PUT', body as Record<string, unknown>)
 }
+
+export async function deleteProductionEntry(id: number): Promise<ProductionMutationResponse> {
+  const url = API_BASE_URL
+    ? `${API_BASE_URL}/api/production/entries?id=${encodeURIComponent(String(id))}`
+    : `/api/production/entries?id=${encodeURIComponent(String(id))}`
+  const res = await fetch(url, { method: 'DELETE', headers: { Accept: 'application/json' } })
+  const data = (await res.json().catch(() => ({}))) as ProductionMutationResponse
+  if (!res.ok) return { ok: false, error: data.error ?? `HTTP ${res.status}` }
+  return data
+}

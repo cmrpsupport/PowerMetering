@@ -14,6 +14,7 @@ function titleForPath(pathname: string) {
   if (pathname.startsWith('/dashboard/')) return 'Plant Overview'
   if (pathname === '/real-time-data') return 'Live Meters'
   if (pathname === '/production-efficiency') return 'Production & Efficiency'
+  if (pathname === '/production-input') return 'Production Input'
   if (pathname.startsWith('/meters/')) return 'Meter Detail'
   if (pathname === '/alerts') return 'Alarms'
   if (pathname === '/topology') return 'Single Line'

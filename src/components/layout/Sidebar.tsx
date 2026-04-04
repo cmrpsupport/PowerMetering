@@ -8,6 +8,7 @@ import {
   LayoutGrid,
   Database,
   Factory,
+  Table2,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -17,6 +18,7 @@ const navItems: NavItem[] = [
   // Ops-first ordering: SCADA screens first (no-scroll), then detail/drilldown pages.
   { to: '/dashboard', label: 'Plant Overview', icon: LayoutGrid, end: true },
   { to: '/production-efficiency', label: 'Production & Efficiency', icon: Factory },
+  { to: '/production-input', label: 'Production Input', icon: Table2 },
   { to: '/real-time-data', label: 'Live Meters', icon: Database },
   { to: '/topology', label: 'Single Line', icon: Network },
   { to: '/power-quality', label: 'PQ Trends', icon: LineChart },

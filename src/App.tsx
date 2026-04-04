@@ -14,6 +14,7 @@ import { PowerQualityTrendsPage } from './pages/PowerQualityTrendsPage'
 import { RealTimeDataPage } from './pages/RealTimeDataPage'
 import { PvcTrendsPage } from './pages/PvcTrendsPage'
 import { ProductionEfficiencyPage } from './pages/ProductionEfficiencyPage'
+import { ProductionInputPage } from './pages/ProductionInputPage'
 
 export default function App() {
   return (
@@ -40,6 +41,7 @@ export default function App() {
             </div>
           }
         />
+        <Route path="production-input" element={<ProductionInputPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

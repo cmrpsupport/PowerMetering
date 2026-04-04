@@ -72,6 +72,7 @@ export function KpiCard({
   sparkline,
   footerRight,
   onClick,
+  className,
 }: {
   title: string
   value: ReactNode
@@ -87,6 +88,7 @@ export function KpiCard({
   sparkline?: number[]
   footerRight?: ReactNode
   onClick?: () => void
+  className?: string
 }) {
   const st = statusStyles(status)
   const trend = trendFromDelta(deltaPct)
@@ -114,6 +116,7 @@ export function KpiCard({
         st.ring,
         st.glow,
         onClick ? 'cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--primary)_45%,transparent)]' : '',
+        className ?? '',
       ].join(' ')}
     >
       <div className="pointer-events-none absolute inset-0 opacity-[0.16] [mask-image:radial-gradient(160px_120px_at_80%_20%,black,transparent)]">

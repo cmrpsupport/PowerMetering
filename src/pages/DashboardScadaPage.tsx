@@ -359,7 +359,7 @@ export function DashboardScadaPage() {
     if (/^Pretzel Line$/i.test(n)) return 'Pretzel'
     if (/^Wafer Line 1$/i.test(n)) return 'Wafer1'
     if (/^Wafer Line 2$/i.test(n)) return 'Wafer2'
-    if (/^Choco.*Line$/i.test(n)) return 'Choco'
+    if (/^Chooey Choco Line$/i.test(n)) return 'Choco'
     if (/^Dynamite Line$/i.test(n)) return 'Dynamite'
     if (/^XO Line$/i.test(n)) return 'XO'
     if (/^Maxx Line$/i.test(n)) return 'Maxx'

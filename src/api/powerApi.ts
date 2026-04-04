@@ -134,7 +134,7 @@ function valueForTotalEnergyKey(values: Record<string, unknown>, key: string): n
     Total_EnergyCon_kwh_Pretzel_Line: 'Total_PretzelLine_kWh',
     Total_EnergyCon_kwh_Wafer_Line_1: 'Total_WaferLine1_kWh',
     Total_EnergyCon_kwh_Wafer_Line_2: 'Total_WaferLine2_kWh',
-    Total_EnergyCon_kwh_Chooey_Choco_Line: 'Total_ChocoyChocoLine_kWh',
+    Total_EnergyCon_kwh_Chooey_Choco_Line: 'Total_ChooeyChocoLine_kWh',
     Total_EnergyCon_kwh_Dynamite_Line: 'Total_DynamiteLine_kWh',
     Total_EnergyCon_kwh_XO_Line: 'Total_XOLine_kWh',
     Total_EnergyCon_kwh_Maxx_Line: 'Total_MaxxLine_kWh',
