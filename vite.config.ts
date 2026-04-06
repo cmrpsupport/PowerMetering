@@ -21,8 +21,7 @@ export default defineConfig({
   },
   plugins: [react()],
   server: {
-    // Windows localhost-only deployment: proxy API calls to Node-RED.
-    // This makes /api/* work even if VITE_API_BASE_URL isn't set.
+    host: '0.0.0.0',  // listen on all interfaces — accessible on the local network
     proxy: {
       '/api': {
         target: 'http://127.0.0.1:1880',
