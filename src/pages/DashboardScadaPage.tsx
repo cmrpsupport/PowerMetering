@@ -312,19 +312,22 @@ export function DashboardScadaPage() {
   const lineBarLabel = (mode: LineEnergyViewMode) => (p: unknown) => {
     const v = Number((p as { value?: unknown }).value)
     if (!Number.isFinite(v) || v <= 0) return null
+    const barWidth = Number((p as { width?: number }).width) || 0
+    const barHeight = Number((p as { height?: number }).height) || 0
+    // Skip label if bar is too short to fit text
+    if (barWidth < 24 || barHeight < 10) return null
     const text = mode === 'pct' ? `${v.toFixed(v >= 10 ? 0 : 1)}%` : `${fmtCompact(v)}`
     return (
       <text
-        x={(p as { x?: number }).x}
-        y={(p as { y?: number }).y}
-        dx={(p as { width?: number }).width ? Number((p as { width?: number }).width) / 2 : 0}
-        dy={-6}
-        textAnchor="middle"
+        x={Number((p as { x?: number }).x) + barWidth - 6}
+        y={Number((p as { y?: number }).y) + barHeight / 2}
+        textAnchor="end"
+        dominantBaseline="central"
         style={{
-          fill: 'var(--text)',
+          fill: '#fff',
           fontSize: 10,
-          fontWeight: 600,
-          filter: 'drop-shadow(0px 1px 2px rgba(0,0,0,0.25))',
+          fontWeight: 700,
+          filter: 'drop-shadow(0px 1px 2px rgba(0,0,0,0.5))',
         }}
       >
         {text}
