@@ -176,7 +176,7 @@ export function ConsumptionReportPage() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `consumption-${granularity}-${new Date().toISOString().slice(0, 10)}.csv`
+    a.download = `EnergyConsumption_${new Date().toISOString().slice(0, 10)}.csv`
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -200,7 +200,7 @@ export function ConsumptionReportPage() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `energy-table-${dataMode}-${granularity}.csv`
+    a.download = `EnergyConsumption_${new Date().toISOString().slice(0, 10)}.csv`
     a.click()
     URL.revokeObjectURL(url)
   }

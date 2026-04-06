@@ -485,7 +485,7 @@ export function PowerQualityTrendsPage() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `pq-trend-${effectiveMeterId}-${rangeId}.csv`
+    a.download = `EnergyConsumption_${new Date().toISOString().slice(0, 10)}.csv`
     a.click()
     URL.revokeObjectURL(url)
   }, [pqRows, effectiveMeterId, rangeId])
