@@ -15,14 +15,15 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 # Run as Administrator:
 #   powershell -ExecutionPolicy Bypass -File scripts\autostart-install.ps1
 
-$ServiceTask = "PowerMonitorService"
-$TrayTask    = "PowerMonitorTray"
-$ScriptDir   = Split-Path -Parent $MyInvocation.MyCommand.Definition
-$RepoRoot    = Split-Path -Parent $ScriptDir
-$StartupBat  = Join-Path $ScriptDir "startup.bat"
-$TrayScript  = Join-Path $ScriptDir "tray-launcher.ps1"
+$ServiceTask     = "PowerMonitorService"
+$TrayTask        = "PowerMonitorTray"
+$ScriptDir       = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$RepoRoot        = Split-Path -Parent $ScriptDir
+$StartupBat      = Join-Path $ScriptDir "startup.bat"
+$TrayScript      = Join-Path $ScriptDir "tray-launcher.ps1"
+$ShortcutScript  = Join-Path $ScriptDir "install-desktop-shortcut.ps1"
 
-foreach ($f in @($StartupBat, $TrayScript)) {
+foreach ($f in @($StartupBat, $TrayScript, $ShortcutScript)) {
     if (-not (Test-Path $f)) { throw "Missing file: $f" }
 }
 
@@ -60,9 +61,13 @@ $null = Register-ScheduledTask `
     -Action      (New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$TrayScript`"" -WorkingDirectory $RepoRoot) `
     -Settings    $settings
 
+# Desktop shortcut (runs in the current user context, no elevation needed)
+& powershell -NoProfile -ExecutionPolicy Bypass -File "$ShortcutScript"
+
 Write-Host ""
 Write-Host "Installed:" -ForegroundColor Green
 Write-Host "  $ServiceTask  - starts Node-RED + Vite at boot (no logon needed)"
 Write-Host "  $TrayTask     - shows tray icon when a user logs in"
+Write-Host "  Desktop shortcut - double-click to open the dashboard"
 Write-Host ""
 Write-Host "To remove: powershell -File scripts\autostart-uninstall.ps1"

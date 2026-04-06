@@ -110,6 +110,7 @@ export function usePowerTrend(
     queryKey: ['powerTrend', minutes, opts?.bucket ?? null, opts?.bucketSec ?? null],
     queryFn: () => getPowerTrend(minutes, opts),
     refetchInterval: 60_000,
+    gcTime: 30_000,
   })
 }
 
@@ -128,6 +129,7 @@ export function useMeterHistory(minutes = 24 * 60, meterId?: string) {
     queryKey: ['meterHistory', minutes, meterId],
     queryFn: () => getMeterHistory(minutes, meterId),
     refetchInterval: 60_000,
+    gcTime: 30_000,
   })
 }
 

@@ -1,5 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppLayout } from './components/layout/AppLayout'
+import { MemoryReloadBanner } from './components/ui/MemoryReloadBanner'
+import { useMemoryGuard } from './hooks/useMemoryGuard'
 import { DashboardPage } from './pages/DashboardPage'
 import { DashboardScadaPage } from './pages/DashboardScadaPage'
 import { DashboardDetailsPage } from './pages/DashboardDetailsPage'
@@ -16,7 +18,11 @@ import { ProductionEfficiencyPage } from './pages/ProductionEfficiencyPage'
 import { ProductionInputPage } from './pages/ProductionInputPage'
 
 export default function App() {
+  const memoryGuard = useMemoryGuard()
+
   return (
+    <>
+    <MemoryReloadBanner guard={memoryGuard} />
     <Routes>
       <Route element={<AppLayout />}>
         <Route index element={<ConsumptionReportPage />} />
@@ -44,5 +50,6 @@ export default function App() {
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
+    </>
   )
 }

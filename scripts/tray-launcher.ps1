@@ -103,7 +103,24 @@ $notify.ContextMenuStrip = $menu
 # Double-click tray icon  open dashboard
 $notify.Add_DoubleClick({ Start-Process "http://localhost:5173" })
 
-#  start the app and enter message loop 
+#  start the app and enter message loop
 Start-PowerMonitor
+
+# Auto-open dashboard once the frontend is ready
+Start-Job -ScriptBlock {
+    $deadline = (Get-Date).AddSeconds(90)
+    while ((Get-Date) -lt $deadline) {
+        try {
+            $tcp = New-Object System.Net.Sockets.TcpClient
+            $tcp.Connect("127.0.0.1", 5173)
+            $tcp.Close()
+            Start-Process "http://localhost:5173"
+            break
+        } catch {
+            Start-Sleep -Seconds 2
+        }
+    }
+} | Out-Null
+
 $notify.ShowBalloonTip(3000, "Power Monitor", "Running in background. Right-click tray icon for options.", [System.Windows.Forms.ToolTipIcon]::Info)
 [System.Windows.Forms.Application]::Run()
