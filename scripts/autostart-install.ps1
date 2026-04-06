@@ -1,5 +1,10 @@
-#Requires -RunAsAdministrator
 $ErrorActionPreference = "Stop"
+
+# Self-elevate if not already running as Administrator
+if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Start-Process powershell -Verb RunAs -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`""
+    exit
+}
 
 # Power Monitor - Register auto-start on Windows
 #
