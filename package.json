@@ -7,6 +7,8 @@
     "postinstall": "npm install --prefix backend && npm install --prefix backend/node-red-data",
     "start": "concurrently -n frontend,backend -c green,cyan \"npm run dev\" \"npm start --prefix backend\"",
     "bootstrap:win": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/bootstrap-windows.ps1",
+    "autostart:install": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/autostart-install.ps1",
+    "autostart:uninstall": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/autostart-uninstall.ps1",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
