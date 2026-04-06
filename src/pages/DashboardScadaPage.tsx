@@ -787,13 +787,6 @@ export function DashboardScadaPage() {
               <div className="mb-2 flex items-center justify-between gap-2">
                 <div className="text-sm font-semibold text-[var(--text)]">Energy by line</div>
                 <div className="flex items-center gap-2">
-                  <div className="hidden items-baseline gap-2 sm:flex">
-                    <div className="text-right text-[11px] text-[var(--muted)]">{lineEnergyHover?.line ?? '—'}</div>
-                    <div className="font-mono text-lg font-semibold text-[var(--text)]">
-                      {lineEnergyHover ? fmt(lineEnergyHover.kwh, 0) : '—'}
-                    </div>
-                    <div className="text-[11px] text-[var(--muted)]">kWh</div>
-                  </div>
                   <SegmentedControl
                     value={lineEnergyViewMode}
                     onChange={(id) => setLineEnergyViewMode(id as LineEnergyViewMode)}
@@ -823,7 +816,14 @@ export function DashboardScadaPage() {
                   />
                 </div>
               </div>
-              <div className="h-80 min-h-[280px] w-full min-w-0">
+              <div className="relative h-80 min-h-[280px] w-full min-w-0">
+                {lineEnergyHover && (
+                  <div className="pointer-events-none absolute right-2 top-2 z-10 flex items-baseline gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-1.5 shadow-sm">
+                    <span className="text-[11px] text-[var(--muted)]">{lineEnergyHover.line}</span>
+                    <span className="font-mono text-lg font-semibold text-[var(--text)]">{fmt(lineEnergyHover.kwh, 0)}</span>
+                    <span className="text-[11px] text-[var(--muted)]">kWh</span>
+                  </div>
+                )}
                 <div className="grid h-full grid-cols-2 gap-3">
                   <div className="min-w-0">
                     <div className="mb-1 text-[11px] font-semibold text-[var(--muted)]">Production lines</div>
