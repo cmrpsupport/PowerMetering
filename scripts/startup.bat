@@ -1,9 +1,9 @@
 @echo off
-:: ──────────────────────────────────────────────────
+:: 
 :: Power Monitor - Startup script
 :: Starts Node-RED backend + Vite frontend, then
 :: opens the dashboard in the default browser.
-:: ──────────────────────────────────────────────────
+:: 
 setlocal
 
 :: Resolve repo root (one level up from scripts/)

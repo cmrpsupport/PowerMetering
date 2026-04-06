@@ -1,11 +1,11 @@
 $ErrorActionPreference = "Stop"
 
-# ──────────────────────────────────────────────────
+# 
 # Power Monitor - Remove all auto-start Scheduled Tasks
 #
 # Run as Administrator:
 #   powershell -ExecutionPolicy Bypass -File scripts\autostart-uninstall.ps1
-# ──────────────────────────────────────────────────
+# 
 
 $tasks = @("PowerMonitorService", "PowerMonitorTray", "PowerMonitorAutoStart")
 

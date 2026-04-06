@@ -1,14 +1,14 @@
-# ──────────────────────────────────────────────────
+# 
 # Power Monitor - System-tray launcher
 # Starts the app hidden and places an icon in the
 # notification area. No console window to close.
-# ──────────────────────────────────────────────────
+# 
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
 $RepoRoot = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Definition)
 
-# ── helper: check if the service is already running ──
+#  helper: check if the service is already running 
 function Test-ServiceRunning {
     try {
         $tcp = New-Object System.Net.Sockets.TcpClient
@@ -20,7 +20,7 @@ function Test-ServiceRunning {
     }
 }
 
-# ── helper: start npm hidden ──────────────────────
+#  helper: start npm hidden 
 function Start-PowerMonitor {
     if (Test-ServiceRunning) {
         # Service task already started it at boot - nothing to do
@@ -38,7 +38,7 @@ function Start-PowerMonitor {
     $script:ManagedByUs = $true
 }
 
-# ── helper: stop process tree ─────────────────────
+#  helper: stop process tree 
 function Stop-PowerMonitor {
     if ($script:ManagedByUs -and $script:AppProcess -and -not $script:AppProcess.HasExited) {
         # /T kills entire child-process tree (concurrently, node-red, vite)
@@ -47,7 +47,7 @@ function Stop-PowerMonitor {
     }
 }
 
-# ── build a simple ⚡ icon ────────────────────────
+#  build a simple  icon 
 function New-TrayIcon {
     $bmp = New-Object System.Drawing.Bitmap(16, 16)
     $g   = [System.Drawing.Graphics]::FromImage($bmp)
@@ -60,7 +60,7 @@ function New-TrayIcon {
     return $icon
 }
 
-# ── tray icon + context menu ─────────────────────
+#  tray icon + context menu 
 $notify = New-Object System.Windows.Forms.NotifyIcon
 $notify.Icon    = New-TrayIcon
 $notify.Text    = "Power Monitor"
@@ -100,10 +100,10 @@ $menu.Items.Add($exitItem) | Out-Null
 
 $notify.ContextMenuStrip = $menu
 
-# Double-click tray icon → open dashboard
+# Double-click tray icon  open dashboard
 $notify.Add_DoubleClick({ Start-Process "http://localhost:5173" })
 
-# ── start the app and enter message loop ──────────
+#  start the app and enter message loop 
 Start-PowerMonitor
 $notify.ShowBalloonTip(3000, "Power Monitor", "Running in background. Right-click tray icon for options.", [System.Windows.Forms.ToolTipIcon]::Info)
 [System.Windows.Forms.Application]::Run()
