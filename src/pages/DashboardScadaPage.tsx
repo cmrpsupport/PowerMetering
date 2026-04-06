@@ -4,6 +4,7 @@ import { useEnergyIntervals, usePlantLoadProfile, useNodeRedHealth, usePlcFullSn
 import { DemandTracker } from '../components/ui/DemandTracker'
 import { SegmentedControl } from '../components/ui/SegmentedControl'
 import { KpiCard, type KpiStatus } from '../components/ui/KpiCard'
+import { useDatabaseBackup } from '../hooks/mutations'
 import { Activity, Bolt, Gauge, Layers, Percent, Waves, Zap } from 'lucide-react'
 import { PLC_PRODUCTION_METERS } from '../constants/plcProductionMeters'
 import {
@@ -97,6 +98,7 @@ export function DashboardScadaPage() {
   const snapQ = usePlcFullSnapshot()
   const healthQ = useNodeRedHealth()
   const plcUp = healthQ.data?.plcLink?.up === true
+  const backupM = useDatabaseBackup()
 
   const [trendWindow, setTrendWindow] = useState<TrendWindow>('30d')
   const [energyWindow, setEnergyWindow] = useState<EnergyWindow>('30d')
@@ -522,6 +524,20 @@ export function DashboardScadaPage() {
         <div className="min-w-0">
           <div className="truncate text-lg font-semibold text-[var(--text)]">Dashboard (SCADA)</div>
           <div className="mt-0.5 truncate text-xs text-[var(--muted)]">Single-screen overview.</div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => backupM.mutate()}
+            disabled={backupM.isPending}
+            className={[
+              'rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-xs font-medium shadow-sm transition',
+              backupM.isPending ? 'cursor-not-allowed opacity-60' : 'hover:text-[var(--text)]',
+            ].join(' ')}
+            title="Create a manual SQLite backup now"
+          >
+            {backupM.isPending ? 'Backing up…' : 'Backup database'}
+          </button>
         </div>
       </div>
 

@@ -48,6 +48,26 @@ async function http<T>(path: string): Promise<T> {
   return (await res.json()) as T
 }
 
+async function httpPost<T>(path: string, body?: unknown): Promise<T> {
+  const url = API_BASE_URL ? `${API_BASE_URL}${path}` : path
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
+    },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  })
+  if (!res.ok) throw new Error(`Request failed: ${res.status}`)
+  return (await res.json()) as T
+}
+
+export type DatabaseBackupResult = { ok: boolean; path: string | null; error?: string }
+
+export async function triggerDatabaseBackup(): Promise<DatabaseBackupResult> {
+  return await httpPost<DatabaseBackupResult>('/api/db/backup')
+}
+
 function toNumber(v: unknown): number {
   const n = typeof v === 'number' ? v : Number(v)
   return Number.isFinite(n) ? n : 0
