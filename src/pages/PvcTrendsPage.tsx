@@ -8,6 +8,7 @@ import {
   CartesianGrid,
   ComposedChart,
   Legend,
+  ReferenceArea,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -17,6 +18,7 @@ import {
   aggregateTrendByBucket,
   bucketMsForNavigatorFullSpan,
   bucketMsForVisibleSpan,
+  detectGaps,
   downsampleTrendForChart,
   type TrendPoint,
 } from '../lib/trendSeries'
@@ -118,6 +120,9 @@ export function PvcTrendsPage() {
     return aggregateTrendByBucket(down, bucketMs)
   }, [powerTrendFull, pvcSpanMs])
 
+  const pvcBucketMs = useMemo(() => bucketMsForVisibleSpan(pvcSpanMs), [pvcSpanMs])
+  const pvcGaps = useMemo(() => detectGaps(pvcMainSeries, pvcBucketMs), [pvcMainSeries, pvcBucketMs])
+
   return (
     <div className="grid h-[calc(100vh-124px)] min-h-0 grid-rows-[auto_1fr] gap-3 overflow-hidden">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -160,6 +165,9 @@ export function PvcTrendsPage() {
                     <stop offset="0%" stopColor="var(--chart-3)" stopOpacity={0.32} />
                     <stop offset="100%" stopColor="var(--chart-3)" stopOpacity={0.02} />
                   </linearGradient>
+                  <pattern id="pvc-gap-hatch" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+                    <line x1="0" y1="0" x2="0" y2="8" stroke="rgba(239,68,68,0.35)" strokeWidth="3" />
+                  </pattern>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
                 <XAxis dataKey="ts" tick={{ fill: 'var(--chart-axis)', fontSize: 10 }} stroke="var(--chart-axis)" minTickGap={22} tickFormatter={pvcTick} />
@@ -180,6 +188,22 @@ export function PvcTrendsPage() {
                   }}
                 />
                 <Legend wrapperStyle={{ color: 'var(--muted)', fontSize: 12 }} />
+                {pvcGaps.map((g, i) => (
+                  <ReferenceArea
+                    key={i}
+                    yAxisId="left"
+                    x1={g.x1}
+                    x2={g.x2}
+                    fill="url(#pvc-gap-hatch)"
+                    stroke="rgba(239,68,68,0.4)"
+                    strokeWidth={1}
+                    label={
+                      g.durationMs > pvcBucketMs * 6
+                        ? { value: 'No data', position: 'insideTop', fill: 'rgba(239,68,68,0.8)', fontSize: 9 }
+                        : undefined
+                    }
+                  />
+                ))}
                 <Area yAxisId="left" type="monotone" dataKey="kw" name="kW" stroke="var(--chart-1)" strokeWidth={2} fill="url(#pvc-kw-page)" dot={false} connectNulls />
                 <Area yAxisId="right" type="monotone" dataKey="voltageV" name="Voltage (V)" stroke="var(--chart-2)" strokeWidth={2} fill="url(#pvc-v-page)" dot={false} connectNulls />
                 <Area yAxisId="right" type="monotone" dataKey="currentA" name="Current (A)" stroke="var(--chart-3)" strokeWidth={2} fill="url(#pvc-i-page)" dot={false} connectNulls />

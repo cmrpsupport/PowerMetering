@@ -16,6 +16,7 @@ import {
   ComposedChart,
   LabelList,
   Legend,
+  ReferenceArea,
   ReferenceDot,
   ResponsiveContainer,
   Tooltip,
@@ -33,6 +34,7 @@ import {
   aggregateTrendByBucket,
   bucketMsForNavigatorFullSpan,
   bucketMsForVisibleSpan,
+  detectGaps,
   downsampleTrendForChart,
   type TrendPoint,
 } from '../lib/trendSeries'
@@ -487,6 +489,12 @@ export function DashboardScadaPage() {
 
   const loadProfile24h = loadProfileQ.data ?? []
 
+  const loadProfileBucketMs = { '1m': 60_000, '5m': 300_000, '15m': 900_000, '1h': 3_600_000 }[loadProfileBucket]
+  const loadProfileGaps = useMemo(
+    () => detectGaps(loadProfile24h, loadProfileBucketMs),
+    [loadProfile24h, loadProfileBucketMs],
+  )
+
   const loadProfileTick = (iso: string) => {
     const d = new Date(iso)
     if (Number.isNaN(d.getTime())) return iso
@@ -750,6 +758,9 @@ export function DashboardScadaPage() {
                         <stop offset="0%" stopColor="var(--chart-2)" stopOpacity={0.35} />
                         <stop offset="100%" stopColor="var(--chart-2)" stopOpacity={0.02} />
                       </linearGradient>
+                      <pattern id="lp-gap-hatch" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+                        <line x1="0" y1="0" x2="0" y2="8" stroke="rgba(239,68,68,0.35)" strokeWidth="3" />
+                      </pattern>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
                     <XAxis
@@ -771,6 +782,21 @@ export function DashboardScadaPage() {
                       formatter={(v) => [`${fmt(Number(v), 1)} kW`, 'Demand']}
                       labelFormatter={(l) => (typeof l === 'string' ? loadProfileTick(l) : String(l))}
                     />
+                    {loadProfileGaps.map((g, i) => (
+                      <ReferenceArea
+                        key={i}
+                        x1={g.x1}
+                        x2={g.x2}
+                        fill="url(#lp-gap-hatch)"
+                        stroke="rgba(239,68,68,0.4)"
+                        strokeWidth={1}
+                        label={
+                          g.durationMs > loadProfileBucketMs * 6
+                            ? { value: 'No data', position: 'insideTop', fill: 'rgba(239,68,68,0.8)', fontSize: 9 }
+                            : undefined
+                        }
+                      />
+                    ))}
                     <Area
                       type="monotone"
                       dataKey="demandKw"

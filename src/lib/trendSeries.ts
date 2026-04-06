@@ -82,6 +82,35 @@ export function aggregateTrendByBucket(points: TrendPoint[], bucketMs: number): 
 
 export const MAX_MAIN_CHART_POINTS = 1400
 
+/** A detected gap (no data) between two consecutive logged points. */
+export type GapInterval = { x1: string; x2: string; durationMs: number }
+
+/**
+ * Scan sorted time-series points and return gaps where the time between
+ * consecutive points exceeds `toleranceFactor × expectedIntervalMs`.
+ *
+ * The returned x1/x2 are the exact `ts` values of the points on either
+ * side of the gap — safe to use as Recharts ReferenceArea boundaries.
+ */
+export function detectGaps(
+  points: { ts: string }[],
+  expectedIntervalMs: number,
+  toleranceFactor = 2,
+): GapInterval[] {
+  if (points.length < 2 || expectedIntervalMs <= 0) return []
+  const threshold = expectedIntervalMs * toleranceFactor
+  const gaps: GapInterval[] = []
+  for (let i = 0; i < points.length - 1; i++) {
+    const t0 = Date.parse(points[i].ts)
+    const t1 = Date.parse(points[i + 1].ts)
+    const diff = t1 - t0
+    if (diff > threshold) {
+      gaps.push({ x1: points[i].ts, x2: points[i + 1].ts, durationMs: diff })
+    }
+  }
+  return gaps
+}
+
 type Sev = 'warning' | 'critical' | null
 
 function mergeSev(a: Sev, b: Sev): Sev {
