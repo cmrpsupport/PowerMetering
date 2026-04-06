@@ -4830,6 +4830,134 @@
     ]
   },
   {
+    "id": "a1000090.backup_weekly",
+    "type": "inject",
+    "z": "a1000001.0001tab",
+    "name": "SQLite weekly backup",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "0 2 * * 0",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 220,
+    "y": 200,
+    "wires": [
+      [
+        "a1000092.backup_cmd"
+      ]
+    ]
+  },
+  {
+    "id": "a1000091.backup_now",
+    "type": "inject",
+    "z": "a1000001.0001tab",
+    "name": "Backup now (manual)",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 220,
+    "y": 240,
+    "wires": [
+      [
+        "a1000092.backup_cmd"
+      ]
+    ]
+  },
+  {
+    "id": "a1000092.backup_cmd",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "SQLite: build backup command",
+    "func": "const KEEP = 8;\n\n// Node-RED sqlite node stores relative to userDir when given a relative db path.\n// Backups live alongside in ./backups.\n\nconst script = [\n  'set -e',\n  'mkdir -p backups',\n  'TS=$(date -u +%Y%m%dT%H%M%SZ)',\n  'OUT=\"backups/plc-energy-v2-${TS}.sqlite\"',\n  'if command -v sqlite3 >/dev/null 2>&1; then',\n  '  sqlite3 \"plc-energy-v2.sqlite\" \".backup ${OUT}\"',\n  'else',\n  '  cp -f \"plc-energy-v2.sqlite\" \"${OUT}\"',\n  '  [ -f \"plc-energy-v2.sqlite-wal\" ] && cp -f \"plc-energy-v2.sqlite-wal\" \"${OUT}-wal\" || true',\n  '  [ -f \"plc-energy-v2.sqlite-shm\" ] && cp -f \"plc-energy-v2.sqlite-shm\" \"${OUT}-shm\" || true',\n  'fi',\n  `COUNT=$(ls -1 backups/plc-energy-v2-*.sqlite 2>/dev/null | wc -l | tr -d ' ') || COUNT=0`,\n  `if [ \"${COUNT}\" -gt \"${KEEP}\" ]; then`,\n  `  ls -1t backups/plc-energy-v2-*.sqlite | tail -n +$((KEEP+1)) | while read -r f; do rm -f \"${f}\"; done`,\n  'fi',\n  'echo \"OK: ${OUT}\"',\n].join('; ');\n\nmsg.payload = script;\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 500,
+    "y": 220,
+    "wires": [
+      [
+        "a1000093.backup_exec"
+      ]
+    ]
+  },
+  {
+    "id": "a1000093.backup_exec",
+    "type": "exec",
+    "z": "a1000001.0001tab",
+    "command": "bash -lc",
+    "addpay": "true",
+    "append": "",
+    "useSpawn": "false",
+    "timer": "",
+    "winHide": false,
+    "oldrc": false,
+    "name": "Run sqlite backup",
+    "x": 740,
+    "y": 220,
+    "wires": [
+      [
+        "a1000094.backup_ok"
+      ],
+      [
+        "a1000095.backup_err"
+      ],
+      []
+    ]
+  },
+  {
+    "id": "a1000094.backup_ok",
+    "type": "debug",
+    "z": "a1000001.0001tab",
+    "name": "Backup OK",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": true,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "payload",
+    "statusType": "auto",
+    "x": 940,
+    "y": 200,
+    "wires": []
+  },
+  {
+    "id": "a1000095.backup_err",
+    "type": "debug",
+    "z": "a1000001.0001tab",
+    "name": "Backup ERR",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": true,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "payload",
+    "statusType": "auto",
+    "x": 940,
+    "y": 240,
+    "wires": []
+  },
+  {
     "id": "a1000019.energyhttp",
     "type": "http in",
     "z": "a1000001.0001tab",

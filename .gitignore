@@ -19,6 +19,7 @@ dist-ssr
 # Node-RED runtime data (local only)
 backend/*.sqlite
 backend/node-red-data/*.sqlite
+backend/node-red-data/backups/
 backend/node-red-data/.generated_vartable_full.json
 
 # Editor directories and files
