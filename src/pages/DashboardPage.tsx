@@ -603,7 +603,7 @@ export function DashboardPage() {
       </div>
 
       {/* Plant summary stats */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-4">
         <MiniKpiCard
           title="Total Real Power"
           value={
@@ -659,7 +659,7 @@ export function DashboardPage() {
       {/* Power quality — PF, frequency, reactive/apparent, voltage spread */}
       <div>
         <div className="mb-2 text-xs font-medium uppercase tracking-wide text-[var(--muted)]">Power quality</div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
           <MiniKpiCard
             title="Power factor"
             value={
@@ -766,8 +766,8 @@ export function DashboardPage() {
       </div>
 
       {/* Fluctuation detection */}
-      <div className="grid gap-3 lg:grid-cols-2">
-        <div className="card card-hover p-5 lg:col-span-2">
+      <div className="grid gap-3 md:grid-cols-2">
+        <div className="card card-hover p-5 md:col-span-2">
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
             <div className="min-w-0">
               <div className="text-sm font-semibold text-[var(--text)]">Power / Voltage / Current</div>
@@ -1066,7 +1066,7 @@ export function DashboardPage() {
       </div>
 
       {/* Trends */}
-      <div className="grid gap-3 lg:grid-cols-2">
+      <div className="grid gap-3 md:grid-cols-2">
         <div className="card card-hover p-5">
           <div className="mb-2 text-sm font-semibold text-[var(--text)]">kW (Active Power) vs Time</div>
           <MultiAxisTrendChart
@@ -1107,7 +1107,7 @@ export function DashboardPage() {
           </div>
         </div>
 
-        <div className="card card-hover p-5 lg:col-span-2">
+        <div className="card card-hover p-5 md:col-span-2">
           <div className="mb-4">
             <div className="text-sm font-semibold text-[var(--text)]">Load profile & demand</div>
             <div className="mt-0.5 text-[11px] text-[var(--muted)]">
@@ -1204,7 +1204,7 @@ export function DashboardPage() {
           )}
         </div>
 
-        <div className="card card-hover p-5 lg:col-span-2">
+        <div className="card card-hover p-5 md:col-span-2">
           <div className="mb-2 text-sm font-semibold text-[var(--text)]">Peak Demand Tracking (daily max)</div>
           <div className="h-72 min-h-[220px] w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%">

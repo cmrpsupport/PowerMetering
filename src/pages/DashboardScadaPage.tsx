@@ -517,7 +517,7 @@ export function DashboardScadaPage() {
   }
 
   return (
-    <div className="grid h-[calc(100vh-124px)] min-h-0 grid-rows-[auto_auto_1fr] gap-3 overflow-hidden">
+    <div className="grid min-h-0 grid-rows-[auto_auto_1fr] gap-3 overflow-hidden md:h-[calc(100vh-124px)]">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
           <div className="truncate text-lg font-semibold text-[var(--text)]">Dashboard (SCADA)</div>
@@ -600,8 +600,8 @@ export function DashboardScadaPage() {
         />
       </div>
 
-      <div className="grid min-h-0 gap-3 lg:grid-cols-4">
-        <div className="grid min-h-0 gap-3 lg:col-span-3 lg:grid-rows-[1fr_auto]">
+      <div className="grid min-h-0 gap-3 md:grid-cols-4">
+        <div className="grid min-h-0 gap-3 md:col-span-3 md:grid-rows-[1fr_auto]">
           <div className="card card-hover flex min-h-0 flex-col overflow-hidden p-4">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
               <div className="min-w-0">
@@ -765,7 +765,7 @@ export function DashboardScadaPage() {
             </div>
           </div>
 
-          <div className="grid gap-3 lg:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-2">
             <div className="card card-hover overflow-hidden p-4">
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                 <div className="text-sm font-semibold text-[var(--text)]">24-hour load profile</div>
