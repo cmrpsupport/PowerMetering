@@ -823,7 +823,7 @@ export function DashboardScadaPage() {
                   />
                 </div>
               </div>
-              <div className="h-48 min-h-[160px] w-full min-w-0">
+              <div className="h-80 min-h-[280px] w-full min-w-0">
                 <div className="grid h-full grid-cols-2 gap-3">
                   <div className="min-w-0">
                     <div className="mb-1 text-[11px] font-semibold text-[var(--muted)]">Production lines</div>
@@ -833,8 +833,8 @@ export function DashboardScadaPage() {
                           data={lineEnergyGrouped.prod}
                           layout="vertical"
                           margin={{ left: 4, right: 10, top: 6, bottom: 0 }}
-                          barCategoryGap={10}
-                          barGap={4}
+                          barCategoryGap={6}
+                          barGap={2}
                           onMouseMove={(st) => {
                             const p =
                               (st as unknown as { activePayload?: Array<{ payload?: { line?: string; kwh?: number } }> }).activePayload?.[0]?.payload
@@ -906,8 +906,8 @@ export function DashboardScadaPage() {
                           data={lineEnergyGrouped.util}
                           layout="vertical"
                           margin={{ left: 4, right: 10, top: 6, bottom: 0 }}
-                          barCategoryGap={10}
-                          barGap={4}
+                          barCategoryGap={6}
+                          barGap={2}
                           onMouseMove={(st) => {
                             const p =
                               (st as unknown as { activePayload?: Array<{ payload?: { line?: string; kwh?: number } }> }).activePayload?.[0]?.payload
