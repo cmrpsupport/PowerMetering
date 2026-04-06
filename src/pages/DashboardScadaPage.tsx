@@ -36,6 +36,7 @@ import {
   bucketMsForVisibleSpan,
   detectGaps,
   downsampleTrendForChart,
+  injectGapSentinels,
   type TrendPoint,
 } from '../lib/trendSeries'
 
@@ -397,6 +398,20 @@ export function DashboardScadaPage() {
     return aggregateKwhSumByTimeBucket(rows, bucketMs)
   }, [energyTrend.series, energyTrend.spanMs])
 
+  const energyResolutionMs = useMemo(
+    () => ({ '5m': 300_000, '15m': 900_000, '1h': 3_600_000 }[energyResolution]),
+    [energyResolution],
+  )
+  const energyGaps = useMemo(
+    () => detectGaps(energyTrend.series as { ts: string }[], energyResolutionMs),
+    [energyTrend.series, energyResolutionMs],
+  )
+  // Series with null sentinels inserted at each gap so Recharts breaks the line
+  const energySeriesWithBreaks = useMemo(
+    () => injectGapSentinels(energyTrend.series, energyGaps, ['kwh']),
+    [energyTrend.series, energyGaps],
+  )
+
   const powerTrendFull = useMemo(() => {
     const pts = trendQ.data ?? []
     return pts
@@ -639,12 +654,15 @@ export function DashboardScadaPage() {
             <div className="min-h-0 flex-1 flex flex-col">
               <div className="min-h-0 flex-1 w-full min-w-0">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={energyTrend.series} margin={{ left: 6, right: 10, top: 8, bottom: 0 }}>
+                  <AreaChart data={energySeriesWithBreaks} margin={{ left: 6, right: 10, top: 8, bottom: 0 }}>
                     <defs>
                       <linearGradient id="energy-kwh-scada" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="var(--chart-4)" stopOpacity={0.35} />
                         <stop offset="100%" stopColor="var(--chart-4)" stopOpacity={0.02} />
                       </linearGradient>
+                      <pattern id="energy-gap-hatch" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+                        <line x1="0" y1="0" x2="0" y2="8" stroke="rgba(239,68,68,0.35)" strokeWidth="3" />
+                      </pattern>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
                     <XAxis
@@ -666,6 +684,21 @@ export function DashboardScadaPage() {
                       formatter={(v) => [`${fmt(Number(v), 1)} kWh`, 'Energy']}
                     />
                     <Legend wrapperStyle={{ color: 'var(--muted)', fontSize: 12 }} />
+                    {energyGaps.map((g, i) => (
+                      <ReferenceArea
+                        key={i}
+                        x1={g.x1}
+                        x2={g.x2}
+                        fill="url(#energy-gap-hatch)"
+                        stroke="rgba(239,68,68,0.4)"
+                        strokeWidth={1}
+                        label={
+                          g.durationMs > energyResolutionMs * 6
+                            ? { value: 'No data', position: 'insideTop', fill: 'rgba(239,68,68,0.8)', fontSize: 9 }
+                            : undefined
+                        }
+                      />
+                    ))}
                     <Area
                       type={energyAreaType}
                       dataKey="kwh"
@@ -674,7 +707,7 @@ export function DashboardScadaPage() {
                       strokeWidth={2}
                       fill="url(#energy-kwh-scada)"
                       dot={false}
-                      connectNulls
+                      connectNulls={false}
                       isAnimationActive={false}
                     />
                     {showLineEnergy
@@ -692,7 +725,7 @@ export function DashboardScadaPage() {
                               strokeWidth={1.5}
                               fill="transparent"
                               dot={false}
-                              connectNulls
+                              connectNulls={false}
                               isAnimationActive={false}
                               opacity={0.9}
                             />

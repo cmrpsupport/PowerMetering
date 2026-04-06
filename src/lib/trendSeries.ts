@@ -111,6 +111,35 @@ export function detectGaps(
   return gaps
 }
 
+/**
+ * Insert a null-value sentinel point mid-gap for every detected gap so that
+ * Recharts (with connectNulls={false}) visually breaks the trend line.
+ *
+ * `nullFields` lists which numeric keys to null out on the sentinel
+ * (e.g. ['kwh'] or ['kw', 'voltageV', 'currentA']).
+ */
+export function injectGapSentinels<T extends Record<string, unknown>>(
+  series: T[],
+  gaps: GapInterval[],
+  nullFields: (keyof T)[],
+): Array<T | Record<string, unknown>> {
+  if (gaps.length === 0) return series
+  const insertAfter = new Map(
+    gaps.map((g) => [g.x1, new Date((Date.parse(g.x1) + Date.parse(g.x2)) / 2).toISOString()]),
+  )
+  const result: Array<T | Record<string, unknown>> = []
+  for (const pt of series) {
+    result.push(pt)
+    const midTs = insertAfter.get(String(pt.ts))
+    if (midTs) {
+      const sentinel: Record<string, unknown> = { ts: midTs }
+      for (const f of nullFields) sentinel[f as string] = null
+      result.push(sentinel)
+    }
+  }
+  return result
+}
+
 type Sev = 'warning' | 'critical' | null
 
 function mergeSev(a: Sev, b: Sev): Sev {

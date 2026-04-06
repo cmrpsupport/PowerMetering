@@ -20,6 +20,7 @@ import {
   bucketMsForVisibleSpan,
   detectGaps,
   downsampleTrendForChart,
+  injectGapSentinels,
   type TrendPoint,
 } from '../lib/trendSeries'
 
@@ -122,6 +123,10 @@ export function PvcTrendsPage() {
 
   const pvcBucketMs = useMemo(() => bucketMsForVisibleSpan(pvcSpanMs), [pvcSpanMs])
   const pvcGaps = useMemo(() => detectGaps(pvcMainSeries, pvcBucketMs), [pvcMainSeries, pvcBucketMs])
+  const pvcSeriesWithBreaks = useMemo(
+    () => injectGapSentinels(pvcMainSeries, pvcGaps, ['kw', 'voltageV', 'currentA']),
+    [pvcMainSeries, pvcGaps],
+  )
 
   return (
     <div className="grid h-[calc(100vh-124px)] min-h-0 grid-rows-[auto_1fr] gap-3 overflow-hidden">
@@ -151,7 +156,7 @@ export function PvcTrendsPage() {
         <div className="min-h-0 flex-1">
           <div className="h-[420px] min-h-[260px] w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={pvcMainSeries} margin={{ left: 6, right: 10, top: 8, bottom: 0 }}>
+              <ComposedChart data={pvcSeriesWithBreaks} margin={{ left: 6, right: 10, top: 8, bottom: 0 }}>
                 <defs>
                   <linearGradient id="pvc-kw-page" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.42} />
@@ -204,9 +209,9 @@ export function PvcTrendsPage() {
                     }
                   />
                 ))}
-                <Area yAxisId="left" type="monotone" dataKey="kw" name="kW" stroke="var(--chart-1)" strokeWidth={2} fill="url(#pvc-kw-page)" dot={false} connectNulls />
-                <Area yAxisId="right" type="monotone" dataKey="voltageV" name="Voltage (V)" stroke="var(--chart-2)" strokeWidth={2} fill="url(#pvc-v-page)" dot={false} connectNulls />
-                <Area yAxisId="right" type="monotone" dataKey="currentA" name="Current (A)" stroke="var(--chart-3)" strokeWidth={2} fill="url(#pvc-i-page)" dot={false} connectNulls />
+                <Area yAxisId="left" type="monotone" dataKey="kw" name="kW" stroke="var(--chart-1)" strokeWidth={2} fill="url(#pvc-kw-page)" dot={false} connectNulls={false} />
+                <Area yAxisId="right" type="monotone" dataKey="voltageV" name="Voltage (V)" stroke="var(--chart-2)" strokeWidth={2} fill="url(#pvc-v-page)" dot={false} connectNulls={false} />
+                <Area yAxisId="right" type="monotone" dataKey="currentA" name="Current (A)" stroke="var(--chart-3)" strokeWidth={2} fill="url(#pvc-i-page)" dot={false} connectNulls={false} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
