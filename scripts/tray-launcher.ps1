@@ -1,5 +1,5 @@
 # ──────────────────────────────────────────────────
-# Power Monitor — System-tray launcher
+# Power Monitor - System-tray launcher
 # Starts the app hidden and places an icon in the
 # notification area. No console window to close.
 # ──────────────────────────────────────────────────
@@ -23,7 +23,7 @@ function Test-ServiceRunning {
 # ── helper: start npm hidden ──────────────────────
 function Start-PowerMonitor {
     if (Test-ServiceRunning) {
-        # Service task already started it at boot — nothing to do
+        # Service task already started it at boot - nothing to do
         $script:ManagedByUs = $false
         return
     }
@@ -79,7 +79,7 @@ $menu.Items.Add((New-Object System.Windows.Forms.ToolStripSeparator)) | Out-Null
 # Restart
 $restartItem = New-Object System.Windows.Forms.ToolStripMenuItem("Restart")
 $restartItem.Add_Click({
-    $notify.Text = "Power Monitor — restarting..."
+    $notify.Text = "Power Monitor - restarting..."
     Stop-PowerMonitor
     Start-Sleep -Seconds 2
     Start-PowerMonitor

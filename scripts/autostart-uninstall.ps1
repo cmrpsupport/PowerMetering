@@ -1,8 +1,7 @@
-Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 # ──────────────────────────────────────────────────
-# Power Monitor — Remove all auto-start Scheduled Tasks
+# Power Monitor - Remove all auto-start Scheduled Tasks
 #
 # Run as Administrator:
 #   powershell -ExecutionPolicy Bypass -File scripts\autostart-uninstall.ps1
@@ -18,4 +17,4 @@ foreach ($name in $tasks) {
     }
 }
 
-Write-Host "Done — all Power Monitor auto-start tasks removed." -ForegroundColor Green
+Write-Host "Done - all Power Monitor auto-start tasks removed." -ForegroundColor Green

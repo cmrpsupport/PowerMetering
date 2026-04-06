@@ -1,6 +1,6 @@
 @echo off
 :: ──────────────────────────────────────────────────
-:: Power Monitor — Startup script
+:: Power Monitor - Startup script
 :: Starts Node-RED backend + Vite frontend, then
 :: opens the dashboard in the default browser.
 :: ──────────────────────────────────────────────────
@@ -10,7 +10,7 @@ setlocal
 set REPO_ROOT=%~dp0..
 pushd "%REPO_ROOT%"
 
-:: Wait for network (PLC connectivity) — up to 30 seconds
+:: Wait for network (PLC connectivity) - up to 30 seconds
 echo Waiting for network...
 set /a TRIES=0
 :wait_net

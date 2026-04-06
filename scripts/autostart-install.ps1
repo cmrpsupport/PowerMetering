@@ -1,12 +1,12 @@
 $ErrorActionPreference = "Stop"
 
 # ──────────────────────────────────────────────────
-# Power Monitor — Register auto-start on Windows
+# Power Monitor - Register auto-start on Windows
 #
 # Creates TWO Scheduled Tasks:
-#   1. AtStartup  (SYSTEM) — headless Node-RED + Vite,
+#   1. AtStartup  (SYSTEM) - headless Node-RED + Vite,
 #      runs before anyone logs in.
-#   2. AtLogOn — tray icon so the user can open the
+#   2. AtLogOn - tray icon so the user can open the
 #      dashboard, restart, or exit.
 #
 # Run as Administrator:
@@ -59,7 +59,7 @@ Register-ScheduledTask `
     -Action $svcAction `
     -Settings $settings `
     -Principal $svcPrincipal `
-    -Description "Power Monitor headless service (Node-RED + Vite) — runs at boot" | Out-Null
+    -Description "Power Monitor headless service (Node-RED + Vite) - runs at boot" | Out-Null
 
 # ── Task 2: Tray icon at logon ────────────────────
 $trayTrigger = New-ScheduledTaskTrigger -AtLogOn
@@ -73,11 +73,11 @@ Register-ScheduledTask `
     -Trigger $trayTrigger `
     -Action $trayAction `
     -Settings $settings `
-    -Description "Power Monitor tray icon — manage the running service" | Out-Null
+    -Description "Power Monitor tray icon - manage the running service" | Out-Null
 
 Write-Host ""
 Write-Host "Installed two scheduled tasks:" -ForegroundColor Green
-Write-Host "  $ServiceTask  — starts Node-RED + Vite at boot (no logon needed)"
-Write-Host "  $TrayTask     — shows tray icon when a user logs in"
+Write-Host "  $ServiceTask  - starts Node-RED + Vite at boot (no logon needed)"
+Write-Host "  $TrayTask     - shows tray icon when a user logs in"
 Write-Host ""
 Write-Host "To remove:  powershell -File scripts\autostart-uninstall.ps1"
