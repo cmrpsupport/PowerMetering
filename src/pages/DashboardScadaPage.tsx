@@ -316,7 +316,7 @@ export function DashboardScadaPage() {
     const barHeight = Number((p as { height?: number }).height) || 0
     // Skip label if bar is too short to fit text
     if (barWidth < 24 || barHeight < 10) return null
-    const text = mode === 'pct' ? `${v.toFixed(v >= 10 ? 0 : 1)}%` : `${fmtCompact(v)}`
+    const text = mode === 'pct' ? `${v.toFixed(v >= 10 ? 0 : 1)}%` : `${Math.round(v).toLocaleString()}`
     return (
       <text
         x={Number((p as { x?: number }).x) + barWidth - 6}
