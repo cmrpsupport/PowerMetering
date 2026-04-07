@@ -804,7 +804,7 @@ export function DashboardScadaPage() {
                   <div className="text-[11px] text-[var(--muted)]">Avg kW · plant total</div>
                 </div>
               </div>
-              <div className="h-80 min-h-[280px] w-full min-w-0">
+              <div className="h-52 min-h-[180px] w-full min-w-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={loadProfile24h} margin={{ left: 6, right: 10, top: 8, bottom: 0 }}>
                     <defs>
@@ -900,7 +900,7 @@ export function DashboardScadaPage() {
                   />
                 </div>
               </div>
-              <div className="h-80 min-h-[280px] w-full min-w-0">
+              <div className="h-52 min-h-[180px] w-full min-w-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={lineEnergyGrouped.prod}
@@ -979,7 +979,7 @@ export function DashboardScadaPage() {
                         : 'Last 1 year total'}
                 </div>
               </div>
-              <div className="h-80 min-h-[280px] w-full min-w-0">
+              <div className="h-52 min-h-[180px] w-full min-w-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={lineEnergyGrouped.util}
