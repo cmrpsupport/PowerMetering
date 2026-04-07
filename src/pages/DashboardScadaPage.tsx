@@ -542,7 +542,7 @@ export function DashboardScadaPage() {
         </div>
       </div>
 
-      <div className="grid gap-2 grid-cols-1 md:grid-cols-3 xl:grid-cols-7">
+      <div className="grid gap-2 grid-cols-2 md:grid-cols-4 lg:grid-cols-7 xl:grid-cols-7">
         <KpiCard
           title="Plant power"
           value={plantNow ? fmt(plantNow.kw, 1) : '—'}
@@ -550,8 +550,7 @@ export function DashboardScadaPage() {
           status="normal"
           icon={<Bolt size={18} />}
           deltaPct={pvcDelta.kw}
-          deltaLabel="latest tick"
-          sparkline={pvcSpark.kw}
+          deltaLabel="vs prev"
         />
         <KpiCard
           title="Energy (MTD)"
@@ -559,7 +558,12 @@ export function DashboardScadaPage() {
           unit="kWh"
           status="normal"
           icon={<Layers size={18} />}
-          sparkline={energyHourly.series}
+          deltaPct={
+            Number.isFinite(monthKwh.thisMtd) && Number.isFinite(monthKwh.prevMtd) && monthKwh.prevMtd > 0
+              ? (monthKwh.thisMtd - monthKwh.prevMtd) / monthKwh.prevMtd
+              : null
+          }
+          deltaLabel="vs last month"
           subtext={
             Number.isFinite(monthKwh.prevMtd) ? (
               <span>
@@ -576,7 +580,6 @@ export function DashboardScadaPage() {
           unit="kVAR"
           status="normal"
           icon={<Zap size={18} />}
-          sparkline={pvcSpark.kw}
         />
         <KpiCard
           title="Current avg"
@@ -585,8 +588,7 @@ export function DashboardScadaPage() {
           status="normal"
           icon={<Activity size={18} />}
           deltaPct={pvcDelta.i}
-          deltaLabel="latest tick"
-          sparkline={pvcSpark.i}
+          deltaLabel="vs prev"
         />
         <KpiCard
           title="Voltage L-L avg"
@@ -595,8 +597,7 @@ export function DashboardScadaPage() {
           status="normal"
           icon={<Waves size={18} />}
           deltaPct={pvcDelta.v}
-          deltaLabel="latest tick"
-          sparkline={pvcSpark.v}
+          deltaLabel="vs prev"
         />
         <KpiCard
           title="Frequency avg"
@@ -611,9 +612,8 @@ export function DashboardScadaPage() {
           status={plantNow ? pfStatus(plantNow.pfAvg) : 'normal'}
           icon={<Percent size={18} />}
           deltaPct={pvcDelta.pf}
-          deltaLabel="latest tick"
+          deltaLabel="vs prev"
           targetText="Target ≥ 0.950"
-          sparkline={pvcSpark.pf}
         />
       </div>
 
