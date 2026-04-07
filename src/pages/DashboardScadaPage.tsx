@@ -519,7 +519,8 @@ export function DashboardScadaPage() {
   }
 
   return (
-    <div className="grid gap-3 overflow-auto xl:min-h-0 xl:h-[calc(100vh-124px)] xl:grid-rows-[auto_auto_1fr]">
+    <div className="flex min-h-0 flex-col gap-3">
+      <div className="grid gap-3 overflow-auto xl:min-h-0 xl:h-[calc(100vh-124px)] xl:grid-rows-[auto_auto_1fr]">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
           <div className="truncate text-lg font-semibold text-[var(--text)]">Dashboard (SCADA)</div>
@@ -617,8 +618,7 @@ export function DashboardScadaPage() {
       </div>
 
       <div className="grid min-h-0 gap-3 md:[grid-template-columns:3fr_2fr] xl:[grid-template-columns:3fr_1fr]">
-        <div className="grid min-h-0 gap-3 xl:grid-rows-[minmax(0,1fr)_auto]">
-          <div className="card card-hover flex min-h-0 flex-col overflow-hidden p-4">
+          <div className="card card-hover flex min-h-[400px] flex-col overflow-hidden p-4 xl:min-h-0">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
               <div className="min-w-0">
                 <div className="text-sm font-semibold text-[var(--text)]">Energy consumption</div>
@@ -667,7 +667,7 @@ export function DashboardScadaPage() {
               </div>
             </div>
 
-            <div className="flex flex-col min-h-[320px] xl:min-h-0 xl:flex-1">
+            <div className="min-h-0 flex-1 flex flex-col">
               <div className="min-h-0 flex-1 w-full min-w-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={energySeriesWithBreaks} margin={{ left: 6, right: 10, top: 8, bottom: 0 }}>
@@ -781,264 +781,6 @@ export function DashboardScadaPage() {
             </div>
           </div>
 
-          {/* Bottom section: 3 panels
-               Desktop (xl):  [Load Profile] [Energy by Line] [Utilities] — one row
-               Tablet  (md):  [Load Profile — full width] / [Energy by Line] [Utilities]
-               Mobile:        stacked */}
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {/* Load Profile — spans 2 cols on tablet, 1 col on desktop */}
-            <div className="card card-hover overflow-hidden p-4 md:col-span-2 xl:col-span-1">
-              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                <div className="text-sm font-semibold text-[var(--text)]">24-hour load profile</div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <SegmentedControl
-                    value={loadProfileBucket}
-                    onChange={(id) => setLoadProfileBucket(id as typeof loadProfileBucket)}
-                    options={[
-                      { id: '1m', label: '1m' },
-                      { id: '5m', label: '5m' },
-                      { id: '15m', label: '15m' },
-                      { id: '1h', label: '1h' },
-                    ]}
-                  />
-                  <div className="text-[11px] text-[var(--muted)]">Avg kW · plant total</div>
-                </div>
-              </div>
-              <div className="h-52 min-h-[180px] w-full min-w-0">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={loadProfile24h} margin={{ left: 6, right: 10, top: 8, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="lp-scada" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="var(--chart-2)" stopOpacity={0.35} />
-                        <stop offset="100%" stopColor="var(--chart-2)" stopOpacity={0.02} />
-                      </linearGradient>
-                      <pattern id="lp-gap-hatch" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
-                        <line x1="0" y1="0" x2="0" y2="8" stroke="rgba(239,68,68,0.35)" strokeWidth="3" />
-                      </pattern>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
-                    <XAxis
-                      dataKey="ts"
-                      tick={{ fill: 'var(--chart-axis)', fontSize: 10 }}
-                      stroke="var(--chart-axis)"
-                      tickFormatter={loadProfileTick}
-                      minTickGap={30}
-                    />
-                    <YAxis tick={{ fill: 'var(--chart-axis)', fontSize: 10 }} stroke="var(--chart-axis)" width={56} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'var(--chart-tooltip-bg)',
-                        border: `1px solid var(--chart-tooltip-border)`,
-                        borderRadius: 8,
-                        color: 'var(--chart-tooltip-text)',
-                        fontSize: 12,
-                      }}
-                      formatter={(v) => [`${fmt(Number(v), 1)} kW`, 'Demand']}
-                      labelFormatter={(l) => (typeof l === 'string' ? loadProfileTick(l) : String(l))}
-                    />
-                    {loadProfileGaps.map((g, i) => (
-                      <ReferenceArea
-                        key={i}
-                        x1={g.x1}
-                        x2={g.x2}
-                        fill="url(#lp-gap-hatch)"
-                        stroke="rgba(239,68,68,0.4)"
-                        strokeWidth={1}
-                        label={
-                          g.durationMs > loadProfileBucketMs * 6
-                            ? { value: 'No data', position: 'insideTop', fill: 'rgba(239,68,68,0.8)', fontSize: 9 }
-                            : undefined
-                        }
-                      />
-                    ))}
-                    <Area
-                      type="monotone"
-                      dataKey="demandKw"
-                      name="kW"
-                      stroke="var(--chart-2)"
-                      strokeWidth={2}
-                      fill="url(#lp-scada)"
-                      dot={false}
-                      isAnimationActive={false}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            {/* Energy by Line (Production lines) — controls live here, shared with Utilities */}
-            <div className="card card-hover overflow-hidden p-4">
-              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                <div className="text-sm font-semibold text-[var(--text)]">Energy by line</div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <SegmentedControl
-                    value={lineEnergyViewMode}
-                    onChange={(id) => setLineEnergyViewMode(id as LineEnergyViewMode)}
-                    options={[
-                      { id: 'abs', label: 'kWh' },
-                      { id: 'pct', label: '%' },
-                    ]}
-                  />
-                  <div className="text-[11px] text-[var(--muted)]">
-                    {lineEnergyWindow === 'daily'
-                      ? 'Last 24h total'
-                      : lineEnergyWindow === 'weekly'
-                        ? 'Last 7 days total'
-                        : lineEnergyWindow === 'monthly'
-                          ? 'Last 30 days total'
-                          : 'Last 1 year total'}
-                  </div>
-                  <SegmentedControl
-                    value={lineEnergyWindow}
-                    onChange={(id) => setLineEnergyWindow(id as LineEnergyWindow)}
-                    options={[
-                      { id: 'daily', label: 'Daily' },
-                      { id: 'weekly', label: 'Weekly' },
-                      { id: 'monthly', label: 'Monthly' },
-                      { id: '1y', label: '1yr' },
-                    ]}
-                  />
-                </div>
-              </div>
-              <div className="h-52 min-h-[180px] w-full min-w-0">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={lineEnergyGrouped.prod}
-                    layout="vertical"
-                    margin={{ left: 4, right: 10, top: 6, bottom: 0 }}
-                    barCategoryGap={6}
-                    barGap={2}
-                  >
-                    <defs>
-                      <linearGradient id="energy-bars-magenta" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor="rgb(217 70 239)" stopOpacity={0.12} />
-                        <stop offset="45%" stopColor="rgb(217 70 239)" stopOpacity={0.55} />
-                        <stop offset="100%" stopColor="rgb(217 70 239)" stopOpacity={0.95} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid horizontal={false} stroke="color-mix(in_srgb, var(--text) 10%, transparent)" />
-                    <XAxis
-                      type="number"
-                      domain={lineEnergyViewMode === 'pct' ? [0, 100] : [0, 'auto']}
-                      tick={{ fill: 'var(--text)', fontSize: 10 }}
-                      axisLine={{ stroke: 'color-mix(in_srgb, var(--text) 22%, transparent)' }}
-                      tickLine={{ stroke: 'color-mix(in_srgb, var(--text) 18%, transparent)' }}
-                      tickFormatter={(v) => (lineEnergyViewMode === 'pct' ? `${Math.round(Number(v))}%` : fmtCompact(Number(v)))}
-                    />
-                    <YAxis
-                      type="category"
-                      dataKey="line"
-                      width={66}
-                      tick={{ fill: 'var(--text)', fontSize: 10 }}
-                      axisLine={false}
-                      tickLine={false}
-                      tickFormatter={(v) => shortLineName(String(v))}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'var(--chart-tooltip-bg)',
-                        border: `1px solid var(--chart-tooltip-border)`,
-                        borderRadius: 8,
-                        color: 'var(--chart-tooltip-text)',
-                        fontSize: 12,
-                      }}
-                      formatter={(v, _name, it) => {
-                        const line = (it as unknown as { payload?: { line?: string } }).payload?.line ?? 'Line'
-                        return [
-                          lineEnergyViewMode === 'pct' ? `${Number(v).toFixed(1)}%` : `${fmt(Number(v), 0)} kWh`,
-                          String(line),
-                        ]
-                      }}
-                    />
-                    <Bar
-                      dataKey={lineEnergyViewMode === 'pct' ? 'pct' : 'kwh'}
-                      fill="url(#energy-bars-magenta)"
-                      stroke="color-mix(in_srgb, rgb(217 70 239) 55%, transparent)"
-                      strokeWidth={1}
-                      isAnimationActive={false}
-                      radius={[0, 6, 6, 0]}
-                    >
-                      <LabelList content={lineBarLabel(lineEnergyViewMode)} />
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            {/* Utilities — shares lineEnergyViewMode / lineEnergyWindow controls from card above */}
-            <div className="card card-hover overflow-hidden p-4">
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <div className="text-sm font-semibold text-[var(--text)]">Utilities</div>
-                <div className="text-[11px] text-[var(--muted)]">
-                  {lineEnergyWindow === 'daily'
-                    ? 'Last 24h total'
-                    : lineEnergyWindow === 'weekly'
-                      ? 'Last 7 days total'
-                      : lineEnergyWindow === 'monthly'
-                        ? 'Last 30 days total'
-                        : 'Last 1 year total'}
-                </div>
-              </div>
-              <div className="h-52 min-h-[180px] w-full min-w-0">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={lineEnergyGrouped.util}
-                    layout="vertical"
-                    margin={{ left: 4, right: 10, top: 6, bottom: 0 }}
-                    barCategoryGap={6}
-                    barGap={2}
-                  >
-                    <CartesianGrid horizontal={false} stroke="color-mix(in_srgb, var(--text) 10%, transparent)" />
-                    <XAxis
-                      type="number"
-                      domain={lineEnergyViewMode === 'pct' ? [0, 100] : [0, 'auto']}
-                      tick={{ fill: 'var(--text)', fontSize: 10 }}
-                      axisLine={{ stroke: 'color-mix(in_srgb, var(--text) 22%, transparent)' }}
-                      tickLine={{ stroke: 'color-mix(in_srgb, var(--text) 18%, transparent)' }}
-                      tickFormatter={(v) => (lineEnergyViewMode === 'pct' ? `${Math.round(Number(v))}%` : fmtCompact(Number(v)))}
-                    />
-                    <YAxis
-                      type="category"
-                      dataKey="line"
-                      width={66}
-                      tick={{ fill: 'var(--text)', fontSize: 10 }}
-                      axisLine={false}
-                      tickLine={false}
-                      tickFormatter={(v) => shortLineName(String(v))}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'var(--chart-tooltip-bg)',
-                        border: `1px solid var(--chart-tooltip-border)`,
-                        borderRadius: 8,
-                        color: 'var(--chart-tooltip-text)',
-                        fontSize: 12,
-                      }}
-                      formatter={(v, _name, it) => {
-                        const line = (it as unknown as { payload?: { line?: string } }).payload?.line ?? 'Line'
-                        return [
-                          lineEnergyViewMode === 'pct' ? `${Number(v).toFixed(1)}%` : `${fmt(Number(v), 0)} kWh`,
-                          String(line),
-                        ]
-                      }}
-                    />
-                    <Bar
-                      dataKey={lineEnergyViewMode === 'pct' ? 'pct' : 'kwh'}
-                      fill="url(#energy-bars-magenta)"
-                      stroke="color-mix(in_srgb, rgb(217 70 239) 55%, transparent)"
-                      strokeWidth={1}
-                      isAnimationActive={false}
-                      radius={[0, 6, 6, 0]}
-                    >
-                      <LabelList content={lineBarLabel(lineEnergyViewMode)} />
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div className="min-h-[300px] xl:min-h-0">
           <div className="card card-hover min-h-[290px] overflow-hidden p-4 xl:h-full xl:min-h-0">
             <DemandTracker variant="embedded" />
@@ -1046,6 +788,264 @@ export function DashboardScadaPage() {
         </div>
       </div>
     </div>
+
+    {/* Bottom section: 3 panels
+         Desktop (xl):  [Load Profile] [Energy by Line] [Utilities] — one row
+         Tablet  (md):  [Load Profile — full width] / [Energy by Line] [Utilities]
+         Mobile:        stacked */}
+    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      {/* Load Profile — spans 2 cols on tablet, 1 col on desktop */}
+      <div className="card card-hover overflow-hidden p-4 md:col-span-2 xl:col-span-1">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <div className="text-sm font-semibold text-[var(--text)]">24-hour load profile</div>
+          <div className="flex flex-wrap items-center gap-2">
+            <SegmentedControl
+              value={loadProfileBucket}
+              onChange={(id) => setLoadProfileBucket(id as typeof loadProfileBucket)}
+              options={[
+                { id: '1m', label: '1m' },
+                { id: '5m', label: '5m' },
+                { id: '15m', label: '15m' },
+                { id: '1h', label: '1h' },
+              ]}
+            />
+            <div className="text-[11px] text-[var(--muted)]">Avg kW · plant total</div>
+          </div>
+        </div>
+        <div className="h-52 min-h-[180px] w-full min-w-0">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={loadProfile24h} margin={{ left: 6, right: 10, top: 8, bottom: 0 }}>
+              <defs>
+                <linearGradient id="lp-scada" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="var(--chart-2)" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="var(--chart-2)" stopOpacity={0.02} />
+                </linearGradient>
+                <pattern id="lp-gap-hatch" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+                  <line x1="0" y1="0" x2="0" y2="8" stroke="rgba(239,68,68,0.35)" strokeWidth="3" />
+                </pattern>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
+              <XAxis
+                dataKey="ts"
+                tick={{ fill: 'var(--chart-axis)', fontSize: 10 }}
+                stroke="var(--chart-axis)"
+                tickFormatter={loadProfileTick}
+                minTickGap={30}
+              />
+              <YAxis tick={{ fill: 'var(--chart-axis)', fontSize: 10 }} stroke="var(--chart-axis)" width={56} />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'var(--chart-tooltip-bg)',
+                  border: `1px solid var(--chart-tooltip-border)`,
+                  borderRadius: 8,
+                  color: 'var(--chart-tooltip-text)',
+                  fontSize: 12,
+                }}
+                formatter={(v) => [`${fmt(Number(v), 1)} kW`, 'Demand']}
+                labelFormatter={(l) => (typeof l === 'string' ? loadProfileTick(l) : String(l))}
+              />
+              {loadProfileGaps.map((g, i) => (
+                <ReferenceArea
+                  key={i}
+                  x1={g.x1}
+                  x2={g.x2}
+                  fill="url(#lp-gap-hatch)"
+                  stroke="rgba(239,68,68,0.4)"
+                  strokeWidth={1}
+                  label={
+                    g.durationMs > loadProfileBucketMs * 6
+                      ? { value: 'No data', position: 'insideTop', fill: 'rgba(239,68,68,0.8)', fontSize: 9 }
+                      : undefined
+                  }
+                />
+              ))}
+              <Area
+                type="monotone"
+                dataKey="demandKw"
+                name="kW"
+                stroke="var(--chart-2)"
+                strokeWidth={2}
+                fill="url(#lp-scada)"
+                dot={false}
+                isAnimationActive={false}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Energy by Line (Production lines) — controls live here, shared with Utilities */}
+      <div className="card card-hover overflow-hidden p-4">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <div className="text-sm font-semibold text-[var(--text)]">Energy by line</div>
+          <div className="flex flex-wrap items-center gap-2">
+            <SegmentedControl
+              value={lineEnergyViewMode}
+              onChange={(id) => setLineEnergyViewMode(id as LineEnergyViewMode)}
+              options={[
+                { id: 'abs', label: 'kWh' },
+                { id: 'pct', label: '%' },
+              ]}
+            />
+            <div className="text-[11px] text-[var(--muted)]">
+              {lineEnergyWindow === 'daily'
+                ? 'Last 24h total'
+                : lineEnergyWindow === 'weekly'
+                  ? 'Last 7 days total'
+                  : lineEnergyWindow === 'monthly'
+                    ? 'Last 30 days total'
+                    : 'Last 1 year total'}
+            </div>
+            <SegmentedControl
+              value={lineEnergyWindow}
+              onChange={(id) => setLineEnergyWindow(id as LineEnergyWindow)}
+              options={[
+                { id: 'daily', label: 'Daily' },
+                { id: 'weekly', label: 'Weekly' },
+                { id: 'monthly', label: 'Monthly' },
+                { id: '1y', label: '1yr' },
+              ]}
+            />
+          </div>
+        </div>
+        <div className="h-52 min-h-[180px] w-full min-w-0">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={lineEnergyGrouped.prod}
+              layout="vertical"
+              margin={{ left: 4, right: 10, top: 6, bottom: 0 }}
+              barCategoryGap={6}
+              barGap={2}
+            >
+              <defs>
+                <linearGradient id="energy-bars-magenta" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="rgb(217 70 239)" stopOpacity={0.12} />
+                  <stop offset="45%" stopColor="rgb(217 70 239)" stopOpacity={0.55} />
+                  <stop offset="100%" stopColor="rgb(217 70 239)" stopOpacity={0.95} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid horizontal={false} stroke="color-mix(in_srgb, var(--text) 10%, transparent)" />
+              <XAxis
+                type="number"
+                domain={lineEnergyViewMode === 'pct' ? [0, 100] : [0, 'auto']}
+                tick={{ fill: 'var(--text)', fontSize: 10 }}
+                axisLine={{ stroke: 'color-mix(in_srgb, var(--text) 22%, transparent)' }}
+                tickLine={{ stroke: 'color-mix(in_srgb, var(--text) 18%, transparent)' }}
+                tickFormatter={(v) => (lineEnergyViewMode === 'pct' ? `${Math.round(Number(v))}%` : fmtCompact(Number(v)))}
+              />
+              <YAxis
+                type="category"
+                dataKey="line"
+                width={66}
+                tick={{ fill: 'var(--text)', fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={(v) => shortLineName(String(v))}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'var(--chart-tooltip-bg)',
+                  border: `1px solid var(--chart-tooltip-border)`,
+                  borderRadius: 8,
+                  color: 'var(--chart-tooltip-text)',
+                  fontSize: 12,
+                }}
+                formatter={(v, _name, it) => {
+                  const line = (it as unknown as { payload?: { line?: string } }).payload?.line ?? 'Line'
+                  return [
+                    lineEnergyViewMode === 'pct' ? `${Number(v).toFixed(1)}%` : `${fmt(Number(v), 0)} kWh`,
+                    String(line),
+                  ]
+                }}
+              />
+              <Bar
+                dataKey={lineEnergyViewMode === 'pct' ? 'pct' : 'kwh'}
+                fill="url(#energy-bars-magenta)"
+                stroke="color-mix(in_srgb, rgb(217 70 239) 55%, transparent)"
+                strokeWidth={1}
+                isAnimationActive={false}
+                radius={[0, 6, 6, 0]}
+              >
+                <LabelList content={lineBarLabel(lineEnergyViewMode)} />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Utilities — shares lineEnergyViewMode / lineEnergyWindow controls from card above */}
+      <div className="card card-hover overflow-hidden p-4">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <div className="text-sm font-semibold text-[var(--text)]">Utilities</div>
+          <div className="text-[11px] text-[var(--muted)]">
+            {lineEnergyWindow === 'daily'
+              ? 'Last 24h total'
+              : lineEnergyWindow === 'weekly'
+                ? 'Last 7 days total'
+                : lineEnergyWindow === 'monthly'
+                  ? 'Last 30 days total'
+                  : 'Last 1 year total'}
+          </div>
+        </div>
+        <div className="h-52 min-h-[180px] w-full min-w-0">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={lineEnergyGrouped.util}
+              layout="vertical"
+              margin={{ left: 4, right: 10, top: 6, bottom: 0 }}
+              barCategoryGap={6}
+              barGap={2}
+            >
+              <CartesianGrid horizontal={false} stroke="color-mix(in_srgb, var(--text) 10%, transparent)" />
+              <XAxis
+                type="number"
+                domain={lineEnergyViewMode === 'pct' ? [0, 100] : [0, 'auto']}
+                tick={{ fill: 'var(--text)', fontSize: 10 }}
+                axisLine={{ stroke: 'color-mix(in_srgb, var(--text) 22%, transparent)' }}
+                tickLine={{ stroke: 'color-mix(in_srgb, var(--text) 18%, transparent)' }}
+                tickFormatter={(v) => (lineEnergyViewMode === 'pct' ? `${Math.round(Number(v))}%` : fmtCompact(Number(v)))}
+              />
+              <YAxis
+                type="category"
+                dataKey="line"
+                width={66}
+                tick={{ fill: 'var(--text)', fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={(v) => shortLineName(String(v))}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'var(--chart-tooltip-bg)',
+                  border: `1px solid var(--chart-tooltip-border)`,
+                  borderRadius: 8,
+                  color: 'var(--chart-tooltip-text)',
+                  fontSize: 12,
+                }}
+                formatter={(v, _name, it) => {
+                  const line = (it as unknown as { payload?: { line?: string } }).payload?.line ?? 'Line'
+                  return [
+                    lineEnergyViewMode === 'pct' ? `${Number(v).toFixed(1)}%` : `${fmt(Number(v), 0)} kWh`,
+                    String(line),
+                  ]
+                }}
+              />
+              <Bar
+                dataKey={lineEnergyViewMode === 'pct' ? 'pct' : 'kwh'}
+                fill="url(#energy-bars-magenta)"
+                stroke="color-mix(in_srgb, rgb(217 70 239) 55%, transparent)"
+                strokeWidth={1}
+                isAnimationActive={false}
+                radius={[0, 6, 6, 0]}
+              >
+                <LabelList content={lineBarLabel(lineEnergyViewMode)} />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </div>
+  </div>
   )
 }
 
