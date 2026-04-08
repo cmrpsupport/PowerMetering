@@ -133,9 +133,18 @@ export function DashboardScadaPage() {
   const energy48hQ = useEnergyIntervals(48)
   const lineEnergyHours =
     lineEnergyWindow === 'daily' ? 24 : lineEnergyWindow === 'weekly' ? 24 * 7 : lineEnergyWindow === 'monthly' ? 24 * 30 : 24 * 365
-  const lineEnergyQ = useEnergyIntervals(lineEnergyHours)
-  // Pull enough buckets to cover current + previous month for MTD comparison.
-  const energyMonthQ = useEnergyIntervals(24 * 75)
+  // Large windows: force server-side aggregation to cap row count.
+  //   monthly (720h × 25 meters): default 15m → 72k rows → force 1h → 18k rows
+  //   1y     (8760h × 25 meters): default 15m → 876k rows → force daily → 9k rows
+  const lineEnergyBucketSec: number | undefined =
+    lineEnergyWindow === '1y' ? 86_400 : lineEnergyWindow === 'monthly' ? 3_600 : undefined
+  const lineEnergyQ = useEnergyIntervals(
+    lineEnergyHours,
+    lineEnergyBucketSec != null ? { bucketSec: lineEnergyBucketSec } : undefined,
+  )
+  // MTD comparison: only need per-day totals, not 15-min rows.
+  // daily bucket: 75 days × 25 meters = 1,875 rows (vs 180,000 at 15m default).
+  const energyMonthQ = useEnergyIntervals(24 * 75, { bucketSec: 86_400 })
 
   const energyHours =
     energyWindow === '1h'

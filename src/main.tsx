@@ -5,7 +5,15 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.tsx'
 
-const queryClient = new QueryClient()
+// Disable refetch-on-focus globally: kiosk screen-wake events would otherwise
+// trigger mass simultaneous re-fetches of every stale query on the page.
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+})
 
 // Apply theme before first render to avoid flash.
 const stored = localStorage.getItem('pm_themeMode')

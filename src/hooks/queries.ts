@@ -71,6 +71,12 @@ export function useEnergyIntervals(
     queryKey: ['energyIntervals', hours, opts?.bucket ?? null, opts?.bucketSec ?? null],
     queryFn: () => getEnergyIntervals(hours, opts),
     refetchInterval: 60_000,
+    // Don't re-fetch immediately on focus events — prevents simultaneous mass
+    // re-fetches when kiosk screen wakes (covered by global refetchOnWindowFocus:false too).
+    staleTime: 55_000,
+    // Free superseded cache entries promptly. Large energy datasets (monthly/yearly)
+    // can be 10k–180k row objects; holding them beyond the refetch window wastes heap.
+    gcTime: 90_000,
   })
 }
 
