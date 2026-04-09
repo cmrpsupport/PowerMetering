@@ -12,7 +12,6 @@ import {
   AreaChart,
   Bar,
   BarChart,
-  Brush,
   CartesianGrid,
   ComposedChart,
   LabelList,
@@ -782,7 +781,6 @@ export function DashboardScadaPage() {
                         dot={false}
                         isAnimationActive={false}
                       />
-                      <Brush dataKey="ts" height={18} stroke="var(--primary)" travellerWidth={10} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>

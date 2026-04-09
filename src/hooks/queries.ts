@@ -96,6 +96,8 @@ export function usePlantLoadProfile(
     queryKey: ['plantLoadProfile', hours, opts?.bucket ?? null, opts?.bucketSec ?? null],
     queryFn: () => getPlantLoadProfile(hours, opts),
     refetchInterval: 60_000,
+    staleTime: 55_000,
+    gcTime: 90_000,
   })
 }
 
@@ -116,6 +118,7 @@ export function usePowerTrend(
     queryKey: ['powerTrend', minutes, opts?.bucket ?? null, opts?.bucketSec ?? null],
     queryFn: () => getPowerTrend(minutes, opts),
     refetchInterval: 60_000,
+    staleTime: 55_000,
     gcTime: 30_000,
   })
 }
@@ -126,6 +129,10 @@ export function useDemandStatus(range: DemandTrendRange = 'all') {
     queryKey: ['demandStatus', range],
     queryFn: () => getDemandStatus(range),
     refetchInterval: 5_000,
+    // Prevents stale-immediate background refetches on every component mount.
+    staleTime: 4_500,
+    // Free superseded cache entries promptly — demand trend for 'all' can be large.
+    gcTime: 30_000,
   })
 }
 

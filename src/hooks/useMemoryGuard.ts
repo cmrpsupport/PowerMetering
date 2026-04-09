@@ -1,16 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-/** Reload after 8 hours regardless (nightly reset for kiosk displays). */
-const MAX_AGE_MS = 8 * 60 * 60 * 1000
+/** Reload after 4 hours regardless (prevents cumulative memory drift on kiosk displays). */
+const MAX_AGE_MS = 4 * 60 * 60 * 1000
 
-/** Reload when Chrome reports JS heap > 350 MB. */
-const HEAP_LIMIT_BYTES = 350 * 1024 * 1024
+/**
+ * Reload when Chrome reports JS heap > 200 MB.
+ * Chrome OOM-kills the tab based on total renderer memory (JS heap + DOM + GPU),
+ * typically 2–4× the reported JS heap. Triggering at 200 MB JS heap keeps total
+ * renderer memory well below the crash threshold.
+ */
+const HEAP_LIMIT_BYTES = 200 * 1024 * 1024
 
 /** How long before reload to show the warning banner. */
 const WARN_BEFORE_MS = 60_000
 
 /** How often to check memory / age. */
-const CHECK_INTERVAL_MS = 60_000
+const CHECK_INTERVAL_MS = 30_000
 
 type ChromePerf = Performance & {
   memory?: { usedJSHeapSize: number; jsHeapSizeLimit: number }
