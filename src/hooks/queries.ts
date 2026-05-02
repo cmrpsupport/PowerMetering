@@ -103,9 +103,14 @@ export function usePlantLoadProfile(
 
 export function useConsumptionReportIntervals(granularity: ConsumptionGranularity) {
   const hours = CONSUMPTION_REPORT_HOURS[granularity]
+  // Request daily buckets for coarser views so the backend computes endpoint
+  // deltas (MAX_bucket - LAG(MAX_bucket)) per day rather than summing 15-min
+  // slices.  This prevents inflated totals when a PLC cumulative register
+  // resets mid-day (drop filtered, recovery sum stays bounded by the 2 MW cap).
+  const bucketSec = granularity === 'hourly' ? 900 : 86_400
   return useQuery({
-    queryKey: ['energyIntervals', 'consumption', granularity, hours],
-    queryFn: () => getEnergyIntervals(hours),
+    queryKey: ['energyIntervals', 'consumption', granularity, hours, bucketSec],
+    queryFn: () => getEnergyIntervals(hours, { bucketSec }),
     staleTime: 60_000,
   })
 }
