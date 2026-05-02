@@ -47,16 +47,23 @@ function Stop-PowerMonitor {
     }
 }
 
-#  build a simple  icon 
+#  build tray icon — try loading public\favicon.ico first, fall back to drawn bitmap
 function New-TrayIcon {
+    $icoPath = Join-Path $RepoRoot "public\favicon.ico"
+    if (Test-Path $icoPath) {
+        try { return New-Object System.Drawing.Icon($icoPath, 16, 16) } catch {}
+    }
+    # Fallback: draw a 16x16 blue square with "P"
     $bmp = New-Object System.Drawing.Bitmap(16, 16)
     $g   = [System.Drawing.Graphics]::FromImage($bmp)
+    $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
     $g.Clear([System.Drawing.Color]::FromArgb(30, 120, 230))
     $brush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::White)
     $font  = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
     $g.DrawString("P", $font, $brush, 1, 0)
     $g.Dispose()
-    $icon = [System.Drawing.Icon]::FromHandle($bmp.GetHicon())
+    $hIcon = $bmp.GetHicon()
+    $icon  = [System.Drawing.Icon]::FromHandle($hIcon)
     return $icon
 }
 
