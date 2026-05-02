@@ -146,9 +146,22 @@ export type PeriodComparison = {
 export function computePeriodComparisons(buckets: ConsumptionReportBucket[], granularity: ConsumptionGranularity): PeriodComparison {
   if (buckets.length < 2) return { vsPrevPct: null, vsWeekAvgPct: null }
   const totals = buckets.map(sumBucketEnergy)
+
+  // Use the median of recent full buckets as the "normal" reference energy so that a
+  // near-zero gap bucket (shutdown / data loss) does not inflate the comparison baseline
+  // or make the following restart day look like a massive spike.
+  const recentFull = totals.filter((v) => v > 1e-6)
+  const medianFull =
+    recentFull.length > 0
+      ? recentFull.slice().sort((a, b) => a - b)[Math.floor(recentFull.length / 2)]!
+      : 0
+
+  // Skip prev-bucket comparison when the immediately preceding bucket has near-zero
+  // energy (gap / shutdown day) — comparing a normal day to a blackout day is misleading.
   const last = totals[totals.length - 1]!
   const prev = totals[totals.length - 2]!
-  const vsPrevPct = prev > 1e-6 ? ((last - prev) / prev) * 100 : null
+  const prevIsGap = medianFull > 1e-6 && prev < medianFull * 0.1
+  const vsPrevPct = prev > 1e-6 && !prevIsGap ? ((last - prev) / prev) * 100 : null
 
   let vsWeekAvgPct: number | null = null
   if (granularity === 'daily' && totals.length >= 8) {

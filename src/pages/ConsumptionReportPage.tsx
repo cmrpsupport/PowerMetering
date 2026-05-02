@@ -368,7 +368,10 @@ export function ConsumptionReportPage() {
                           const periodKwh = cell?.energyKwh ?? 0
                           const cum = cell?.cumulativeKwhEnd ?? null
                           const prevC = prevBucket?.byMeter[m]
-                          const prevPeriodKwh = prevC !== undefined ? prevC.energyKwh ?? 0 : null
+                          // Treat prev bucket as missing when the whole plant had near-zero
+                          // energy (shutdown / data gap) — avoids false spike on restart day.
+                          const prevBucketIsGap = (prevBucket?.totalEnergyKwh ?? 0) < 1
+                          const prevPeriodKwh = prevC !== undefined && !prevBucketIsGap ? prevC.energyKwh ?? 0 : null
 
                           const curCum = cum
                           const prevCumEnd = prevBucket?.byMeter[m]?.cumulativeKwhEnd
