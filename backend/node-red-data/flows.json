@@ -4728,7 +4728,7 @@
     "type": "function",
     "z": "a1000001.0001tab",
     "name": "SQLite: create schema (v3 — meter_samples)",
-    "func": "msg.topic = `CREATE TABLE IF NOT EXISTS plc_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  Power_kW REAL,\n  Energy_kWh REAL,\n  Voltage_V REAL,\n  Current_A REAL,\n  PowerFactor REAL,\n  Total_CrackerLine1_kWh REAL,\n  Total_CrackerLine2_kWh REAL,\n  Total_PretzelLine_kWh REAL,\n  Total_WaferLine1_kWh REAL,\n  Total_WaferLine2_kWh REAL,\n  Total_ChooeyChocoLine_kWh REAL,\n  Total_DynamiteLine_kWh REAL,\n  Total_XOLine_kWh REAL,\n  Total_MaxxLine_kWh REAL,\n  Total_MainLine_kWh REAL,\n  Total_UtilitiesJaguar_kWh REAL,\n  Total_UtilitiesLighting_kWh REAL\n);\nCREATE INDEX IF NOT EXISTS idx_plc_samples_ts ON plc_samples(ts);\nCREATE INDEX IF NOT EXISTS idx_plc_samples_epoch ON plc_samples(ts_epoch);\n\nCREATE TABLE IF NOT EXISTS meter_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  meter_id TEXT NOT NULL,\n  real_power_kw REAL,\n  reactive_power_kvar REAL,\n  apparent_power_kva REAL,\n  real_energy_kwh REAL,\n  reactive_energy_kvarh REAL,\n  apparent_energy_kvah REAL,\n  voltage_ab REAL,\n  voltage_bc REAL,\n  voltage_ca REAL,\n  voltage_ll_avg REAL,\n  voltage_an REAL,\n  voltage_bn REAL,\n  voltage_cn REAL,\n  voltage_ln_avg REAL,\n  current_a REAL,\n  current_b REAL,\n  current_c REAL,\n  current_avg REAL,\n  power_factor REAL,\n  frequency REAL\n);\nCREATE INDEX IF NOT EXISTS idx_meter_epoch_id ON meter_samples(ts_epoch, meter_id);\nCREATE INDEX IF NOT EXISTS idx_meter_id_epoch ON meter_samples(meter_id, ts_epoch);\n\nCREATE TABLE IF NOT EXISTS demand_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  current_demand_kw REAL NOT NULL,\n  instant_kw REAL NOT NULL\n);\nCREATE INDEX IF NOT EXISTS idx_demand_samples_epoch ON demand_samples(ts_epoch);\n\nCREATE TABLE IF NOT EXISTS enhanced_alerts (\n  id TEXT PRIMARY KEY NOT NULL,\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  payload TEXT NOT NULL\n);\nCREATE INDEX IF NOT EXISTS idx_enhanced_alerts_ts_epoch ON enhanced_alerts(ts_epoch DESC);\n\nCREATE TABLE IF NOT EXISTS production_entries (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  line_id TEXT NOT NULL,\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  quantity REAL NOT NULL,\n  shift TEXT\n);\nCREATE INDEX IF NOT EXISTS idx_production_line_epoch ON production_entries(line_id, ts_epoch DESC);`;\nreturn msg;",
+    "func": "msg.topic = `CREATE TABLE IF NOT EXISTS plc_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  Power_kW REAL,\n  Energy_kWh REAL,\n  Voltage_V REAL,\n  Current_A REAL,\n  PowerFactor REAL,\n  Total_CrackerLine1_kWh REAL,\n  Total_CrackerLine2_kWh REAL,\n  Total_PretzelLine_kWh REAL,\n  Total_WaferLine1_kWh REAL,\n  Total_WaferLine2_kWh REAL,\n  Total_ChooeyChocoLine_kWh REAL,\n  Total_DynamiteLine_kWh REAL,\n  Total_XOLine_kWh REAL,\n  Total_MaxxLine_kWh REAL,\n  Total_MainLine_kWh REAL,\n  Total_UtilitiesJaguar_kWh REAL,\n  Total_UtilitiesJaguar_kWh_PAC REAL,\n  Total_UtilitiesLighting_kWh REAL\n);\nCREATE INDEX IF NOT EXISTS idx_plc_samples_ts ON plc_samples(ts);\nCREATE INDEX IF NOT EXISTS idx_plc_samples_epoch ON plc_samples(ts_epoch);\n\nCREATE TABLE IF NOT EXISTS meter_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  meter_id TEXT NOT NULL,\n  real_power_kw REAL,\n  reactive_power_kvar REAL,\n  apparent_power_kva REAL,\n  real_energy_kwh REAL,\n  reactive_energy_kvarh REAL,\n  apparent_energy_kvah REAL,\n  voltage_ab REAL,\n  voltage_bc REAL,\n  voltage_ca REAL,\n  voltage_ll_avg REAL,\n  voltage_an REAL,\n  voltage_bn REAL,\n  voltage_cn REAL,\n  voltage_ln_avg REAL,\n  current_a REAL,\n  current_b REAL,\n  current_c REAL,\n  current_avg REAL,\n  power_factor REAL,\n  frequency REAL\n);\nCREATE INDEX IF NOT EXISTS idx_meter_epoch_id ON meter_samples(ts_epoch, meter_id);\nCREATE INDEX IF NOT EXISTS idx_meter_id_epoch ON meter_samples(meter_id, ts_epoch);\n\nCREATE TABLE IF NOT EXISTS demand_samples (\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  current_demand_kw REAL NOT NULL,\n  instant_kw REAL NOT NULL\n);\nCREATE INDEX IF NOT EXISTS idx_demand_samples_epoch ON demand_samples(ts_epoch);\n\nCREATE TABLE IF NOT EXISTS enhanced_alerts (\n  id TEXT PRIMARY KEY NOT NULL,\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  payload TEXT NOT NULL\n);\nCREATE INDEX IF NOT EXISTS idx_enhanced_alerts_ts_epoch ON enhanced_alerts(ts_epoch DESC);\n\nCREATE TABLE IF NOT EXISTS production_entries (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  line_id TEXT NOT NULL,\n  ts TEXT NOT NULL,\n  ts_epoch INTEGER NOT NULL,\n  quantity REAL NOT NULL,\n  shift TEXT\n);\nCREATE INDEX IF NOT EXISTS idx_production_line_epoch ON production_entries(line_id, ts_epoch DESC);`;\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -4755,7 +4755,8 @@
     "y": 120,
     "wires": [
       [
-        "a1000018a.check_chooey_column"
+        "a1000018a.check_chooey_column",
+        "c1000060.check_pac_column"
       ]
     ]
   },
@@ -5210,7 +5211,7 @@
     "type": "function",
     "z": "a1000001.0001tab",
     "name": "SQLite: query intervals",
-    "func": "const hours = Math.max(1, Math.min(24 * 370, Number(msg.req?.query?.hours ?? 24)));\nconst sinceEpoch = Math.floor(Date.now() / 1000) - Math.floor(hours * 3600);\n\nconst q = msg.req?.query ?? {};\nconst bucketMap = { '5m': 300, '15m': 900, '1h': 3600, 'hourly': 3600 };\nlet bucketSec = Number(q.bucketSec ?? q.bucket_sec);\nconst bt = typeof q.bucket === 'string' ? q.bucket.trim().toLowerCase() : '';\nif (!Number.isFinite(bucketSec) || bucketSec <= 0) {\n  bucketSec = bucketMap[bt] ?? 900;\n}\nconst allowed = [300, 900, 3600];\nbucketSec = allowed.includes(Math.floor(bucketSec))\n  ? Math.floor(bucketSec)\n  : allowed.reduce((a, s) => (Math.abs(s - bucketSec) < Math.abs(a - bucketSec) ? s : a), 900);\n\nconst demandFactor = 3600.0 / bucketSec;\n\nmsg.topic = `WITH base AS (\n  SELECT\n    ts_epoch,\n    Total_CrackerLine1_kWh,\n    Total_CrackerLine2_kWh,\n    Total_PretzelLine_kWh,\n    Total_WaferLine1_kWh,\n    Total_WaferLine2_kWh,\n    Total_ChooeyChocoLine_kWh,\n    Total_DynamiteLine_kWh,\n    Total_XOLine_kWh,\n    Total_MaxxLine_kWh,\n    Total_MainLine_kWh,\n    Total_UtilitiesJaguar_kWh,\n    Total_UtilitiesLighting_kWh\n  FROM plc_samples\n  WHERE ts_epoch >= ${sinceEpoch}\n), diffs AS (\n  SELECT\n    ts_epoch,\n    COALESCE(Total_CrackerLine1_kWh - LAG(Total_CrackerLine1_kWh) OVER (ORDER BY ts_epoch), 0) AS d1,\n    COALESCE(Total_CrackerLine2_kWh - LAG(Total_CrackerLine2_kWh) OVER (ORDER BY ts_epoch), 0) AS d2,\n    COALESCE(Total_PretzelLine_kWh - LAG(Total_PretzelLine_kWh) OVER (ORDER BY ts_epoch), 0) AS d3,\n    COALESCE(Total_WaferLine1_kWh - LAG(Total_WaferLine1_kWh) OVER (ORDER BY ts_epoch), 0) AS d4,\n    COALESCE(Total_WaferLine2_kWh - LAG(Total_WaferLine2_kWh) OVER (ORDER BY ts_epoch), 0) AS d5,\n    COALESCE(Total_ChooeyChocoLine_kWh - LAG(Total_ChooeyChocoLine_kWh) OVER (ORDER BY ts_epoch), 0) AS d6,\n    COALESCE(Total_DynamiteLine_kWh - LAG(Total_DynamiteLine_kWh) OVER (ORDER BY ts_epoch), 0) AS d7,\n    COALESCE(Total_XOLine_kWh - LAG(Total_XOLine_kWh) OVER (ORDER BY ts_epoch), 0) AS d8,\n    COALESCE(Total_MaxxLine_kWh - LAG(Total_MaxxLine_kWh) OVER (ORDER BY ts_epoch), 0) AS d9,\n    COALESCE(Total_MainLine_kWh - LAG(Total_MainLine_kWh) OVER (ORDER BY ts_epoch), 0) AS d10,\n    COALESCE(Total_UtilitiesJaguar_kWh - LAG(Total_UtilitiesJaguar_kWh) OVER (ORDER BY ts_epoch), 0) AS d11,\n    COALESCE(Total_UtilitiesLighting_kWh - LAG(Total_UtilitiesLighting_kWh) OVER (ORDER BY ts_epoch), 0) AS d12\n  FROM base\n), buckets AS (\n  SELECT\n    datetime((ts_epoch / ${bucketSec}) * ${bucketSec}, 'unixepoch') AS bucket_ts,\n    SUM(MAX(0, COALESCE(d1,0))) AS d1,\n    SUM(MAX(0, COALESCE(d2,0))) AS d2,\n    SUM(MAX(0, COALESCE(d3,0))) AS d3,\n    SUM(MAX(0, COALESCE(d4,0))) AS d4,\n    SUM(MAX(0, COALESCE(d5,0))) AS d5,\n    SUM(MAX(0, COALESCE(d6,0))) AS d6,\n    SUM(MAX(0, COALESCE(d7,0))) AS d7,\n    SUM(MAX(0, COALESCE(d8,0))) AS d8,\n    SUM(MAX(0, COALESCE(d9,0))) AS d9,\n    SUM(MAX(0, COALESCE(d10,0))) AS d10,\n    SUM(MAX(0, COALESCE(d11,0))) AS d11,\n    SUM(MAX(0, COALESCE(d12,0))) AS d12\n  FROM diffs\n  GROUP BY bucket_ts\n), cum AS (\n  SELECT\n    datetime((ts_epoch / ${bucketSec}) * ${bucketSec}, 'unixepoch') AS bucket_ts,\n    MAX(Total_CrackerLine1_kWh) AS t1,\n    MAX(Total_CrackerLine2_kWh) AS t2,\n    MAX(Total_PretzelLine_kWh) AS t3,\n    MAX(Total_WaferLine1_kWh) AS t4,\n    MAX(Total_WaferLine2_kWh) AS t5,\n    MAX(Total_ChooeyChocoLine_kWh) AS t6,\n    MAX(Total_DynamiteLine_kWh) AS t7,\n    MAX(Total_XOLine_kWh) AS t8,\n    MAX(Total_MaxxLine_kWh) AS t9,\n    MAX(Total_MainLine_kWh) AS t10,\n    MAX(Total_UtilitiesJaguar_kWh) AS t11,\n    MAX(Total_UtilitiesLighting_kWh) AS t12\n  FROM base\n  GROUP BY bucket_ts\n)\nSELECT\n  strftime('%Y-%m-%dT%H:%M:00.000Z', bucket_ts) AS ts,\n  meterId,\n  meterName,\n  energyKwh,\n  (energyKwh * ${demandFactor}) AS demandKw,\n  0.0 AS costDollars,\n  'n/a' AS rateTier,\n  cumulativeKwh\nFROM (\n  SELECT b.bucket_ts, 'line-01' AS meterId, 'Cracker Line 1' AS meterName, b.d1 AS energyKwh, c.t1 AS cumulativeKwh FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-02', 'Cracker Line 2', b.d2, c.t2 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-03', 'Pretzel Line', b.d3, c.t3 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-04', 'Wafer Line 1', b.d4, c.t4 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-05', 'Wafer Line 2', b.d5, c.t5 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-06', 'Chooey Choco Line', b.d6, c.t6 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-07', 'Dynamite Line', b.d7, c.t7 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-08', 'XO Line', b.d8, c.t8 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-09', 'Maxx Line', b.d9, c.t9 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-10', 'Main Line', b.d10, c.t10 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-11', 'Utilities Jaguar', b.d11, c.t11 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-12', 'Utilities Lighting', b.d12, c.t12 FROM buckets b JOIN cum c USING(bucket_ts)\n)\nORDER BY ts ASC, meterId ASC;`;\n\ndelete msg.payload;\nreturn msg;",
+    "func": "const hours = Math.max(1, Math.min(24 * 370, Number(msg.req?.query?.hours ?? 24)));\nconst sinceEpoch = Math.floor(Date.now() / 1000) - Math.floor(hours * 3600);\n\nconst q = msg.req?.query ?? {};\nconst bucketMap = { '5m': 300, '15m': 900, '1h': 3600, 'hourly': 3600 };\nlet bucketSec = Number(q.bucketSec ?? q.bucket_sec);\nconst bt = typeof q.bucket === 'string' ? q.bucket.trim().toLowerCase() : '';\nif (!Number.isFinite(bucketSec) || bucketSec <= 0) {\n  bucketSec = bucketMap[bt] ?? 900;\n}\nconst allowed = [300, 900, 3600];\nbucketSec = allowed.includes(Math.floor(bucketSec))\n  ? Math.floor(bucketSec)\n  : allowed.reduce((a, s) => (Math.abs(s - bucketSec) < Math.abs(a - bucketSec) ? s : a), 900);\n\nconst demandFactor = 3600.0 / bucketSec;\n\nmsg.topic = `WITH base AS (\n  SELECT\n    ts_epoch,\n    Total_CrackerLine1_kWh,\n    Total_CrackerLine2_kWh,\n    Total_PretzelLine_kWh,\n    Total_WaferLine1_kWh,\n    Total_WaferLine2_kWh,\n    Total_ChooeyChocoLine_kWh,\n    Total_DynamiteLine_kWh,\n    Total_XOLine_kWh,\n    Total_MaxxLine_kWh,\n    Total_MainLine_kWh,\n    Total_UtilitiesJaguar_kWh,\n    Total_UtilitiesLighting_kWh\n  FROM plc_samples\n  WHERE ts_epoch >= ${sinceEpoch}\n), raw_diffs AS (\n  SELECT\n    ts_epoch,\n    COALESCE(ts_epoch - LAG(ts_epoch) OVER (ORDER BY ts_epoch), 2) AS interval_sec,\n    COALESCE(Total_CrackerLine1_kWh - LAG(Total_CrackerLine1_kWh) OVER (ORDER BY ts_epoch), 0) AS d1,\n    COALESCE(Total_CrackerLine2_kWh - LAG(Total_CrackerLine2_kWh) OVER (ORDER BY ts_epoch), 0) AS d2,\n    COALESCE(Total_PretzelLine_kWh - LAG(Total_PretzelLine_kWh) OVER (ORDER BY ts_epoch), 0) AS d3,\n    COALESCE(Total_WaferLine1_kWh - LAG(Total_WaferLine1_kWh) OVER (ORDER BY ts_epoch), 0) AS d4,\n    COALESCE(Total_WaferLine2_kWh - LAG(Total_WaferLine2_kWh) OVER (ORDER BY ts_epoch), 0) AS d5,\n    COALESCE(Total_ChooeyChocoLine_kWh - LAG(Total_ChooeyChocoLine_kWh) OVER (ORDER BY ts_epoch), 0) AS d6,\n    COALESCE(Total_DynamiteLine_kWh - LAG(Total_DynamiteLine_kWh) OVER (ORDER BY ts_epoch), 0) AS d7,\n    COALESCE(Total_XOLine_kWh - LAG(Total_XOLine_kWh) OVER (ORDER BY ts_epoch), 0) AS d8,\n    COALESCE(Total_MaxxLine_kWh - LAG(Total_MaxxLine_kWh) OVER (ORDER BY ts_epoch), 0) AS d9,\n    COALESCE(Total_MainLine_kWh - LAG(Total_MainLine_kWh) OVER (ORDER BY ts_epoch), 0) AS d10,\n    COALESCE(Total_UtilitiesJaguar_kWh - LAG(Total_UtilitiesJaguar_kWh) OVER (ORDER BY ts_epoch), 0) AS d11,\n    COALESCE(Total_UtilitiesLighting_kWh - LAG(Total_UtilitiesLighting_kWh) OVER (ORDER BY ts_epoch), 0) AS d12\n  FROM base\n), diffs AS (\n  -- Reconnect-spike filter: any per-sample delta implying > 2 MW instantaneous power\n  -- on a single submeter line is treated as a post-outage register jump and dropped\n  -- to 0. 2 MW * 2s sample = 1.11 kWh threshold per typical sample; legit per-line\n  -- consumption is far below that.\n  SELECT\n    ts_epoch,\n    CASE WHEN d1  > (2000.0 * interval_sec / 3600.0) THEN 0 ELSE d1  END AS d1,\n    CASE WHEN d2  > (2000.0 * interval_sec / 3600.0) THEN 0 ELSE d2  END AS d2,\n    CASE WHEN d3  > (2000.0 * interval_sec / 3600.0) THEN 0 ELSE d3  END AS d3,\n    CASE WHEN d4  > (2000.0 * interval_sec / 3600.0) THEN 0 ELSE d4  END AS d4,\n    CASE WHEN d5  > (2000.0 * interval_sec / 3600.0) THEN 0 ELSE d5  END AS d5,\n    CASE WHEN d6  > (2000.0 * interval_sec / 3600.0) THEN 0 ELSE d6  END AS d6,\n    CASE WHEN d7  > (2000.0 * interval_sec / 3600.0) THEN 0 ELSE d7  END AS d7,\n    CASE WHEN d8  > (2000.0 * interval_sec / 3600.0) THEN 0 ELSE d8  END AS d8,\n    CASE WHEN d9  > (2000.0 * interval_sec / 3600.0) THEN 0 ELSE d9  END AS d9,\n    CASE WHEN d10 > (2000.0 * interval_sec / 3600.0) THEN 0 ELSE d10 END AS d10,\n    CASE WHEN d11 > (2000.0 * interval_sec / 3600.0) THEN 0 ELSE d11 END AS d11,\n    CASE WHEN d12 > (2000.0 * interval_sec / 3600.0) THEN 0 ELSE d12 END AS d12\n  FROM raw_diffs\n), buckets AS (\n  SELECT\n    datetime((ts_epoch / ${bucketSec}) * ${bucketSec}, 'unixepoch') AS bucket_ts,\n    SUM(MAX(0, COALESCE(d1,0))) AS d1,\n    SUM(MAX(0, COALESCE(d2,0))) AS d2,\n    SUM(MAX(0, COALESCE(d3,0))) AS d3,\n    SUM(MAX(0, COALESCE(d4,0))) AS d4,\n    SUM(MAX(0, COALESCE(d5,0))) AS d5,\n    SUM(MAX(0, COALESCE(d6,0))) AS d6,\n    SUM(MAX(0, COALESCE(d7,0))) AS d7,\n    SUM(MAX(0, COALESCE(d8,0))) AS d8,\n    SUM(MAX(0, COALESCE(d9,0))) AS d9,\n    SUM(MAX(0, COALESCE(d10,0))) AS d10,\n    SUM(MAX(0, COALESCE(d11,0))) AS d11,\n    SUM(MAX(0, COALESCE(d12,0))) AS d12\n  FROM diffs\n  GROUP BY bucket_ts\n), cum AS (\n  SELECT\n    datetime((ts_epoch / ${bucketSec}) * ${bucketSec}, 'unixepoch') AS bucket_ts,\n    MAX(Total_CrackerLine1_kWh) AS t1,\n    MAX(Total_CrackerLine2_kWh) AS t2,\n    MAX(Total_PretzelLine_kWh) AS t3,\n    MAX(Total_WaferLine1_kWh) AS t4,\n    MAX(Total_WaferLine2_kWh) AS t5,\n    MAX(Total_ChooeyChocoLine_kWh) AS t6,\n    MAX(Total_DynamiteLine_kWh) AS t7,\n    MAX(Total_XOLine_kWh) AS t8,\n    MAX(Total_MaxxLine_kWh) AS t9,\n    MAX(Total_MainLine_kWh) AS t10,\n    MAX(Total_UtilitiesJaguar_kWh) AS t11,\n    MAX(Total_UtilitiesLighting_kWh) AS t12\n  FROM base\n  GROUP BY bucket_ts\n)\nSELECT\n  strftime('%Y-%m-%dT%H:%M:00.000Z', bucket_ts) AS ts,\n  meterId,\n  meterName,\n  energyKwh,\n  (energyKwh * ${demandFactor}) AS demandKw,\n  0.0 AS costDollars,\n  'n/a' AS rateTier,\n  cumulativeKwh\nFROM (\n  SELECT b.bucket_ts, 'line-01' AS meterId, 'Cracker Line 1' AS meterName, b.d1 AS energyKwh, c.t1 AS cumulativeKwh FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-02', 'Cracker Line 2', b.d2, c.t2 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-03', 'Pretzel Line', b.d3, c.t3 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-04', 'Wafer Line 1', b.d4, c.t4 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-05', 'Wafer Line 2', b.d5, c.t5 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-06', 'Chooey Choco Line', b.d6, c.t6 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-07', 'Dynamite Line', b.d7, c.t7 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-08', 'XO Line', b.d8, c.t8 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-09', 'Maxx Line', b.d9, c.t9 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-10', 'Main Line', b.d10, c.t10 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-11', 'Utilities Jaguar', b.d11, c.t11 FROM buckets b JOIN cum c USING(bucket_ts)\n  UNION ALL SELECT b.bucket_ts, 'line-12', 'Utilities Lighting', b.d12, c.t12 FROM buckets b JOIN cum c USING(bucket_ts)\n)\nORDER BY ts ASC, meterId ASC;`;\n\ndelete msg.payload;\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -6412,5 +6413,305 @@
     "x": 1160,
     "y": 620,
     "wires": []
+  },
+  {
+    "id": "c1000001.modbustab",
+    "type": "tab",
+    "label": "PAC3220 Modbus (Jaguar)",
+    "disabled": false,
+    "info": "Direct Modbus TCP polling of PAC3220 meters at 192.168.0.51 and 192.168.0.53.\nReads active-energy-import (kWh) at FC3 holding-register address 800 (qty 4 = 64-bit float).\nSums both meters into Total_UtilitiesJaguar_kWh_PAC and writes to plc_samples in parallel\nwith the S7 DB16,REAL2064 path. Disable this tab to fall back to pure-PLC behavior."
+  },
+  {
+    "id": "c1000010.modbusclient51",
+    "type": "modbus-client",
+    "name": "PAC3220 #51",
+    "clienttype": "tcp",
+    "bufferCommands": true,
+    "stateLogEnabled": false,
+    "queueLogEnabled": false,
+    "failureLogEnabled": true,
+    "tcpHost": "192.168.0.51",
+    "tcpPort": "502",
+    "tcpType": "DEFAULT",
+    "serialPort": "",
+    "serialType": "RTU-BUFFERD",
+    "serialBaudrate": "9600",
+    "serialDatabits": "8",
+    "serialStopbits": "1",
+    "serialParity": "none",
+    "serialConnectionDelay": "100",
+    "serialAsciiResponseStartDelimiter": "",
+    "unit_id": 1,
+    "commandDelay": "100",
+    "clientTimeout": "3000",
+    "reconnectOnTimeout": true,
+    "reconnectTimeout": "5000",
+    "parallelUnitIdsAllowed": true,
+    "showStatusActivities": false,
+    "showErrors": true,
+    "showWarnings": true,
+    "showLogs": false
+  },
+  {
+    "id": "c1000011.modbusclient53",
+    "type": "modbus-client",
+    "name": "PAC3220 #53",
+    "clienttype": "tcp",
+    "bufferCommands": true,
+    "stateLogEnabled": false,
+    "queueLogEnabled": false,
+    "failureLogEnabled": true,
+    "tcpHost": "192.168.0.53",
+    "tcpPort": "502",
+    "tcpType": "DEFAULT",
+    "serialPort": "",
+    "serialType": "RTU-BUFFERD",
+    "serialBaudrate": "9600",
+    "serialDatabits": "8",
+    "serialStopbits": "1",
+    "serialParity": "none",
+    "serialConnectionDelay": "100",
+    "serialAsciiResponseStartDelimiter": "",
+    "unit_id": 1,
+    "commandDelay": "100",
+    "clientTimeout": "3000",
+    "reconnectOnTimeout": true,
+    "reconnectTimeout": "5000",
+    "parallelUnitIdsAllowed": true,
+    "showStatusActivities": false,
+    "showErrors": true,
+    "showWarnings": true,
+    "showLogs": false
+  },
+  {
+    "id": "c1000020.modbusread51",
+    "type": "modbus-read",
+    "z": "c1000001.modbustab",
+    "name": "PAC3220 #51 — Active Energy Import",
+    "topic": "pac51_kwh",
+    "showStatusActivities": false,
+    "logIOActivities": false,
+    "showErrors": true,
+    "showWarnings": true,
+    "unitid": "1",
+    "dataType": "HoldingRegister",
+    "adr": "800",
+    "quantity": "4",
+    "rate": "2",
+    "rateUnit": "s",
+    "delayOnStart": false,
+    "startDelayTime": "",
+    "server": "c1000010.modbusclient51",
+    "useIOFile": false,
+    "ioFile": "",
+    "useIOForPayload": false,
+    "emptyMsgOnFail": false,
+    "keepMsgProperties": false,
+    "x": 240,
+    "y": 120,
+    "wires": [
+      [
+        "c1000030.parse51"
+      ],
+      []
+    ]
+  },
+  {
+    "id": "c1000021.modbusread53",
+    "type": "modbus-read",
+    "z": "c1000001.modbustab",
+    "name": "PAC3220 #53 — Active Energy Import",
+    "topic": "pac53_kwh",
+    "showStatusActivities": false,
+    "logIOActivities": false,
+    "showErrors": true,
+    "showWarnings": true,
+    "unitid": "1",
+    "dataType": "HoldingRegister",
+    "adr": "800",
+    "quantity": "4",
+    "rate": "2",
+    "rateUnit": "s",
+    "delayOnStart": false,
+    "startDelayTime": "",
+    "server": "c1000011.modbusclient53",
+    "useIOFile": false,
+    "ioFile": "",
+    "useIOForPayload": false,
+    "emptyMsgOnFail": false,
+    "keepMsgProperties": false,
+    "x": 240,
+    "y": 200,
+    "wires": [
+      [
+        "c1000031.parse53"
+      ],
+      []
+    ]
+  },
+  {
+    "id": "c1000030.parse51",
+    "type": "function",
+    "z": "c1000001.modbustab",
+    "name": "Parse #51 kWh (DOUBLE BE, hi-word first)",
+    "func": "// PAC3220 active-energy-import: 64-bit IEEE 754 double, 4 holding regs.\n// Default word order = big-endian, high-word first.\n// If values are wrong, flip WORD_ORDER to 'WL'.\nconst WORD_ORDER = 'WH';\nconst regs = msg.payload;\nif (!Array.isArray(regs) || regs.length < 4) {\n  node.warn('PAC#51: bad payload, expected 4 regs, got ' + JSON.stringify(regs));\n  return null;\n}\nconst order = WORD_ORDER === 'WL' ? [regs[1], regs[0], regs[3], regs[2]] : regs.slice(0, 4);\nconst buf = Buffer.alloc(8);\nbuf.writeUInt16BE(order[0] & 0xFFFF, 0);\nbuf.writeUInt16BE(order[1] & 0xFFFF, 2);\nbuf.writeUInt16BE(order[2] & 0xFFFF, 4);\nbuf.writeUInt16BE(order[3] & 0xFFFF, 6);\nconst kwh = buf.readDoubleBE(0);\nif (!Number.isFinite(kwh) || kwh < 0 || kwh > 1e12) {\n  node.warn('PAC#51: implausible kWh = ' + kwh + ' from regs ' + JSON.stringify(regs));\n  return null;\n}\nflow.set('pac51_kwh', kwh);\nflow.set('pac51_kwh_ts', Date.now());\nnode.status({ fill: 'green', shape: 'dot', text: kwh.toFixed(2) + ' kWh' });\nreturn null;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 580,
+    "y": 120,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "c1000031.parse53",
+    "type": "function",
+    "z": "c1000001.modbustab",
+    "name": "Parse #53 kWh (DOUBLE BE, hi-word first)",
+    "func": "const WORD_ORDER = 'WH';\nconst regs = msg.payload;\nif (!Array.isArray(regs) || regs.length < 4) {\n  node.warn('PAC#53: bad payload, expected 4 regs, got ' + JSON.stringify(regs));\n  return null;\n}\nconst order = WORD_ORDER === 'WL' ? [regs[1], regs[0], regs[3], regs[2]] : regs.slice(0, 4);\nconst buf = Buffer.alloc(8);\nbuf.writeUInt16BE(order[0] & 0xFFFF, 0);\nbuf.writeUInt16BE(order[1] & 0xFFFF, 2);\nbuf.writeUInt16BE(order[2] & 0xFFFF, 4);\nbuf.writeUInt16BE(order[3] & 0xFFFF, 6);\nconst kwh = buf.readDoubleBE(0);\nif (!Number.isFinite(kwh) || kwh < 0 || kwh > 1e12) {\n  node.warn('PAC#53: implausible kWh = ' + kwh + ' from regs ' + JSON.stringify(regs));\n  return null;\n}\nflow.set('pac53_kwh', kwh);\nflow.set('pac53_kwh_ts', Date.now());\nnode.status({ fill: 'green', shape: 'dot', text: kwh.toFixed(2) + ' kWh' });\nreturn null;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 580,
+    "y": 200,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "c1000040.tick",
+    "type": "inject",
+    "z": "c1000001.modbustab",
+    "name": "Tick 5 s",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "5",
+    "crontab": "",
+    "once": true,
+    "onceDelay": "5",
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 200,
+    "y": 320,
+    "wires": [
+      [
+        "c1000041.aggregate"
+      ]
+    ]
+  },
+  {
+    "id": "c1000041.aggregate",
+    "type": "function",
+    "z": "c1000001.modbustab",
+    "name": "Build INSERT (PAC sum)",
+    "func": "const STALE_MS = 30000;\nconst now = Date.now();\nconst v51 = flow.get('pac51_kwh');\nconst v53 = flow.get('pac53_kwh');\nconst t51 = flow.get('pac51_kwh_ts') || 0;\nconst t53 = flow.get('pac53_kwh_ts') || 0;\nconst f51 = Number.isFinite(v51) && (now - t51) < STALE_MS ? v51 : null;\nconst f53 = Number.isFinite(v53) && (now - t53) < STALE_MS ? v53 : null;\nlet total = null;\nif (f51 !== null && f53 !== null) total = f51 + f53;\nelse if (f51 !== null) total = f51;\nelse if (f53 !== null) total = f53;\nif (total === null) {\n  node.status({ fill: 'red', shape: 'ring', text: 'no fresh PAC data' });\n  return null;\n}\nnode.status({ fill: 'green', shape: 'dot', text: total.toFixed(2) + ' kWh' });\nconst ts = new Date().toISOString();\nconst tsEpoch = Math.floor(now / 1000);\nmsg.topic = `INSERT INTO plc_samples (ts, ts_epoch, Total_UtilitiesJaguar_kWh_PAC) VALUES ('${ts}', ${tsEpoch}, ${total});`;\ndelete msg.payload;\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 480,
+    "y": 320,
+    "wires": [
+      [
+        "c1000042.sqlite_pac_write"
+      ]
+    ]
+  },
+  {
+    "id": "c1000042.sqlite_pac_write",
+    "type": "sqlite",
+    "z": "c1000001.modbustab",
+    "mydb": "a1000012.sqlitedb",
+    "sqlquery": "msg.topic",
+    "sql": "",
+    "name": "SQLite write (PAC)",
+    "x": 760,
+    "y": 320,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "c1000060.check_pac_column",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "SQLite: pragma check Jaguar_PAC column",
+    "func": "msg.topic = `SELECT COUNT(*) AS cnt FROM pragma_table_info('plc_samples') WHERE name='Total_UtilitiesJaguar_kWh_PAC'`;\nmsg.payload = null;\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 1780,
+    "y": 120,
+    "wires": [
+      [
+        "c1000061.read_pragma_pac"
+      ]
+    ]
+  },
+  {
+    "id": "c1000061.read_pragma_pac",
+    "type": "sqlite",
+    "z": "a1000001.0001tab",
+    "mydb": "a1000012.sqlitedb",
+    "sqlquery": "msg.topic",
+    "sql": "",
+    "name": "SQLite read pragma (PAC)",
+    "x": 2020,
+    "y": 120,
+    "wires": [
+      [
+        "c1000062.maybe_add_pac_column"
+      ]
+    ]
+  },
+  {
+    "id": "c1000062.maybe_add_pac_column",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "SQLite: ADD COLUMN if missing (PAC)",
+    "func": "const rows = msg.payload;\nlet raw = null;\nif (Array.isArray(rows) && rows[0]) raw = rows[0].cnt;\nelse if (rows && typeof rows === 'object' && !Array.isArray(rows)) raw = rows.cnt;\nconst n = Number(raw);\nif (Number.isFinite(n) && n > 0) return null;\nmsg.topic = `ALTER TABLE plc_samples ADD COLUMN Total_UtilitiesJaguar_kWh_PAC REAL;`;\nmsg.payload = null;\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 2260,
+    "y": 120,
+    "wires": [
+      [
+        "c1000063.exec_pac_alter"
+      ]
+    ]
+  },
+  {
+    "id": "c1000063.exec_pac_alter",
+    "type": "sqlite",
+    "z": "a1000001.0001tab",
+    "mydb": "a1000012.sqlitedb",
+    "sqlquery": "msg.topic",
+    "sql": "",
+    "name": "SQLite exec ADD COLUMN (PAC)",
+    "x": 2480,
+    "y": 120,
+    "wires": [
+      []
+    ]
   }
 ]
