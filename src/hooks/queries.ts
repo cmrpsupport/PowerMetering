@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import type { ConsumptionGranularity } from '../types'
 import { CONSUMPTION_REPORT_HOURS } from '../lib/consumptionReport'
 import {
@@ -73,12 +73,12 @@ export function useEnergyIntervals(
     queryKey: ['energyIntervals', hours, opts?.bucket ?? null, opts?.bucketSec ?? null],
     queryFn: () => getEnergyIntervals(hours, opts),
     refetchInterval: 60_000,
-    // Don't re-fetch immediately on focus events — prevents simultaneous mass
-    // re-fetches when kiosk screen wakes (covered by global refetchOnWindowFocus:false too).
     staleTime: 55_000,
-    // Free superseded cache entries promptly. Large energy datasets (monthly/yearly)
-    // can be 10k–180k row objects; holding them beyond the refetch window wastes heap.
-    gcTime: 90_000,
+    // 5 min gcTime: cached data survives nav-away-and-back so the consumption
+    // page is instant on return. Memory cost is bounded by the limited number
+    // of distinct (hours, bucket) keys an active session uses.
+    gcTime: 5 * 60_000,
+    placeholderData: keepPreviousData,
   })
 }
 
@@ -107,6 +107,10 @@ export function useConsumptionReportIntervals(granularity: ConsumptionGranularit
     queryKey: ['energyIntervals', 'consumption', granularity, hours],
     queryFn: () => getEnergyIntervals(hours),
     staleTime: 60_000,
+    gcTime: 10 * 60_000,
+    // Granularity toggle keeps showing the previous table while new data fetches
+    // — avoids the page going blank during the SQL query.
+    placeholderData: keepPreviousData,
   })
 }
 
@@ -118,7 +122,9 @@ export function usePowerTrend(
     queryKey: ['powerTrend', minutes, opts?.bucket ?? null, opts?.bucketSec ?? null],
     queryFn: () => getPowerTrend(minutes, opts),
     refetchInterval: 60_000,
-    gcTime: 30_000,
+    staleTime: 55_000,
+    gcTime: 5 * 60_000,
+    placeholderData: keepPreviousData,
   })
 }
 
@@ -137,7 +143,9 @@ export function useMeterHistory(minutes = 24 * 60, meterId?: string) {
     queryKey: ['meterHistory', minutes, meterId],
     queryFn: () => getMeterHistory(minutes, meterId),
     refetchInterval: 60_000,
-    gcTime: 30_000,
+    staleTime: 55_000,
+    gcTime: 5 * 60_000,
+    placeholderData: keepPreviousData,
   })
 }
 
@@ -148,7 +156,8 @@ export function useMeterIntervals(bucket: MeterIntervalBucket, periods?: number)
     queryFn: () => getMeterIntervals(bucket, periods),
     staleTime: 30_000,
     refetchInterval: 60_000,
-    gcTime: 5 * 60_000,
+    gcTime: 10 * 60_000,
+    placeholderData: keepPreviousData,
   })
 }
 
