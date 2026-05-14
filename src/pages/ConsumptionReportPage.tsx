@@ -5,7 +5,7 @@ import { EnergyDrilldownModal } from '../components/energy/EnergyDrilldownModal'
 import { EnergyEmptyState } from '../components/energy/EnergyEmptyState'
 import { EnergySummaryBar, type SummaryTone } from '../components/energy/EnergySummaryBar'
 import { SegmentedControl } from '../components/ui/SegmentedControl'
-import { useConsumptionReportIntervals, useDemandStatus } from '../hooks/queries'
+import { useConsumptionReportIntervals, useDemandStatus, useMeterHistory } from '../hooks/queries'
 import { classifyEnergyCell, type CellAnomaly } from '../lib/energyAnomalies'
 import {
   aggregateConsumptionIntervals,
@@ -17,6 +17,11 @@ import {
   findGlobalPeakDemand,
   intervalsForBucket,
 } from '../lib/energyInsights'
+import {
+  meterMinutesForGranularity,
+  meterPointsToBuckets,
+  sortMeterDisplayNames,
+} from '../lib/meterConsumption'
 import type { ConsumptionGranularity, EnergyInterval } from '../types'
 
 const GRANULARITY_OPTIONS: { id: ConsumptionGranularity; label: string; hint: string }[] = [
@@ -57,6 +62,7 @@ const LINE_COLORS = [
 ]
 
 type DataMode = 'consumption' | 'meterReading'
+type ViewMode = 'lines' | 'meters'
 type RowSort = 'time-asc' | 'time-desc' | 'total-desc' | 'total-asc'
 
 function fmtNum(n: number, decimals = 1) {
@@ -114,20 +120,25 @@ function cellClass(a: CellAnomaly, topBold: boolean): string {
 export function ConsumptionReportPage() {
   const [granularity, setGranularity] = useState<ConsumptionGranularity>('daily')
   const [dataMode, setDataMode] = useState<DataMode>('consumption')
+  const [viewMode, setViewMode] = useState<ViewMode>('lines')
   const [rowSort, setRowSort] = useState<RowSort>('time-desc')
   const [drilldown, setDrilldown] = useState<{ bucketKey: string; lineName: string; periodLabel: string } | null>(null)
 
-  const q = useConsumptionReportIntervals(granularity)
+  const linesQ = useConsumptionReportIntervals(granularity)
+  const metersQ = useMeterHistory(meterMinutesForGranularity(granularity))
+  const q = viewMode === 'lines' ? linesQ : metersQ
   const demandQ = useDemandStatus('24h')
   const queryClient = useQueryClient()
   const granRef = useRef<HTMLDivElement>(null)
 
-  const rawIntervals: EnergyInterval[] = q.data ?? []
+  const rawIntervals: EnergyInterval[] = linesQ.data ?? []
 
   const buckets = useMemo(() => {
-    const intervals = q.data ?? []
-    return aggregateConsumptionIntervals(intervals, granularity)
-  }, [q.data, granularity])
+    if (viewMode === 'lines') {
+      return aggregateConsumptionIntervals(linesQ.data ?? [], granularity)
+    }
+    return meterPointsToBuckets(metersQ.data ?? [], granularity)
+  }, [viewMode, linesQ.data, metersQ.data, granularity])
 
   const sortedBuckets = useMemo(() => sortBuckets(buckets, rowSort), [buckets, rowSort])
 
@@ -145,6 +156,7 @@ export function ConsumptionReportPage() {
       for (const m of Object.keys(b.byMeter)) s.add(m)
     }
     const raw = Array.from(s)
+    if (viewMode === 'meters') return sortMeterDisplayNames(raw)
     return raw.sort((a, b) => {
       const ia = LINE_ORDER.indexOf(a)
       const ib = LINE_ORDER.indexOf(b)
@@ -153,7 +165,7 @@ export function ConsumptionReportPage() {
       if (ib === -1) return -1
       return ia - ib
     })
-  }, [buckets])
+  }, [buckets, viewMode])
 
   const periodCmp = useMemo(() => computePeriodComparisons(buckets, granularity), [buckets, granularity])
 
@@ -166,9 +178,9 @@ export function ConsumptionReportPage() {
   )
 
   const drilldownIntervals = useMemo(() => {
-    if (!drilldown) return []
+    if (!drilldown || viewMode !== 'lines') return []
     return intervalsForBucket(rawIntervals, drilldown.bucketKey, granularity).filter((iv) => iv.meterName === drilldown.lineName)
-  }, [drilldown, rawIntervals, granularity])
+  }, [drilldown, rawIntervals, granularity, viewMode])
 
   const onDownloadCsv = () => {
     const csv = consumptionReportToCsv(buckets, granularity)
@@ -255,6 +267,14 @@ export function ConsumptionReportPage() {
               </button>
             ))}
           </div>
+          <SegmentedControl<ViewMode>
+            value={viewMode}
+            onChange={setViewMode}
+            options={[
+              { id: 'lines', label: 'Lines' },
+              { id: 'meters', label: 'Meters' },
+            ]}
+          />
           <SegmentedControl<DataMode>
             value={dataMode}
             onChange={setDataMode}
