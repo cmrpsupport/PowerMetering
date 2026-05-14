@@ -5,7 +5,7 @@ import { EnergyDrilldownModal } from '../components/energy/EnergyDrilldownModal'
 import { EnergyEmptyState } from '../components/energy/EnergyEmptyState'
 import { EnergySummaryBar, type SummaryTone } from '../components/energy/EnergySummaryBar'
 import { SegmentedControl } from '../components/ui/SegmentedControl'
-import { useConsumptionReportIntervals, useDemandStatus, useMeterHistory } from '../hooks/queries'
+import { useConsumptionReportIntervals, useDemandStatus, useMeterIntervals } from '../hooks/queries'
 import { classifyEnergyCell, type CellAnomaly } from '../lib/energyAnomalies'
 import {
   aggregateConsumptionIntervals,
@@ -18,8 +18,9 @@ import {
   intervalsForBucket,
 } from '../lib/energyInsights'
 import {
-  meterMinutesForGranularity,
-  meterPointsToBuckets,
+  meterBucketForGranularity,
+  meterIntervalsToBuckets,
+  meterPeriodsForGranularity,
   sortMeterDisplayNames,
 } from '../lib/meterConsumption'
 import type { ConsumptionGranularity, EnergyInterval } from '../types'
@@ -125,7 +126,10 @@ export function ConsumptionReportPage() {
   const [drilldown, setDrilldown] = useState<{ bucketKey: string; lineName: string; periodLabel: string } | null>(null)
 
   const linesQ = useConsumptionReportIntervals(granularity)
-  const metersQ = useMeterHistory(meterMinutesForGranularity(granularity))
+  const metersQ = useMeterIntervals(
+    meterBucketForGranularity(granularity),
+    meterPeriodsForGranularity(granularity),
+  )
   const q = viewMode === 'lines' ? linesQ : metersQ
   const demandQ = useDemandStatus('24h')
   const queryClient = useQueryClient()
@@ -137,7 +141,7 @@ export function ConsumptionReportPage() {
     if (viewMode === 'lines') {
       return aggregateConsumptionIntervals(linesQ.data ?? [], granularity)
     }
-    return meterPointsToBuckets(metersQ.data ?? [], granularity)
+    return meterIntervalsToBuckets(metersQ.data ?? [], granularity)
   }, [viewMode, linesQ.data, metersQ.data, granularity])
 
   const sortedBuckets = useMemo(() => sortBuckets(buckets, rowSort), [buckets, rowSort])

@@ -117,6 +117,16 @@ export type DemandStatus = {
   exceedsThreshold?: boolean
 }
 
+/** Pre-aggregated per-meter, per-bucket consumption from /api/trends/meter/intervals. */
+export type MeterIntervalRow = {
+  ts: string
+  meterId: string
+  energyKwh: number
+  cumulativeKwh: number
+}
+
+export type MeterIntervalBucket = 'hour' | 'day' | 'week' | 'month'
+
 /** Per-meter, per-phase historical sample from /api/trends/meter/history. */
 export type MeterSamplePoint = {
   ts: string

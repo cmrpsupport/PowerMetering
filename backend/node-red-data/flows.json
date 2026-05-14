@@ -6415,6 +6415,72 @@
     "wires": []
   },
   {
+    "id": "a1000200.httpmeterintervals",
+    "type": "http in",
+    "z": "a1000001.0001tab",
+    "name": "GET /api/trends/meter/intervals",
+    "url": "/api/trends/meter/intervals",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": "",
+    "x": 260,
+    "y": 980,
+    "wires": [
+      [
+        "a1000201.meterintervalsql"
+      ]
+    ]
+  },
+  {
+    "id": "a1000201.meterintervalsql",
+    "type": "function",
+    "z": "a1000001.0001tab",
+    "name": "SQLite: per-meter intervals (bucketed deltas + cumulative)",
+    "func": "const bucket = String(msg.req?.query?.bucket || 'day').toLowerCase();\nconst bucketSecMap = { hour: 3600, day: 86400, week: 604800, month: 2592000 };\nconst defaultPeriodsMap = { hour: 72, day: 30, week: 12, month: 12 };\n// Pre-bin raw samples to a coarser \"inner\" bucket BEFORE running LAG/SUM,\n// so we don't scan millions of 30s rows when the user wants weekly totals.\nconst innerSecMap = { hour: 60, day: 300, week: 3600, month: 86400 };\nconst bucketSec = bucketSecMap[bucket] || 86400;\nconst innerSec = innerSecMap[bucket] || 300;\nconst periodsDefault = defaultPeriodsMap[bucket] || 30;\nconst periods = Math.max(1, Math.min(366, Number(msg.req?.query?.periods ?? periodsDefault)));\nconst nowEpoch = Math.floor(Date.now() / 1000);\nconst windowStart = nowEpoch - periods * bucketSec;\nconst lookback = windowStart - innerSec;\n\nmsg.topic = `WITH binned AS (\n  SELECT\n    (ts_epoch / ${innerSec}) * ${innerSec} AS inner_epoch,\n    meter_id,\n    MAX(real_energy_kwh) AS cum\n  FROM meter_samples\n  WHERE ts_epoch >= ${lookback}\n  GROUP BY inner_epoch, meter_id\n), diffs AS (\n  SELECT\n    inner_epoch, meter_id, cum,\n    COALESCE(cum - LAG(cum) OVER (PARTITION BY meter_id ORDER BY inner_epoch), 0) AS d\n  FROM binned\n), filtered AS (\n  SELECT\n    inner_epoch, meter_id, cum,\n    CASE WHEN d < 0 OR d > (2000.0 * ${innerSec} / 3600.0) THEN 0 ELSE d END AS d\n  FROM diffs\n  WHERE inner_epoch >= ${windowStart}\n), bucketed AS (\n  SELECT\n    (inner_epoch / ${bucketSec}) * ${bucketSec} AS bucket_epoch,\n    meter_id,\n    SUM(d) AS energy_kwh,\n    MAX(cum) AS cumulative_kwh\n  FROM filtered\n  GROUP BY bucket_epoch, meter_id\n)\nSELECT\n  strftime('%Y-%m-%dT%H:%M:00.000Z', datetime(bucket_epoch, 'unixepoch')) AS ts,\n  meter_id AS meterId,\n  COALESCE(energy_kwh, 0) AS energyKwh,\n  COALESCE(cumulative_kwh, 0) AS cumulativeKwh\nFROM bucketed\nORDER BY bucket_epoch ASC, meter_id ASC\nLIMIT 50000;`;\n\ndelete msg.payload;\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 560,
+    "y": 980,
+    "wires": [
+      [
+        "a1000202.sqliteread_meterintervals"
+      ]
+    ]
+  },
+  {
+    "id": "a1000202.sqliteread_meterintervals",
+    "type": "sqlite",
+    "z": "a1000001.0001tab",
+    "mydb": "a1000012.sqlitedb",
+    "sqlquery": "msg.topic",
+    "sql": "",
+    "name": "SQLite read (meter intervals)",
+    "x": 870,
+    "y": 980,
+    "wires": [
+      [
+        "a1000203.httpmeterintervalsres"
+      ]
+    ]
+  },
+  {
+    "id": "a1000203.httpmeterintervalsres",
+    "type": "http response",
+    "z": "a1000001.0001tab",
+    "name": "",
+    "statusCode": "",
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8"
+    },
+    "x": 1110,
+    "y": 980,
+    "wires": []
+  },
+  {
     "id": "c1000001.modbustab",
     "type": "tab",
     "label": "PAC3220 Modbus (Jaguar)",

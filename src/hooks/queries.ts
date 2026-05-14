@@ -10,10 +10,12 @@ import {
   getPowerTrend,
   getVoltageEvents,
   getMeterHistory,
+  getMeterIntervals,
   getDemandStatus,
   type DemandTrendRange,
   type EnergyIntervalBucket,
 } from '../api/powerApi'
+import type { MeterIntervalBucket } from '../types'
 import { getProductionEntries } from '../api/productionApi'
 import { PLC_SITE_NAME } from '../constants/plcProductionMeters'
 import { PLC_METERS } from '../constants/plcMeters'
@@ -136,6 +138,17 @@ export function useMeterHistory(minutes = 24 * 60, meterId?: string) {
     queryFn: () => getMeterHistory(minutes, meterId),
     refetchInterval: 60_000,
     gcTime: 30_000,
+  })
+}
+
+/** Pre-aggregated per-meter consumption (server-side delta + bucket + spike clamp). */
+export function useMeterIntervals(bucket: MeterIntervalBucket, periods?: number) {
+  return useQuery({
+    queryKey: ['meterIntervals', bucket, periods ?? null],
+    queryFn: () => getMeterIntervals(bucket, periods),
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+    gcTime: 5 * 60_000,
   })
 }
 

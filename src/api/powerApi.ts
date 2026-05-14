@@ -3,6 +3,8 @@ import type {
   EnhancedAlert,
   EnergyInterval,
   LoadProfilePoint,
+  MeterIntervalBucket,
+  MeterIntervalRow,
   MeterSamplePoint,
   PlcFullSnapshot,
   PlcMeterData,
@@ -540,4 +542,32 @@ export async function getMeterHistory(
       typeof row === 'object' && row !== null ? (row as Record<string, unknown>) : {},
     ),
   )
+}
+
+/** Pre-aggregated per-meter consumption (server-side delta + bucketing + spike clamp). */
+export async function getMeterIntervals(
+  bucket: MeterIntervalBucket,
+  periods?: number,
+): Promise<MeterIntervalRow[]> {
+  const qs = new URLSearchParams({ bucket })
+  if (typeof periods === 'number' && Number.isFinite(periods)) qs.set('periods', String(periods))
+  const raw = await http<unknown>(`/api/trends/meter/intervals?${qs.toString()}`).catch(() => [])
+  if (!Array.isArray(raw)) return []
+  return raw
+    .map((row): MeterIntervalRow | null => {
+      if (typeof row !== 'object' || row === null) return null
+      const r = row as Record<string, unknown>
+      const ts = typeof r.ts === 'string' ? r.ts : null
+      const meterId = typeof r.meterId === 'string' ? r.meterId : null
+      if (!ts || !meterId) return null
+      const energyKwh = Number(r.energyKwh)
+      const cumulativeKwh = Number(r.cumulativeKwh)
+      return {
+        ts,
+        meterId,
+        energyKwh: Number.isFinite(energyKwh) ? energyKwh : 0,
+        cumulativeKwh: Number.isFinite(cumulativeKwh) ? cumulativeKwh : 0,
+      }
+    })
+    .filter((x): x is MeterIntervalRow => x !== null)
 }
